@@ -31,6 +31,39 @@
 $ npm install
 ```
 
+## Database Setup
+
+This project uses PostgreSQL as its database. Follow these steps to set up the database:
+
+1. Install PostgreSQL if you haven't already:
+   ```bash
+   # On macOS with Homebrew
+   brew install postgresql@14
+   brew services start postgresql@14
+   ```
+
+2. Create the database:
+   ```bash
+   # Method 1: Using createdb
+   createdb online_bar
+
+   # Method 2: Using psql (connect to postgres database first)
+   psql postgres
+   CREATE DATABASE online_bar;
+   ```
+
+3. Configure your environment variables in `.env`:
+   ```
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USERNAME=calvincartano
+   DB_PASSWORD=
+   DB_NAME=online_bar
+   NODE_ENV=development
+   ```
+
+4. The application will automatically create tables based on your entities when you start it (in development mode).
+
 ## Compile and run the project
 
 ```bash
