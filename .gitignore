@@ -1,5 +1,8 @@
 # compiled output
 /dist
+/backend/dist
+/frontend/dist
+**/dist
 /node_modules
 /build
 
