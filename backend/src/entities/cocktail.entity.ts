@@ -43,6 +43,10 @@ export class Cocktail {
   })
   updatedAt: Date;
 
+  // Optional Paperless document ID for reference
+  @Column({ nullable: true })
+  paperlessId: number;
+
   @ManyToOne(() => GlassType)
   @JoinColumn()
   glassType: GlassType;

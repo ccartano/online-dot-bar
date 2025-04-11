@@ -15,6 +15,7 @@ const LandingPage: React.FC = () => {
     <div className="landing-page">
       <nav className="navbar">
         <div className="nav-links">
+          <Link to="/potential-cocktails">Potential Cocktails</Link>
           <Link to="/cocktails">Cocktails</Link>
           <Link to="/ingredients">Ingredients</Link>
           <Link to="/categories">Categories</Link>

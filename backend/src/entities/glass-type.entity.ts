@@ -15,6 +15,9 @@ export class GlassType {
   @Column({ nullable: true })
   imageUrl: string;
 
+  @Column({ nullable: true })
+  icon: string;
+
   @OneToMany(() => Cocktail, (cocktail) => cocktail.glassType)
   cocktails: Cocktail[];
 }

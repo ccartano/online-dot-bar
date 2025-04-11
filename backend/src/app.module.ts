@@ -1,4 +1,4 @@
-import { Module, Provider } from '@nestjs/common';
+import { Module, Provider, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
@@ -7,9 +7,11 @@ import { DatabaseModule } from './database/database.module';
 import { CocktailsModule } from './cocktails/cocktails.module';
 import { IngredientsModule } from './ingredients/ingredients.module';
 import { CategoriesModule } from './categories/categories.module';
+import { GlassTypesModule } from './glass-types/glass-types.module';
 import { Cocktail } from './entities/cocktail.entity';
 import { PaperlessService } from './services/paperless.service';
 import { PaperlessController } from './controllers/paperless.controller';
+import { CocktailsController } from './cocktails/cocktails.controller';
 
 @Module({
   imports: [
@@ -21,8 +23,16 @@ import { PaperlessController } from './controllers/paperless.controller';
     CocktailsModule,
     IngredientsModule,
     CategoriesModule,
+    GlassTypesModule,
   ],
-  controllers: [AppController, PaperlessController],
-  providers: [AppService, PaperlessService] as Provider[],
+  controllers: [AppController, PaperlessController, CocktailsController],
+  providers: [
+    AppService,
+    PaperlessService,
+    {
+      provide: 'APP_PIPE',
+      useClass: ValidationPipe,
+    },
+  ] as Provider[],
 })
 export class AppModule {}

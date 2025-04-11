@@ -6,7 +6,7 @@ import { PaperlessDocument } from '../types/paperless.types';
 export class PaperlessController {
   constructor(private readonly paperlessService: PaperlessService) {}
 
-  @Get()
+  @Get('documents')
   async getAllDocuments(): Promise<PaperlessDocument[]> {
     return this.paperlessService.getAllDocuments();
   }
