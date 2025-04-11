@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import '../App.css';
 
 const LandingPage: React.FC = () => {
@@ -13,15 +12,6 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="landing-page">
-      <nav className="navbar">
-        <div className="nav-links">
-          <Link to="/potential-cocktails">Potential Cocktails</Link>
-          <Link to="/cocktails">Cocktails</Link>
-          <Link to="/ingredients">Ingredients</Link>
-          <Link to="/categories">Categories</Link>
-        </div>
-      </nav>
-      
       <div className="main-content">
         <h1 className="site-title">The Online.Bar</h1>
         

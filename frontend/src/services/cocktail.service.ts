@@ -15,28 +15,46 @@ export enum MeasurementUnit {
 }
 
 export interface CocktailIngredient {
-  amount?: string;
+  amount?: number;
   unit?: MeasurementUnit;
-  name: string;
+  notes?: string;
+  order: number;
+  ingredient: {
+    name: string;
+    description?: string;
+    type?: string;
+    imageUrl?: string;
+  };
 }
 
 export interface Cocktail {
-  id: number;
   name: string;
   ingredients: CocktailIngredient[];
   instructions: string;
   sourceDocumentId: number;
   paperlessId?: number;
   created?: string;
+  imageUrl?: string;
   glassType?: {
     id: number;
     name: string;
+    icon?: string;
   };
+  glassTypeId?: number;
   status: 'active' | 'pending';
 }
 
 export class CocktailService {
   private static readonly ML_TO_OZ = 1/30; // 30ml = 1oz
+
+  private static normalizeString(str: string): string {
+    return str.trim().toLowerCase();
+  }
+
+  private static normalizeUnit(unit: string): MeasurementUnit {
+    const normalized = unit.toLowerCase().replace(/\.$/, '');
+    return normalized as MeasurementUnit;
+  }
 
   private static convertMlToOz(ml: number): number {
     return Number((ml * this.ML_TO_OZ).toFixed(2));
@@ -118,7 +136,7 @@ export class CocktailService {
 
     const name = lines[0];
     const instructions = lines[lines.length - 1];
-    const ingredients = lines.slice(1, -1).map(line => {
+    const ingredients = lines.slice(1, -1).map((line, index) => {
       // Try to parse amount and unit from the line, handling units with periods and parenthetical measurements
       const match = line.match(/^(%|\d+(?:\/\d+)?(?:\.\d+)?)\s*([a-zA-Z]+\.?)\s*(?:\([^)]*\))?\s+(.+)$/);
       if (match) {
@@ -127,25 +145,30 @@ export class CocktailService {
         const name = this.normalizeString(match[3]);
         
         return {
-          amount,
+          amount: parseFloat(amount),
           unit,
-          name
+          order: index + 1,
+          ingredient: {
+            name
+          }
         };
       }
       // If no amount/unit found, treat the whole line as the name
       return {
-        name: this.normalizeString(line)
+        order: index + 1,
+        ingredient: {
+          name: this.normalizeString(line)
+        }
       };
     });
 
     return {
-      id: doc.id,
       name: this.normalizeString(name),
       ingredients,
       instructions: this.normalizeString(instructions),
       sourceDocumentId: doc.id,
       paperlessId: doc.id,
-      status: 'pending' // Default status for new cocktails
+      status: 'pending'
     };
   }
 
@@ -209,9 +232,12 @@ export class CocktailService {
             if (ingredientName && 
                 (ingredientName.length > 2 || (value !== undefined && unit !== MeasurementUnit.OTHER))) {
               ingredients.push({
-                name: ingredientName,
-                amount: value?.toString(),
-                unit
+                order: ingredients.length + 1, // Order based on current length
+                amount: value,
+                unit,
+                ingredient: {
+                  name: ingredientName
+                }
               });
             }
           }
@@ -225,7 +251,7 @@ export class CocktailService {
         instructions: instructions.join('\n').trim(),
         paperlessId: doc.id,
         sourceDocumentId: doc.id,
-        status: 'pending' as const
+        status: 'pending'
       };
     });
   }

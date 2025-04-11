@@ -82,7 +82,7 @@ export const PotentialCocktailsPage: React.FC = () => {
       const ingredientPromises = updatedCocktail.ingredients.map(async (ingredient) => {
         // Find existing ingredient
         const existingIngredient = allIngredients.find(
-          (i: { name: string }) => i.name.toLowerCase() === ingredient.name.toLowerCase()
+          (i: { name: string }) => i.name.toLowerCase() === ingredient.ingredient.name.toLowerCase()
         );
         
         if (existingIngredient) {
@@ -96,7 +96,7 @@ export const PotentialCocktailsPage: React.FC = () => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            name: ingredient.name
+            name: ingredient.ingredient.name
           }),
         });
 

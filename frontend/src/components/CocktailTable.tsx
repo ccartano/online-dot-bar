@@ -53,6 +53,7 @@ const headCells: HeadCell[] = [
   { id: 'name', label: 'Cocktail Name', sortable: true },
   { id: 'ingredients', label: 'Ingredients', sortable: false },
   { id: 'instructions', label: 'Instructions', sortable: false },
+  { id: 'glassType', label: 'Glass Type', sortable: false },
   { id: 'created', label: 'Added', sortable: true },
   { id: 'status', label: 'Status', sortable: true },
 ];
@@ -62,7 +63,12 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
   const [orderBy, setOrderBy] = useState<keyof Cocktail>('created');
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const [editingCocktail, setEditingCocktail] = useState<Cocktail | null>(null);
-  const [newIngredient, setNewIngredient] = useState<CocktailIngredient>({ name: '' });
+  const [newIngredient, setNewIngredient] = useState<CocktailIngredient>({
+    order: 0,
+    ingredient: {
+      name: ''
+    }
+  });
   const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);
   const [newGlassType, setNewGlassType] = useState<Partial<GlassTypeIcon>>({});
   const [isNewGlassTypeDialogOpen, setIsNewGlassTypeDialogOpen] = useState(false);
@@ -103,7 +109,12 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
 
   const handleCloseDialog = () => {
     setEditingCocktail(null);
-    setNewIngredient({ name: '' });
+    setNewIngredient({
+      order: 0,
+      ingredient: {
+        name: ''
+      }
+    });
   };
 
   const handleSave = () => {
@@ -114,12 +125,23 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
   };
 
   const handleAddIngredient = () => {
-    if (newIngredient.name.trim() && editingCocktail) {
+    if (newIngredient.ingredient.name.trim() && editingCocktail) {
       setEditingCocktail({
         ...editingCocktail,
-        ingredients: [...editingCocktail.ingredients, { ...newIngredient, name: newIngredient.name.trim() }],
+        ingredients: [...editingCocktail.ingredients, { 
+          ...newIngredient, 
+          order: editingCocktail.ingredients.length + 1,
+          ingredient: {
+            name: newIngredient.ingredient.name.trim()
+          }
+        }],
       });
-      setNewIngredient({ name: '' });
+      setNewIngredient({
+        order: 0,
+        ingredient: {
+          name: ''
+        }
+      });
     }
   };
 
@@ -128,7 +150,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
       setEditingCocktail({
         ...editingCocktail,
         ingredients: editingCocktail.ingredients.filter(
-          (ingredient) => ingredient.name !== ingredientToRemove.name
+          (ingredient) => ingredient.ingredient.name !== ingredientToRemove.ingredient.name
         ),
       });
     }
@@ -221,7 +243,8 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                   sortDirection={orderBy === headCell.id ? order : false}
                   width={headCell.id === 'name' ? '20%' : 
                          headCell.id === 'ingredients' ? '25%' : 
-                         headCell.id === 'instructions' ? '30%' : 
+                         headCell.id === 'instructions' ? '20%' : 
+                         headCell.id === 'glassType' ? '15%' :
                          headCell.id === 'created' ? '10%' : 
                          headCell.id === 'status' ? '10%' : 'auto'}
                 >
@@ -268,13 +291,38 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" color="text.secondary">
-                      {cocktail.ingredients[0]?.name} and {cocktail.ingredients.length - 1} more
+                      {cocktail.ingredients[0]?.ingredient.name} and {cocktail.ingredients.length - 1} more
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" color="text.secondary" noWrap>
                       {cocktail.instructions}
                     </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <FormControl size="small" fullWidth>
+                      <Select
+                        value={cocktail.glassType?.id || ''}
+                        onChange={(e) => {
+                          const selectedGlassType = glassTypes.find(gt => gt.id === e.target.value);
+                          onCocktailUpdate({
+                            ...cocktail,
+                            glassType: selectedGlassType
+                          });
+                        }}
+                        displayEmpty
+                        sx={{ minWidth: 120 }}
+                      >
+                        {glassTypes.map((glassType) => (
+                          <MenuItem key={glassType.id} value={glassType.id}>
+                            <ListItemIcon>
+                              <Icon path={glassType.icon} size={1} />
+                            </ListItemIcon>
+                            <ListItemText primary={glassType.name} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2" color="text.secondary">
@@ -339,7 +387,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                                     </TableCell>
                                     <TableCell>
                                       <Typography variant="body2">
-                                        {ingredient.name}
+                                        {ingredient.ingredient.name}
                                       </Typography>
                                     </TableCell>
                                   </TableRow>
@@ -353,6 +401,18 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                           <Typography variant="body2" paragraph>
                             {cocktail.instructions}
                           </Typography>
+                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onCocktailUpdate(cocktail);
+                              }}
+                            >
+                              Quick Save
+                            </Button>
+                          </Box>
                         </Box>
                       </Box>
                     </Collapse>
@@ -458,12 +518,15 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                         <TableCell>
                           <TextField
                             size="small"
-                            value={ingredient.name}
+                            value={ingredient.ingredient.name}
                             onChange={(e) => {
                               const newIngredients = [...editingCocktail.ingredients];
                               newIngredients[index] = {
                                 ...ingredient,
-                                name: e.target.value
+                                ingredient: {
+                                  ...ingredient.ingredient,
+                                  name: e.target.value
+                                }
                               };
                               setEditingCocktail({ ...editingCocktail, ingredients: newIngredients });
                             }}
@@ -499,8 +562,13 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                 />
                 <TextField
                   label="Name"
-                  value={newIngredient.name || ''}
-                  onChange={(e) => setNewIngredient({ ...newIngredient, name: e.target.value })}
+                  value={newIngredient.ingredient.name || ''}
+                  onChange={(e) => setNewIngredient({ 
+                    ...newIngredient, 
+                    ingredient: {
+                      name: e.target.value
+                    }
+                  })}
                   onKeyPress={(e) => e.key === 'Enter' && handleAddIngredient()}
                   size="small"
                   fullWidth
