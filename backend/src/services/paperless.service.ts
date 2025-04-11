@@ -10,8 +10,7 @@ interface PaperlessApiResponse {
     content: string;
     created: string;
     modified: string;
-    document_type?: { name: string };
-    correspondent?: { name: string };
+    tags?: string[];
   }>;
 }
 
@@ -21,8 +20,7 @@ interface PaperlessApiDocument {
   content: string;
   created: string;
   modified: string;
-  document_type?: { name: string };
-  correspondent?: { name: string };
+  tags?: string[];
 }
 
 @Injectable()
@@ -79,10 +77,9 @@ export class PaperlessService implements OnModuleInit {
         id: doc.id,
         title: doc.title,
         content: doc.content,
-        created: new Date(doc.created),
-        modified: new Date(doc.modified),
-        document_type: doc.document_type?.name || null,
-        correspondent: doc.correspondent?.name || null,
+        created: doc.created,
+        modified: doc.modified,
+        tags: doc.tags || [],
       }));
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -109,10 +106,9 @@ export class PaperlessService implements OnModuleInit {
         id: doc.id,
         title: doc.title,
         content: doc.content,
-        created: new Date(doc.created),
-        modified: new Date(doc.modified),
-        document_type: doc.document_type?.name || null,
-        correspondent: doc.correspondent?.name || null,
+        created: doc.created,
+        modified: doc.modified,
+        tags: doc.tags || [],
       };
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -140,10 +136,9 @@ export class PaperlessService implements OnModuleInit {
         id: doc.id,
         title: doc.title,
         content: doc.content,
-        created: new Date(doc.created),
-        modified: new Date(doc.modified),
-        document_type: doc.document_type?.name || null,
-        correspondent: doc.correspondent?.name || null,
+        created: doc.created,
+        modified: doc.modified,
+        tags: doc.tags || [],
       }));
     } catch (error) {
       const axiosError = error as AxiosError;
