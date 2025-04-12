@@ -27,7 +27,7 @@ export interface CocktailIngredient {
   };
 }
 
-export interface Cocktail {
+export interface ParsedCocktail {
   name: string;
   ingredients: CocktailIngredient[];
   instructions: string;
@@ -42,6 +42,10 @@ export interface Cocktail {
   };
   glassTypeId?: number;
   status: 'active' | 'pending';
+}
+
+export interface Cocktail extends ParsedCocktail {
+  id: number;
 }
 
 export class CocktailService {
@@ -163,6 +167,7 @@ export class CocktailService {
     });
 
     return {
+      id: doc.id,
       name: this.normalizeString(name),
       ingredients,
       instructions: this.normalizeString(instructions),

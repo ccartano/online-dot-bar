@@ -35,6 +35,7 @@ import { glassTypeIcons, GlassTypeIcon } from '../constants/glassTypes';
 import { Cocktail, CocktailIngredient } from '../services/cocktail.service';
 import { getApiUrl } from '../config/api.config';
 import { GlassType } from '../types/glass.types';
+import { mdiGlassCocktail } from '@mdi/js';
 
 interface CocktailTableProps {
   cocktails: (Cocktail & { status: 'active' | 'pending' })[];
@@ -316,7 +317,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                         {glassTypes.map((glassType) => (
                           <MenuItem key={glassType.id} value={glassType.id}>
                             <ListItemIcon>
-                              <Icon path={glassType.icon} size={1} />
+                              <Icon path={glassType.icon || mdiGlassCocktail} size={1} />
                             </ListItemIcon>
                             <ListItemText primary={glassType.name} />
                           </MenuItem>
@@ -451,7 +452,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                 {glassTypes.map((glassType) => (
                   <MenuItem key={glassType.id} value={glassType.id}>
                     <ListItemIcon>
-                      <Icon path={glassType.icon} size={1} />
+                      <Icon path={glassType.icon || mdiGlassCocktail} size={1} />
                     </ListItemIcon>
                     <ListItemText primary={glassType.name} secondary={glassType.description} />
                   </MenuItem>
@@ -493,7 +494,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                               const newIngredients = [...editingCocktail.ingredients];
                               newIngredients[index] = {
                                 ...ingredient,
-                                amount: e.target.value || undefined
+                                amount: e.target.value ? parseFloat(e.target.value) : undefined
                               };
                               setEditingCocktail({ ...editingCocktail, ingredients: newIngredients });
                             }}
@@ -549,7 +550,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                 <TextField
                   label="Amount"
                   value={newIngredient.amount || ''}
-                  onChange={(e) => setNewIngredient({ ...newIngredient, amount: e.target.value || undefined })}
+                  onChange={(e) => setNewIngredient({ ...newIngredient, amount: e.target.value ? parseFloat(e.target.value) : undefined })}
                   type="number"
                   size="small"
                   inputProps={{ step: "0.25" }}
@@ -624,7 +625,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                 {glassTypeIcons.map((glassType) => (
                   <MenuItem key={glassType.id} value={glassType.name}>
                     <ListItemIcon>
-                      <Icon path={glassType.icon} size={1} />
+                      <Icon path={glassType.icon || mdiGlassCocktail} size={1} />
                     </ListItemIcon>
                     <ListItemText primary={glassType.name} secondary={glassType.description} />
                   </MenuItem>

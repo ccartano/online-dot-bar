@@ -15,8 +15,8 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="layout">
-      <nav className="navbar">
+    <div className="layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <nav className="navbar" style={{ position: 'sticky', top: 0, zIndex: 1000 }}>
         <div className="nav-links">
           <Link 
             to="/cocktails" 
@@ -38,7 +38,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Link>
         </div>
       </nav>
-      <Box component="main" sx={{ flexGrow: 1 }}>
+      <Box component="main" sx={{ flexGrow: 1, position: 'relative' }}>
         {children}
       </Box>
     </div>

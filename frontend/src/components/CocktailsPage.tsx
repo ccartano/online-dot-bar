@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Cocktail } from '../services/cocktail.service';
-import { Alert, Snackbar, Box, Typography, Checkbox, FormControlLabel, FormGroup, Divider } from '@mui/material';
+import { Alert, Snackbar, Box, Typography } from '@mui/material';
 import { CocktailCard } from './CocktailCard';
 import { getApiUrl } from '../config/api.config';
 import { BaseSpirit, getBaseSpirit } from '../utils/spiritUtils';
+import { CocktailFilters } from './CocktailFilters';
 
 export const CocktailsPage: React.FC = () => {
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
@@ -81,22 +82,24 @@ export const CocktailsPage: React.FC = () => {
   const filteredCocktails = cocktails.filter(cocktail => {
     const spirit = getBaseSpirit(cocktail.ingredients.map(i => ({ ingredient: { name: i.ingredient.name } })));
     const matchesSpirit = selectedSpirits.length === 0 || selectedSpirits.includes(spirit);
-    const glassName = glassTypeMap[cocktail.glassTypeId] || 'Unknown';
+    const glassName = cocktail.glassTypeId ? glassTypeMap[cocktail.glassTypeId] : 'Unknown';
     console.log('Cocktail:', cocktail.name, 'Glass Name:', glassName);
     const matchesGlass = selectedGlassTypes.length === 0 || selectedGlassTypes.includes(glassName);
     return matchesSpirit && matchesGlass;
   });
 
-  const cocktailsBySpirit = filteredCocktails.reduce((acc, cocktail) => {
-    const spirit = getBaseSpirit(cocktail.ingredients.map(i => ({ ingredient: { name: i.ingredient.name } })));
-    if (!acc[spirit]) {
-      acc[spirit] = [];
+  // Group cocktails by first letter
+  const cocktailsByLetter = filteredCocktails.reduce((acc, cocktail) => {
+    const firstLetter = cocktail.name.charAt(0).toUpperCase();
+    if (!acc[firstLetter]) {
+      acc[firstLetter] = [];
     }
-    acc[spirit].push(cocktail);
+    acc[firstLetter].push(cocktail);
     return acc;
-  }, {} as Record<BaseSpirit, Cocktail[]>);
+  }, {} as Record<string, Cocktail[]>);
 
-  const spiritOrder: BaseSpirit[] = ['Gin', 'Whiskey', 'Vodka', 'Rum', 'Tequila', 'Brandy', 'Other'];
+  // Sort letters alphabetically
+  const sortedLetters = Object.keys(cocktailsByLetter).sort();
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -107,58 +110,29 @@ export const CocktailsPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ display: 'flex', gap: 4 }}>
-        <Box sx={{ width: 240, flexShrink: 0, p: 2, borderRight: '1px solid #e0e0e0' }}>
-          <Typography variant="h6" sx={{ fontFamily: 'Italianno, cursive', fontSize: '2rem', mb: 2 }}>
-            Filters
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-            Spirit
-          </Typography>
-          <FormGroup sx={{ pl: 2, mb: 4 }}>
-            {spiritOrder.map((spirit) => (
-              <FormControlLabel
-                key={spirit}
-                control={
-                  <Checkbox
-                    checked={selectedSpirits.includes(spirit)}
-                    onChange={() => handleSpiritChange(spirit)}
-                  />
-                }
-                label={spirit}
-                sx={{ mb: 1 }}
-              />
-            ))}
-          </FormGroup>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-            Glass Type
-          </Typography>
-          <FormGroup sx={{ pl: 2 }}>
-            {Object.values(glassTypeMap).map((glassName) => (
-              <FormControlLabel
-                key={glassName}
-                control={
-                  <Checkbox
-                    checked={selectedGlassTypes.includes(glassName)}
-                    onChange={() => handleGlassTypeChange(glassName)}
-                  />
-                }
-                label={glassName}
-                sx={{ mb: 1 }}
-              />
-            ))}
-          </FormGroup>
-        </Box>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', gap: 4, flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        <CocktailFilters
+          selectedSpirits={selectedSpirits}
+          selectedGlassTypes={selectedGlassTypes}
+          glassTypeMap={glassTypeMap}
+          onSpiritChange={handleSpiritChange}
+          onGlassTypeChange={handleGlassTypeChange}
+        />
 
-        <Box sx={{ flexGrow: 1 }}>
-          {spiritOrder.map((spirit) => {
-            const spiritCocktails = cocktailsBySpirit[spirit] || [];
-            if (spiritCocktails.length === 0) return null;
+        <Box sx={{ 
+          flex: 1,
+          height: '100%',
+          pr: 2,
+          overflowY: 'auto',
+          position: 'relative'
+        }}>
+          {sortedLetters.map((letter) => {
+            const letterCocktails = cocktailsByLetter[letter] || [];
+            if (letterCocktails.length === 0) return null;
 
             return (
-              <Box key={spirit} sx={{ mb: 6 }}>
+              <Box key={letter} sx={{ mb: 6 }}>
                 <Typography 
                   variant="h4" 
                   component="h2"
@@ -169,11 +143,25 @@ export const CocktailsPage: React.FC = () => {
                     mb: 3,
                   }}
                 >
-                  {spirit}
+                  {letter}
                 </Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                  {spiritCocktails.map((cocktail) => (
-                    <Box key={cocktail.id} sx={{ width: { xs: '100%', sm: 'calc(50% - 16px)', md: 'calc(33.33% - 16px)', lg: 'calc(25% - 16px)' } }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: 4,
+                  justifyContent: 'flex-start'
+                }}>
+                  {letterCocktails.map((cocktail) => (
+                    <Box 
+                      key={cocktail.id} 
+                      sx={{ 
+                        width: 'calc(25% - 12px)',
+                        minWidth: '250px',
+                        flexShrink: 0,
+                        display: 'flex',
+                        justifyContent: 'flex-start'
+                      }}
+                    >
                       <CocktailCard cocktail={cocktail} />
                     </Box>
                   ))}

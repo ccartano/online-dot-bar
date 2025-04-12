@@ -49,6 +49,7 @@ export const PotentialCocktailsPage: React.FC = () => {
               status: data.status || 'pending'
             };
           } catch (err) {
+            console.error('Error fetching status for cocktail:', err);
             return {
               ...cocktail,
               status: 'pending' as const
@@ -123,7 +124,7 @@ export const PotentialCocktailsPage: React.FC = () => {
           glassTypeId: updatedCocktail.glassType.id,
           ingredients: updatedCocktail.ingredients.map((ingredient, index) => ({
             ingredientId: ingredientIds[index],
-            amount: ingredient.amount ? parseFloat(ingredient.amount) : undefined,
+            amount: ingredient.amount ? ingredient.amount.toString() : undefined,
             unit: ingredient.unit,
             order: index
           }))
@@ -147,6 +148,7 @@ export const PotentialCocktailsPage: React.FC = () => {
         severity: 'success',
       });
     } catch (err) {
+      console.error('Error creating cocktail:', err);
       setSnackbar({
         open: true,
         message: err instanceof Error ? err.message : 'Failed to create cocktail',
