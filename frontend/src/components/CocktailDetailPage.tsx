@@ -99,49 +99,78 @@ export const CocktailDetailPage: React.FC = () => {
           Ingredients
         </Typography>
         <List>
-          {cocktail.ingredients.map((ingredient, index) => (
+          {[...cocktail.ingredients]
+            .sort((a, b) => {
+              // Sort ingredients with amounts to the top
+              if (a.amount && !b.amount) return -1;
+              if (!a.amount && b.amount) return 1;
+              return 0;
+            })
+            .map((ingredient, index) => (
             <ListItem key={index} sx={{ py: 0, display: 'flex', width: '100%', alignItems: 'center' }}>
               <div style={{ 
-                fontFamily: 'Italianno, cursive',
-                fontSize: '2rem',
-                lineHeight: 1,
-                width: ingredient.amount ? 'fit-content' : '245px'
+                display: 'flex',
+                width: '250px',
+                alignItems: 'center'
               }}>
-                {formatAmountAndUnit(ingredient)}
-              </div>
-              {ingredient.amount && (
                 <div style={{ 
+                  fontFamily: 'Italianno, cursive',
+                  fontSize: '2rem',
                   lineHeight: 1,
-                  color: '#ccc',
-                  textAlign: 'left',
                   width: 'fit-content'
                 }}>
-                  ................................................
+                  {formatAmountAndUnit(ingredient)}
                 </div>
-              )}
-              <div style={{ lineHeight: 1, minWidth: '200px', marginLeft: ingredient.amount ? '4px' : 0 }}>
+                {ingredient.amount && (
+                  <div style={{ 
+                    lineHeight: 1,
+                    color: '#ccc',
+                    textAlign: 'left',
+                    flex: 1,
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    ................................................
+                  </div>
+                )}
+              </div>
+              <div style={{ lineHeight: 1, minWidth: '200px', marginLeft: '4px' }}>
                 {formatIngredientName(ingredient)}
               </div>
             </ListItem>
           ))}
+          {cocktail.glassType?.name && (
+            <ListItem sx={{ py: 0, display: 'flex', width: '100%', alignItems: 'center' }}>
+              <div style={{ 
+                display: 'flex',
+                width: '250px',
+                alignItems: 'center'
+              }}>
+                <div style={{ 
+                  fontFamily: 'Italianno, cursive',
+                  fontSize: '2rem',
+                  lineHeight: 1,
+                  width: 'fit-content'
+                }}>
+                  Glass Type
+                </div>
+                <div style={{ 
+                  lineHeight: 1,
+                  color: '#ccc',
+                  textAlign: 'left',
+                  flex: 1,
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap'
+                }}>
+                  ................................................
+                </div>
+              </div>
+              <div style={{ lineHeight: 1, minWidth: '200px', marginLeft: '4px' }}>
+                {titleize(cocktail.glassType.name)}
+              </div>
+            </ListItem>
+          )}
         </List>
-        {cocktail.glassType?.name && (
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="h4" sx={{ 
-              fontFamily: 'Italianno, cursive',
-              fontSize: '2rem',
-              display: 'inline'
-            }}>
-              Glass Type:&nbsp;
-            </Typography>
-            <Typography variant="body1" sx={{ 
-              fontSize: '1rem',
-              display: 'inline'
-            }}>
-              {titleize(cocktail.glassType.name)}
-            </Typography>
-          </Box>
-        )}
       </Box>
 
       <Box>
