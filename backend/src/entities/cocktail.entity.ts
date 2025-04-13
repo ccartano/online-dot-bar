@@ -47,8 +47,11 @@ export class Cocktail {
   @Column({ nullable: true })
   paperlessId: number;
 
+  @Column({ nullable: true })
+  glassTypeId: number;
+
   @ManyToOne(() => GlassType)
-  @JoinColumn()
+  @JoinColumn({ name: 'glassTypeId' })
   glassType: GlassType;
 
   @ManyToOne(() => Category)

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Cocktail } from '../services/cocktail.service';
-import { Alert, Snackbar, Box, Typography } from '@mui/material';
+import { Alert, Snackbar, Box } from '@mui/material';
 import { CocktailCard } from './CocktailCard';
 import { getApiUrl } from '../config/api.config';
 import { BaseSpirit, getBaseSpirit } from '../utils/spiritUtils';
@@ -83,7 +83,7 @@ export const CocktailsPage: React.FC = () => {
     const spirit = getBaseSpirit(cocktail.ingredients.map(i => ({ ingredient: { name: i.ingredient.name } })));
     const matchesSpirit = selectedSpirits.length === 0 || selectedSpirits.includes(spirit);
     const glassName = cocktail.glassTypeId ? glassTypeMap[cocktail.glassTypeId] : 'Unknown';
-    console.log('Cocktail:', cocktail.name, 'Glass Name:', glassName);
+    console.log('Cocktail:', cocktail.name, 'Glass ID:', cocktail.glassTypeId, 'Glass Name:', glassName);
     const matchesGlass = selectedGlassTypes.length === 0 || selectedGlassTypes.includes(glassName);
     return matchesSpirit && matchesGlass;
   });
@@ -133,18 +133,20 @@ export const CocktailsPage: React.FC = () => {
 
             return (
               <Box key={letter} sx={{ mb: 6 }}>
-                <Typography 
-                  variant="h4" 
-                  component="h2"
-                  sx={{
+                <h2 
+                  style={{
                     fontFamily: 'Italianno, cursive',
                     fontSize: '2.5rem',
                     color: '#1a1a1a',
-                    mb: 3,
+                    marginBottom: '1.5rem',
+                    marginBlockStart: 0,
+                    marginBlockEnd: 0,
+                    marginInlineStart: 0,
+                    marginInlineEnd: 0,
                   }}
                 >
                   {letter}
-                </Typography>
+                </h2>
                 <Box sx={{ 
                   display: 'flex', 
                   flexWrap: 'wrap', 

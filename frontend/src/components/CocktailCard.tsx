@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { Icon } from '@mdi/react';
 import { Cocktail } from '../services/cocktail.service';
@@ -40,16 +40,17 @@ export const CocktailCard: React.FC<CocktailCardProps> = ({ cocktail }) => {
               color="#1a1a1a"
             />
           )}
-          <Typography
-            variant="h6"
-            sx={{
+          <h3
+            style={{
               fontFamily: 'Italianno, cursive',
               fontSize: '1.8rem',
               color: '#1a1a1a',
+              margin: 0,
+              padding: 0
             }}
           >
             {capitalizeWords(cocktail.name)}
-          </Typography>
+          </h3>
         </Box>
       </Link>
     </Box>

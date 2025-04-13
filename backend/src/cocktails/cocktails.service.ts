@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Brackets } from 'typeorm';
 import { Cocktail } from '../entities/cocktail.entity';
 import { CreateCocktailDto } from './dto/create-cocktail.dto';
 import { GlassType } from '../entities/glass-type.entity';
@@ -8,6 +8,7 @@ import { Category } from '../entities/category.entity';
 import { Ingredient } from '../entities/ingredient.entity';
 import { CocktailIngredient } from '../entities/cocktail-ingredient.entity';
 import { UpdateCocktailDto } from './dto/update-cocktail.dto';
+import { FilterCocktailDto } from './dto/filter-cocktail.dto';
 
 @Injectable()
 export class CocktailsService {
@@ -24,15 +25,68 @@ export class CocktailsService {
     private cocktailIngredientsRepository: Repository<CocktailIngredient>,
   ) {}
 
-  async findAll(): Promise<Cocktail[]> {
-    return this.cocktailsRepository.find({
-      relations: [
-        'glassType',
-        'category',
-        'ingredients',
-        'ingredients.ingredient',
-      ],
-    });
+  async findAll(filterDto?: FilterCocktailDto): Promise<Cocktail[]> {
+    const queryBuilder = this.cocktailsRepository
+      .createQueryBuilder('cocktail')
+      .leftJoinAndSelect('cocktail.category', 'category')
+      .leftJoinAndSelect('cocktail.ingredients', 'cocktailIngredients')
+      .leftJoinAndSelect('cocktailIngredients.ingredient', 'ingredient')
+      .addSelect('cocktail.glassTypeId');
+
+    if (filterDto) {
+      const { name, categoryId, ingredientIds, glassTypeNames } = filterDto;
+
+      if (name) {
+        queryBuilder.andWhere('LOWER(cocktail.name) LIKE LOWER(:name)', {
+          name: `%${name}%`,
+        });
+      }
+
+      if (categoryId) {
+        queryBuilder.andWhere('category.id = :categoryId', { categoryId });
+      }
+
+      if (ingredientIds && ingredientIds.length > 0) {
+        queryBuilder.andWhere(
+          new Brackets((qb) => {
+            ingredientIds.forEach((id, index) => {
+              qb.andWhere(
+                `EXISTS (SELECT 1 FROM cocktail_ingredient ci WHERE ci."cocktailId" = cocktail.id AND ci."ingredientId" = :ingredientId${index})`,
+                { [`ingredientId${index}`]: id },
+              );
+            });
+          }),
+        );
+      }
+
+      if (glassTypeNames && glassTypeNames.length > 0) {
+        // Since we're not joining glassType, we need to use the ID
+        const glassTypeIds = await this.glassTypesRepository
+          .createQueryBuilder('glassType')
+          .select('glassType.id')
+          .where('glassType.name IN (:...names)', { names: glassTypeNames })
+          .getMany()
+          .then((types) => types.map((t) => t.id));
+
+        if (glassTypeIds.length > 0) {
+          queryBuilder.andWhere('cocktail.glassTypeId IN (:...glassTypeIds)', {
+            glassTypeIds,
+          });
+        }
+      }
+    }
+
+    const cocktails = await queryBuilder.getMany();
+
+    // Log the first cocktail's glass type for debugging
+    if (cocktails.length > 0) {
+      console.log('First cocktail glass type:', {
+        cocktailName: cocktails[0].name,
+        glassTypeId: cocktails[0].glassTypeId,
+      });
+    }
+
+    return cocktails;
   }
 
   async findOne(id: number): Promise<Cocktail> {

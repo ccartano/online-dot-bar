@@ -18,8 +18,8 @@ interface HeadCell {
 
 const headCells: HeadCell[] = [
   { id: 'name', label: 'Cocktail Name', sortable: true, width: '20%' },
-  { id: 'ingredients', label: 'Ingredients', sortable: false, width: '25%' },
-  { id: 'instructions', label: 'Instructions', sortable: false, width: '20%' },
+  { id: 'ingredients', label: 'Ingredients', sortable: false, width: '20%' },
+  { id: 'instructions', label: 'Instructions', sortable: false, width: '30%' },
   { id: 'created', label: 'Added', sortable: true, width: '10%' },
   { id: 'status', label: 'Status', sortable: true, width: '10%' },
 ];

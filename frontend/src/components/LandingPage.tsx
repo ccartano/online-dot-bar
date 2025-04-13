@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Typography, TextField, Button, Container } from '@mui/material';
+import { Box, TextField, Button, Container } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 const SearchInput = styled(TextField)(({ theme }) => ({
@@ -49,19 +49,22 @@ const LandingPage: React.FC = () => {
             gap: 4,
           }}
         >
-          <Typography
-            variant="h1"
-            sx={{
+          <h1
+            style={{
               fontFamily: 'Italianno, cursive',
-              fontSize: { xs: '4rem', sm: '5rem', md: '6rem' },
+              fontSize: '6rem',
               color: '#1A1A1A',
               textAlign: 'center',
               lineHeight: 1,
-              mb: 2,
+              marginBottom: '1rem',
+              marginBlockStart: 0,
+              marginBlockEnd: 0,
+              marginInlineStart: 0,
+              marginInlineEnd: 0,
             }}
           >
             The Online.Bar
-          </Typography>
+          </h1>
           
           <Box
             component="form"

@@ -6,18 +6,20 @@ import {
   Put,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { CocktailsService } from './cocktails.service';
 import { CreateCocktailDto } from './dto/create-cocktail.dto';
 import { UpdateCocktailDto } from './dto/update-cocktail.dto';
+import { FilterCocktailDto } from './dto/filter-cocktail.dto';
 
 @Controller('cocktails')
 export class CocktailsController {
   constructor(private readonly cocktailsService: CocktailsService) {}
 
   @Get()
-  async findAll() {
-    const cocktails = await this.cocktailsService.findAll();
+  async findAll(@Query() filterDto: FilterCocktailDto) {
+    const cocktails = await this.cocktailsService.findAll(filterDto);
     return cocktails.map((cocktail) => ({
       ...cocktail,
       status: 'active',

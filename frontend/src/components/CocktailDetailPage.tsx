@@ -209,9 +209,9 @@ export const CocktailDetailPage: React.FC = () => {
         <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Italianno, cursive', fontSize: '2rem' }}>
           Instructions
         </Typography>
-        <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+        <p style={{ whiteSpace: 'pre-line' }}>
           {sentenceCapitalize(cocktail.instructions)}
-        </Typography>
+        </p>
       </Box>
     </Box>
   );
