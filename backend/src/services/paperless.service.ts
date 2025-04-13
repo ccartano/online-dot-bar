@@ -3,6 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { PaperlessDocument } from '../types/paperless.types';
 import axios, { AxiosError } from 'axios';
 
+interface PaperlessTag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 interface PaperlessApiResponse {
   results: Array<{
     id: number;
@@ -10,7 +16,7 @@ interface PaperlessApiResponse {
     content: string;
     created: string;
     modified: string;
-    tags?: string[];
+    tags?: number[];
   }>;
 }
 
@@ -20,7 +26,7 @@ interface PaperlessApiDocument {
   content: string;
   created: string;
   modified: string;
-  tags?: string[];
+  tags?: number[];
 }
 
 @Injectable()
@@ -29,6 +35,7 @@ export class PaperlessService implements OnModuleInit {
   private apiUrl: string;
   private username: string;
   private password: string;
+  private tagsCache: Map<number, PaperlessTag> = new Map();
 
   constructor(private configService: ConfigService) {
     this.apiUrl = this.configService.get<string>('PAPERLESS_API_URL');
@@ -45,13 +52,41 @@ export class PaperlessService implements OnModuleInit {
     };
   }
 
+  private async fetchTags(): Promise<void> {
+    try {
+      const response = await axios.get<{ results: PaperlessTag[] }>(
+        `${this.apiUrl}/tags/`,
+        {
+          headers: this.getAuthHeaders(),
+        },
+      );
+
+      response.data.results.forEach((tag) => {
+        this.tagsCache.set(tag.id, tag);
+      });
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      this.logger.error('Error fetching tags:', axiosError.message);
+      throw new Error(`Failed to fetch tags: ${axiosError.message}`);
+    }
+  }
+
+  private getTagNames(tagIds: number[]): string[] {
+    return tagIds.map(
+      (id) => this.tagsCache.get(id)?.name || `Unknown Tag (${id})`,
+    );
+  }
+
   async onModuleInit() {
     try {
-      // Test the API connection
+      // Test the API connection and fetch tags
       await axios.get(`${this.apiUrl}/documents/`, {
         headers: this.getAuthHeaders(),
       });
-      this.logger.log('Successfully connected to Paperless API');
+      await this.fetchTags();
+      this.logger.log(
+        'Successfully connected to Paperless API and fetched tags',
+      );
     } catch (error) {
       const axiosError = error as AxiosError;
       this.logger.error(
@@ -79,7 +114,7 @@ export class PaperlessService implements OnModuleInit {
         content: doc.content,
         created: doc.created,
         modified: doc.modified,
-        tags: doc.tags || [],
+        tags: this.getTagNames(doc.tags || []),
       }));
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -108,7 +143,7 @@ export class PaperlessService implements OnModuleInit {
         content: doc.content,
         created: doc.created,
         modified: doc.modified,
-        tags: doc.tags || [],
+        tags: this.getTagNames(doc.tags || []),
       };
     } catch (error) {
       const axiosError = error as AxiosError;
@@ -138,12 +173,21 @@ export class PaperlessService implements OnModuleInit {
         content: doc.content,
         created: doc.created,
         modified: doc.modified,
-        tags: doc.tags || [],
+        tags: this.getTagNames(doc.tags || []),
       }));
     } catch (error) {
       const axiosError = error as AxiosError;
       this.logger.error('Error searching documents:', axiosError.message);
       throw new Error(`Failed to search documents: ${axiosError.message}`);
     }
+  }
+
+  async getDocumentThumbnail(id: number): Promise<Buffer> {
+    const response = await axios.get(`${this.apiUrl}/documents/${id}/thumb/`, {
+      headers: this.getAuthHeaders(),
+      responseType: 'arraybuffer',
+    });
+
+    return response.data as Buffer;
   }
 }

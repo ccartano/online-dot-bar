@@ -25,6 +25,28 @@ const sentenceCapitalize = (text: string): string => {
     .join('. ');
 };
 
+const convertToFraction = (amount: number): string => {
+  // Common fractions and their decimal equivalents
+  const fractions: Record<number, string> = {
+    0.5: '1/2',
+    0.33: '1/3',
+    0.67: '2/3',
+    0.25: '1/4',
+    0.75: '3/4'
+  };
+
+  // Check if the amount is close to any of our common fractions
+  for (const [decimal, fraction] of Object.entries(fractions)) {
+    const decimalValue = parseFloat(decimal);
+    if (Math.abs(amount - decimalValue) < 0.01) {
+      return fraction;
+    }
+  }
+
+  // If not a common fraction, return the amount as is
+  return amount.toString();
+};
+
 export const CocktailDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [cocktail, setCocktail] = useState<Cocktail | null>(null);
@@ -66,10 +88,20 @@ export const CocktailDetailPage: React.FC = () => {
     if (ingredient.unit === MeasurementUnit.OTHER || !ingredient.amount) {
       return '\u00A0'; // non-breaking space
     }
-    const parts = [];
-    if (ingredient.amount) parts.push(ingredient.amount);
-    if (ingredient.unit) parts.push(ingredient.unit);
-    return parts.join(' ');
+    
+    let amount = ingredient.amount;
+    let unit = ingredient.unit;
+    
+    // Convert ml to oz if needed
+    if (unit === MeasurementUnit.ML) {
+      amount = amount * (1/30); // 30ml = 1oz
+      unit = MeasurementUnit.OZ;
+    }
+    
+    // Format the amount as a fraction
+    const formattedAmount = convertToFraction(amount);
+    
+    return `${formattedAmount} ${unit}`;
   };
 
   const formatIngredientName = (ingredient: Cocktail['ingredients'][0]) => {

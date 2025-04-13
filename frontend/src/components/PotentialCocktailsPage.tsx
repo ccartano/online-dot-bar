@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { CocktailTable } from './CocktailTable';
-import { Cocktail, CocktailService } from '../services/cocktail.service';
 import { PaperlessDocument } from '../types/paperless.types';
+import { Cocktail } from '../services/cocktail.service';
 import { Alert, Snackbar, FormControlLabel, Switch, Box } from '@mui/material';
 import { getApiUrl } from '../config/api.config';
+import { CocktailParserService } from '../services/cocktail-parser.service';
 
 export const PotentialCocktailsPage: React.FC = () => {
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
@@ -16,10 +17,6 @@ export const PotentialCocktailsPage: React.FC = () => {
     severity: 'success',
   });
 
-  useEffect(() => {
-    fetchCocktails();
-  }, []);
-
   const fetchCocktails = async () => {
     try {
       const response = await fetch(getApiUrl('/paperless/documents'));
@@ -27,10 +24,13 @@ export const PotentialCocktailsPage: React.FC = () => {
         throw new Error('Failed to fetch documents');
       }
       const documents: PaperlessDocument[] = await response.json();
-      const parsedCocktails = CocktailService.parseCocktailsFromDocuments(documents).map(cocktail => ({
-        ...cocktail,
-        created: documents.find(doc => doc.id === cocktail.paperlessId)?.created
-      }));
+      
+      // Parse cocktails using the appropriate service based on document tags
+      const parsedCocktails = CocktailParserService.parseCocktailsFromDocuments(documents)
+        .map(cocktail => ({
+          ...cocktail,
+          created: documents.find(doc => doc.id === cocktail.paperlessId)?.created
+        }));
       
       // Check status for each cocktail
       const cocktailsWithStatus = await Promise.all(
@@ -66,12 +66,12 @@ export const PotentialCocktailsPage: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    fetchCocktails();
+  }, []);
+
   const handleCocktailUpdate = async (updatedCocktail: Cocktail) => {
     try {
-      if (!updatedCocktail.glassType?.id) {
-        throw new Error('Please select a glass type');
-      }
-
       // First get all ingredients
       const ingredientsResponse = await fetch(getApiUrl('/ingredients'));
       if (!ingredientsResponse.ok) {
@@ -121,10 +121,10 @@ export const PotentialCocktailsPage: React.FC = () => {
           name: updatedCocktail.name,
           instructions: updatedCocktail.instructions,
           paperlessId: updatedCocktail.paperlessId,
-          glassTypeId: updatedCocktail.glassType.id,
+          glassTypeId: updatedCocktail.glassType?.id,
           ingredients: updatedCocktail.ingredients.map((ingredient, index) => ({
             ingredientId: ingredientIds[index],
-            amount: ingredient.amount ? ingredient.amount.toString() : undefined,
+            amount: ingredient.amount,
             unit: ingredient.unit,
             order: index
           }))

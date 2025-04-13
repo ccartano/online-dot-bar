@@ -8,7 +8,6 @@ import {
   Delete,
 } from '@nestjs/common';
 import { CocktailsService } from './cocktails.service';
-import { Cocktail } from '../entities/cocktail.entity';
 import { CreateCocktailDto } from './dto/create-cocktail.dto';
 import { UpdateCocktailDto } from './dto/update-cocktail.dto';
 

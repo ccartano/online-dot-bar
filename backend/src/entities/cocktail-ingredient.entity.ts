@@ -18,6 +18,8 @@ export enum MeasurementUnit {
   SPRIG = 'sprig', // for herbs
   TWIST = 'twist', // for citrus twists
   WEDGE = 'wedge', // for fruit wedges
+  TSP = 'tsp', // teaspoon
+  TBSP = 'tbsp', // tablespoon
   OTHER = 'other', // for anything else
 }
 
@@ -103,6 +105,8 @@ export class CocktailIngredient {
       sprig: MeasurementUnit.SPRIG,
       twist: MeasurementUnit.TWIST,
       wedge: MeasurementUnit.WEDGE,
+      tsp: MeasurementUnit.TSP,
+      tbsp: MeasurementUnit.TBSP,
     };
 
     const unit = unitMap[unitStr.toLowerCase()] || MeasurementUnit.OTHER;
