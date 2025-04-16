@@ -8,6 +8,11 @@ import { getApiUrl } from '../config/api.config';
 import { GlassType } from '../types/glass.types';
 import { PotentialCocktailsPage } from './PotentialCocktailsPage';
 import { IngredientAdminPage } from './IngredientAdminPage';
+import { IngredientList } from './IngredientList';
+import { Link } from 'react-router-dom';
+import { AppBar, Toolbar, Typography } from '@mui/material';
+import ConfirmationDialog from './ConfirmationDialog';
+import { apiClient } from '../apiClient';
 
 // Simple Confirmation Dialog Component
 interface ConfirmationDialogProps {
@@ -246,7 +251,7 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  const handleViewChange = (event: React.SyntheticEvent, newValue: 'current' | 'potential' | 'ingredients') => {
+  const handleViewChange = (_event: React.SyntheticEvent, newValue: 'current' | 'potential' | 'ingredients') => {
     setView(newValue);
   };
 
@@ -279,42 +284,41 @@ export const AdminPage: React.FC = () => {
   });
 
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        <Button onClick={handleLogout} variant="outlined">
-          Logout
-        </Button>
-      </Box>
-
-      {/* Navigation Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
-        <Tabs value={view} onChange={handleViewChange} aria-label="admin view selection">
-          <Tab label="Current Cocktails" value="current" />
-          <Tab label="Potential Cocktails" value="potential" />
-          <Tab label="Manage Ingredients" value="ingredients" />
-        </Tabs>
-      </Box>
-
-      {/* Conditional Content Area */}
-      <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-        {view === 'current' && (
-          loading ? 
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>
-          :
-          <CocktailTable 
-            cocktails={cocktails} 
-            onCocktailUpdate={handleCocktailUpdate}
-            glassTypes={glassTypes}
-            onDeleteRequest={handleDeleteRequest}
-          />
-        )}
-        {view === 'potential' && (
-          <PotentialCocktailsPage />
-        )}
-        {view === 'ingredients' && (
-          <IngredientAdminPage />
-        )}
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      {error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
+      <AppBar position="static" sx={{ backgroundColor: '#333' }}>
+        <Toolbar variant="dense">
+          <Typography variant="h6" sx={{ flexGrow: 1, color: '#eee' }}>Admin Dashboard</Typography>
+          <Button color="inherit" component={Link} to="/">Back to Menu</Button>
+        </Toolbar>
+      </AppBar>
+      <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
+          <Tabs value={view} onChange={handleViewChange} aria-label="admin view selection">
+            <Tab label="Current Cocktails" value="current" />
+            <Tab label="Potential Cocktails" value="potential" />
+            <Tab label="Ingredients" value="ingredients" />
+          </Tabs>
+        </Box>
+        <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+          {view === 'current' && (
+            loading ? 
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>
+            :
+            <CocktailTable 
+              cocktails={cocktails} 
+              onCocktailUpdate={handleCocktailUpdate}
+              glassTypes={glassTypes}
+              onDeleteRequest={handleDeleteRequest}
+            />
+          )}
+          {view === 'potential' && (
+            <PotentialCocktailsPage />
+          )}
+          {view === 'ingredients' && (
+            <IngredientAdminPage />
+          )}
+        </Box>
       </Box>
       
       <Snackbar

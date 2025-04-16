@@ -1,26 +1,3 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
 ## Description
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
@@ -97,7 +74,26 @@ This section outlines the steps to deploy the Online Bar application (frontend a
 ### Prerequisites
 
 *   Raspberry Pi (with Raspberry Pi OS or similar Linux distribution)
-*   Node.js and npm installed on the Pi
+*   Node.js and npm installed on the Pi. **Node.js v20 or higher is recommended.** 
+    *   If your Node.js version is lower (check with `node -v`), use Node Version Manager (nvm) to upgrade:
+        1. Install `nvm` (you might need `sudo apt install curl` first):
+           ```bash
+           curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+           ```
+        2. Reload shell config (or close/reopen terminal):
+           ```bash
+           source ~/.bashrc # Or ~/.zshrc
+           ```
+        3. Install Node.js LTS (v20+):
+           ```bash
+           nvm install --lts
+           ```
+        4. Set it as default:
+           ```bash
+           nvm alias default lts/*
+           ```
+        5. Verify: `node -v` should show v20 or higher.
+    *   Ensure `npm` is also installed (usually comes with Node.js).
 *   PostgreSQL installed and running on the Pi (or accessible from it)
 *   Git installed on the Pi
 *   A process manager like `pm2` is recommended for running the backend service (`sudo npm install -g pm2`)
@@ -127,7 +123,17 @@ Before cloning the repository using SSH, ensure the Raspberry Pi has an SSH key 
     # You should see a success message confirming authentication.
     ```
 
-### 1. Clone Repository
+### 1. Install PostgreSQL (if not already installed)
+
+If you haven't installed PostgreSQL on your Raspberry Pi, you can do so with:
+
+```bash
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+```
+This will also install the `psql` command-line tool.
+
+### 2. Clone Repository
 
 Clone the project repository onto your Raspberry Pi:
 
@@ -136,7 +142,7 @@ git clone <your-repository-url> online-bar
 cd online-bar
 ```
 
-### 2. Setup PostgreSQL Database
+### 3. Setup PostgreSQL Database
 
 1.  Connect to PostgreSQL:
     ```bash
@@ -149,7 +155,7 @@ cd online-bar
     \q
     ```
 
-### 3. Configure Backend
+### 4. Configure Backend
 
 1.  Navigate to the backend directory:
     ```bash
@@ -165,15 +171,19 @@ cd online-bar
     *   `DB_NAME=online_bar_prod`
     *   `PAPERLESS_API_URL`, `PAPERLESS_API_TOKEN`, etc. (Update Paperless config if used in production)
     *   `ADMIN_TOKEN` (Set a secure admin token)
-4.  Install dependencies:
+4.  Install dependencies (including dev dependencies needed for build):
     ```bash
-    npm install --omit=dev
+    npm install
     ```
-5.  Build the application (if using TypeScript):
+5.  Build the application:
     ```bash
     npm run build
     ```
-6.  Start the backend using a process manager like `pm2`:
+6.  Remove development dependencies and install only production dependencies:
+    ```bash
+    npm install --omit=dev
+    ```
+7.  Start the backend using a process manager like `pm2`:
     ```bash
     pm2 start dist/main.js --name online-bar-backend
     pm2 save # Save the process list to restart on reboot
@@ -181,7 +191,7 @@ cd online-bar
     ```
     *(Alternatively, you can run `npm run start:prod` but using `pm2` is recommended for production)*
 
-### 4. Configure Frontend
+### 5. Configure Frontend
 
 1.  Navigate to the frontend directory:
     ```bash
@@ -201,7 +211,7 @@ cd online-bar
     npm run build
     ```
 
-### 5. Serve Frontend
+### 6. Serve Frontend
 
 The frontend build artifacts are typically located in the `frontend/dist` directory. You need a web server to serve these static files.
 
