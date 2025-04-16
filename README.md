@@ -274,7 +274,7 @@ The frontend build artifacts are typically located in the `frontend/dist` direct
     ```bash
     sudo ln -s /etc/nginx/sites-available/online-bar /etc/nginx/sites-enabled/
     sudo nginx -t # Test configuration
-    sudo systemctl restart nginx
+    sudo systemctl reload nginx
     ```
 
 You should now be able to access your application by navigating to your Raspberry Pi's IP address (or the configured domain) in a web browser.
