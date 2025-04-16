@@ -8,13 +8,9 @@ import { getApiUrl } from '../config/api.config';
 import { GlassType } from '../types/glass.types';
 import { PotentialCocktailsPage } from './PotentialCocktailsPage';
 import { IngredientAdminPage } from './IngredientAdminPage';
-import { IngredientList } from './IngredientList';
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography } from '@mui/material';
-import ConfirmationDialog from './ConfirmationDialog';
-import { apiClient } from '../apiClient';
 
-// Simple Confirmation Dialog Component
 interface ConfirmationDialogProps {
   open: boolean;
   onClose: () => void;
@@ -100,11 +96,6 @@ export const AdminPage: React.FC = () => {
 
   const handleLogin = () => {
     setIsLoggedIn(true);
-  };
-
-  const handleLogout = () => {
-    AdminService.logout();
-    setIsLoggedIn(false);
   };
 
   const handleCocktailUpdate = async (updatedCocktail: Cocktail) => {

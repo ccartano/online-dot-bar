@@ -8,7 +8,6 @@ import {
   FormControl,
   InputLabel,
   CircularProgress,
-  Grid,
 } from '@mui/material';
 import { Ingredient, IngredientType } from '../types/ingredient.types';
 
@@ -50,8 +49,16 @@ export const IngredientEditForm: React.FC<IngredientEditFormProps> = ({
 
   return (
     <Box component="form" sx={{ p: 2, border: '1px dashed grey', borderRadius: 1 }}>
-      <Grid container spacing={2} alignItems="center">
-        <Grid item xs={12} sm={6} md={3}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexWrap: 'wrap', 
+        gap: 2,
+        '& > *': {
+          flex: '1 1 200px',
+          minWidth: '200px',
+        }
+      }}>
+        <Box>
           <TextField
             label="Name"
             value={name}
@@ -61,8 +68,8 @@ export const IngredientEditForm: React.FC<IngredientEditFormProps> = ({
             size="small"
             disabled={isSaving}
           />
-        </Grid>
-        <Grid item xs={12} sm={6} md={2}>
+        </Box>
+        <Box>
           <FormControl fullWidth size="small" disabled={isSaving}>
             <InputLabel id="ingredient-type-label">Type</InputLabel>
             <Select
@@ -78,21 +85,21 @@ export const IngredientEditForm: React.FC<IngredientEditFormProps> = ({
               ))}
             </Select>
           </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6} md={4}>
+        </Box>
+        <Box sx={{ flex: '2 1 300px' }}>
           <TextField
             label="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             fullWidth
             multiline
-            maxRows={2} // Limit height a bit
+            maxRows={2}
             size="small"
             disabled={isSaving}
           />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-           <TextField
+        </Box>
+        <Box>
+          <TextField
             label="Image URL (Optional)"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
@@ -100,8 +107,14 @@ export const IngredientEditForm: React.FC<IngredientEditFormProps> = ({
             size="small"
             disabled={isSaving}
           />
-        </Grid>
-        <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
+        </Box>
+        <Box sx={{ 
+          width: '100%', 
+          display: 'flex', 
+          justifyContent: 'flex-end', 
+          gap: 1, 
+          mt: 1 
+        }}>
           <Button onClick={onCancel} variant="outlined" size="small" disabled={isSaving}>
             Cancel
           </Button>
@@ -109,13 +122,13 @@ export const IngredientEditForm: React.FC<IngredientEditFormProps> = ({
             onClick={handleSave} 
             variant="contained" 
             size="small" 
-            disabled={isSaving || !name} // Disable if saving or name is empty
+            disabled={isSaving || !name}
             startIcon={isSaving ? <CircularProgress size={14} color="inherit" /> : null}
           >
             Save
           </Button>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Box>
   );
 }; 

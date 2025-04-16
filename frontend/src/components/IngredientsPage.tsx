@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from 'react';
-import { Box, Typography, Grid } from '@mui/material';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Box, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { Ingredient, IngredientType } from '../types/ingredient.types';
 import { fetchIngredients } from '../services/ingredient.service';
@@ -109,9 +109,18 @@ export const IngredientsPage: React.FC = () => {
                   >
                     {letter}
                   </Typography>
-                  <Grid container spacing={2}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: 2,
+                    '& > *': {
+                      flex: '1 1 200px',
+                      minWidth: '200px',
+                      maxWidth: '300px',
+                    }
+                  }}>
                     {letterIngredients.map((ingredient) => (
-                      <Grid item key={ingredient.id} xs={12} sm={6} md={4} lg={3}>
+                      <Box key={ingredient.id}>
                         <Link to={`/ingredients/${ingredient.id}`} style={{ textDecoration: 'none' }}>
                           <Typography
                             component="h3"
@@ -130,9 +139,9 @@ export const IngredientsPage: React.FC = () => {
                             {capitalizeWords(ingredient.name)}
                           </Typography>
                         </Link>
-                      </Grid>
+                      </Box>
                     ))}
-                  </Grid>
+                  </Box>
                 </Box>
               );
             })
