@@ -12,12 +12,24 @@ const logger = new Logger('DatabaseConfig');
 
 // Validate required environment variables in production
 if (process.env.NODE_ENV === 'production') {
-  const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USERNAME', 'DB_PASSWORD', 'DB_NAME'];
-  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
-  
+  const requiredEnvVars = [
+    'DB_HOST',
+    'DB_PORT',
+    'DB_USERNAME',
+    'DB_PASSWORD',
+    'DB_NAME',
+  ];
+  const missingVars = requiredEnvVars.filter(
+    (varName) => !process.env[varName],
+  );
+
   if (missingVars.length > 0) {
-    logger.error(`Missing required environment variables: ${missingVars.join(', ')}`);
-    throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
+    logger.error(
+      `Missing required environment variables: ${missingVars.join(', ')}`,
+    );
+    throw new Error(
+      `Missing required environment variables: ${missingVars.join(', ')}`,
+    );
   }
 }
 
