@@ -7,8 +7,16 @@ import {
   GlassType,
   Category,
 } from '../entities';
+import * as dotenv from 'dotenv';
 
 const logger = new Logger('DatabaseConfig');
+
+// Load environment variables if not already loaded
+if (!process.env.DB_HOST) {
+  const envPath =
+    process.env.NODE_ENV === 'production' ? '.env.production' : '.env';
+  dotenv.config({ path: envPath });
+}
 
 // Validate required environment variables in production
 if (process.env.NODE_ENV === 'production') {
