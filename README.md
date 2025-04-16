@@ -90,6 +90,172 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Production Deployment (Raspberry Pi)
+
+This section outlines the steps to deploy the Online Bar application (frontend and backend) to a Raspberry Pi for production use.
+
+### Prerequisites
+
+*   Raspberry Pi (with Raspberry Pi OS or similar Linux distribution)
+*   Node.js and npm installed on the Pi
+*   PostgreSQL installed and running on the Pi (or accessible from it)
+*   Git installed on the Pi
+*   A process manager like `pm2` is recommended for running the backend service (`sudo npm install -g pm2`)
+
+### SSH Key Setup (on Raspberry Pi)
+
+Before cloning the repository using SSH, ensure the Raspberry Pi has an SSH key that is registered with your GitHub account:
+
+1.  **Log into your Raspberry Pi.**
+2.  **Check for existing keys:** `ls -al ~/.ssh`
+3.  **If no `id_ed25519.pub` or `id_rsa.pub` exists, generate a new key:**
+    ```bash
+    ssh-keygen -t ed25519 -C "your_email@example.com" 
+    # Press Enter to accept default file location and optionally set a passphrase
+    ```
+4.  **Display the public key:**
+    ```bash
+    cat ~/.ssh/id_ed25519.pub 
+    ```
+5.  **Copy the displayed public key output.**
+6.  **Add the copied key to your GitHub account:**
+    *   Go to GitHub > Settings > SSH and GPG keys > New SSH key.
+    *   Paste the key and give it a title (e.g., "Raspberry Pi Key").
+7.  **Test the connection *from the Pi***:
+    ```bash
+    ssh -T git@github.com
+    # You should see a success message confirming authentication.
+    ```
+
+### 1. Clone Repository
+
+Clone the project repository onto your Raspberry Pi:
+
+```bash
+git clone <your-repository-url> online-bar
+cd online-bar
+```
+
+### 2. Setup PostgreSQL Database
+
+1.  Connect to PostgreSQL:
+    ```bash
+    sudo -u postgres psql
+    ```
+2.  Create a production user and database (replace `prod_user` and `prod_password` with secure credentials):
+    ```sql
+    CREATE USER prod_user WITH PASSWORD 'prod_password';
+    CREATE DATABASE online_bar_prod OWNER prod_user;
+    \q
+    ```
+
+### 3. Configure Backend
+
+1.  Navigate to the backend directory:
+    ```bash
+    cd backend
+    ```
+2.  Copy the production environment file:
+    ```bash
+    cp .env.production .env
+    ```
+3.  **Edit `.env`** and replace the placeholder values with your actual production settings:
+    *   `DB_USERNAME=prod_user`
+    *   `DB_PASSWORD=prod_password`
+    *   `DB_NAME=online_bar_prod`
+    *   `PAPERLESS_API_URL`, `PAPERLESS_API_TOKEN`, etc. (Update Paperless config if used in production)
+    *   `ADMIN_TOKEN` (Set a secure admin token)
+4.  Install dependencies:
+    ```bash
+    npm install --omit=dev
+    ```
+5.  Build the application (if using TypeScript):
+    ```bash
+    npm run build
+    ```
+6.  Start the backend using a process manager like `pm2`:
+    ```bash
+    pm2 start dist/main.js --name online-bar-backend
+    pm2 save # Save the process list to restart on reboot
+    pm2 startup # Follow instructions to enable startup script
+    ```
+    *(Alternatively, you can run `npm run start:prod` but using `pm2` is recommended for production)*
+
+### 4. Configure Frontend
+
+1.  Navigate to the frontend directory:
+    ```bash
+    cd ../frontend
+    ```
+2.  Copy the production environment file:
+    ```bash
+    cp .env.production .env
+    ```
+3.  **Edit `.env`** and set the correct `VITE_API_URL` to point to your backend (e.g., `http://<pi_ip_address>:3001/api` or `http://localhost:3001/api` if served on the same machine) and the `VITE_ADMIN_TOKEN`.
+4.  Install dependencies:
+    ```bash
+    npm install --omit=dev
+    ```
+5.  Build the frontend:
+    ```bash
+    npm run build
+    ```
+
+### 5. Serve Frontend
+
+The frontend build artifacts are typically located in the `frontend/dist` directory. You need a web server to serve these static files.
+
+**Option 1: Using `serve` (Simple)**
+
+1.  Install `serve`:
+    ```bash
+    sudo npm install -g serve
+    ```
+2.  Serve the build directory (run from the `frontend` directory):
+    ```bash
+    serve -s dist -l 80 # Serve on port 80 (requires sudo) or another port like 5000
+    ```
+    *(You might want to run this using `pm2` as well for resilience)*
+
+**Option 2: Using `nginx` (Recommended for Production)**
+
+1.  Install nginx:
+    ```bash
+    sudo apt update && sudo apt install nginx
+    ```
+2.  Configure nginx to serve the frontend files and optionally proxy API requests to the backend. Create a configuration file in `/etc/nginx/sites-available/online-bar`:
+    ```nginx
+    server {
+        listen 80;
+        server_name <your_pi_ip_address_or_domain>; # Replace with your Pi's IP or domain
+
+        root /path/to/your/online-bar/frontend/dist; # Replace with the actual path
+        index index.html;
+
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # Optional: Proxy API requests to the backend
+        location /api/ {
+            proxy_pass http://localhost:3001/api/; # Adjust port if backend runs elsewhere
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
+    }
+    ```
+3.  Enable the site and restart nginx:
+    ```bash
+    sudo ln -s /etc/nginx/sites-available/online-bar /etc/nginx/sites-enabled/
+    sudo nginx -t # Test configuration
+    sudo systemctl restart nginx
+    ```
+
+You should now be able to access your application by navigating to your Raspberry Pi's IP address (or the configured domain) in a web browser.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

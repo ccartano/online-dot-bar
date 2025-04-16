@@ -22,6 +22,7 @@
     "clear:db": "ts-node src/scripts/clear-database.ts"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
