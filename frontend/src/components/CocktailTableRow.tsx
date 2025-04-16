@@ -8,7 +8,7 @@ import {
   Typography,
   Chip,
 } from '@mui/material';
-import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
+import { KeyboardArrowDown, KeyboardArrowUp, Delete } from '@mui/icons-material';
 import { Cocktail } from '../services/cocktail.service';
 import { GlassType } from '../types/glass.types';
 import { CocktailEditForm } from './CocktailEditForm';
@@ -20,6 +20,8 @@ interface CocktailTableRowProps {
   onSave: (updatedCocktail: Cocktail) => void;
   onViewThumbnail: (cocktail: Cocktail) => void;
   glassTypes: GlassType[];
+  onDeleteRequest?: (cocktailId: number) => void;
+  showDelete?: boolean;
 }
 
 export const CocktailTableRow: React.FC<CocktailTableRowProps> = ({
@@ -29,13 +31,21 @@ export const CocktailTableRow: React.FC<CocktailTableRowProps> = ({
   onSave,
   onViewThumbnail,
   glassTypes,
+  onDeleteRequest,
+  showDelete = true,
 }) => {
+  // Ensure the glass type object is properly set
+  const cocktailWithGlassType: Cocktail & { status: 'active' | 'pending' } = {
+    ...cocktail,
+    glassType: cocktail.glassTypeId ? glassTypes.find(gt => gt.id === cocktail.glassTypeId) || undefined : undefined
+  };
+
   return (
     <React.Fragment>
       {/* Display Row */}
-      <TableRow hover onClick={onToggleExpand} sx={{ cursor: 'pointer' }}>
+      <TableRow hover sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell>
-          <IconButton aria-label="expand row" size="small">
+          <IconButton aria-label="expand row" size="small" onClick={onToggleExpand}>
             {isExpanded ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
           </IconButton>
         </TableCell>
@@ -71,21 +81,36 @@ export const CocktailTableRow: React.FC<CocktailTableRowProps> = ({
             }}
           />
         </TableCell>
+        {showDelete && (
+          <TableCell align="right">
+            <IconButton 
+              aria-label="delete cocktail" 
+              size="small" 
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteRequest?.(cocktail.id);
+              }}
+              disabled={!onDeleteRequest}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+          </TableCell>
+        )}
+        {!showDelete && <TableCell />}
       </TableRow>
 
       {/* Collapsible Edit Form Row */}
       <TableRow>
-        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={showDelete ? 7 : 6}>
           <Collapse in={isExpanded} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }}>
               <CocktailEditForm
-                initialCocktail={cocktail}
+                initialCocktail={cocktailWithGlassType}
                 glassTypes={glassTypes}
                 onSave={(updatedCocktail) => {
                   onSave(updatedCocktail);
-                  // Expansion is controlled by parent, save callback handles closing
                 }}
-                onCancel={onToggleExpand} // Simply toggle expand to cancel/close
+                onCancel={onToggleExpand}
                 onViewThumbnail={onViewThumbnail}
               />
             </Box>

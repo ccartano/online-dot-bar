@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Table,
   TableBody,
   TableContainer,
   Paper,
-  Box,
   TablePagination,
-  CircularProgress,
 } from '@mui/material';
 import { Cocktail } from '../services/cocktail.service';
-import { getApiUrl } from '../config/api.config';
 import { GlassType } from '../types/glass.types';
 import { getDocumentThumbnail } from '../services/paperless.service';
 import { CocktailTableHeader } from './CocktailTableHeader';
@@ -19,16 +16,23 @@ import { ThumbnailViewDialog } from './ThumbnailViewDialog';
 interface CocktailTableProps {
   cocktails: (Cocktail & { status: 'active' | 'pending' })[];
   onCocktailUpdate: (cocktail: Cocktail) => void;
+  glassTypes: GlassType[];
+  onDeleteRequest?: (cocktailId: number) => void;
+  showDelete?: boolean;
 }
 
 type Order = 'asc' | 'desc';
 
-export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCocktailUpdate }) => {
+export const CocktailTable: React.FC<CocktailTableProps> = ({ 
+  cocktails, 
+  onCocktailUpdate,
+  glassTypes,
+  onDeleteRequest,
+  showDelete = true
+}) => {
   const [order, setOrder] = useState<Order>('desc');
   const [orderBy, setOrderBy] = useState<keyof Cocktail | string>('created');
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
-  const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [imageModalOpen, setImageModalOpen] = useState(false);
@@ -36,25 +40,6 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchGlassTypes = async () => {
-      try {
-        const response = await fetch(getApiUrl('/glass-types'));
-        if (!response.ok) {
-          throw new Error('Failed to fetch glass types');
-        }
-        const data = await response.json();
-        setGlassTypes(data);
-      } catch (err) {
-        console.error('Error fetching glass types:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGlassTypes();
-  }, []);
 
   const handleRequestSort = (property: keyof Cocktail) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -128,21 +113,18 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
     setExpandedRow(null);
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <>
       <TableContainer
         component={Paper}
         sx={{
           width: '100%',
-          overflow: 'auto'
+          height: 'calc(100vh - 200px)',
+          overflow: 'auto',
+          '& .MuiTableCell-root': {
+            whiteSpace: 'normal',
+            wordBreak: 'break-word',
+          },
         }}
       >
         <Table
@@ -150,7 +132,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
           aria-label="cocktail table"
           sx={{
             tableLayout: 'fixed',
-            minWidth: '100%'
+            minWidth: '100%',
           }}
         >
           <CocktailTableHeader
@@ -168,6 +150,8 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
                 onSave={handleSaveCocktail}
                 onViewThumbnail={handleViewThumbnail}
                 glassTypes={glassTypes}
+                onDeleteRequest={onDeleteRequest}
+                showDelete={showDelete}
               />
             ))}
           </TableBody>
@@ -205,8 +189,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({ cocktails, onCockt
         imageUrl={previewUrl}
         isLoading={imageLoading}
         error={imageError}
-      >
-      </ThumbnailViewDialog>
+      />
     </>
   );
 }; 

@@ -8,7 +8,7 @@ import {
 import { Type } from 'class-transformer';
 import { MeasurementUnit } from '../../entities/cocktail-ingredient.entity';
 
-class UpdateCocktailIngredientDto {
+export class UpdateCocktailIngredientDto {
   @IsOptional()
   @IsNumber()
   ingredientId?: number;

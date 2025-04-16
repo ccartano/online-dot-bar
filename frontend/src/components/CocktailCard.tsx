@@ -1,11 +1,14 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { Icon } from '@mdi/react';
+import { mdiPencil } from '@mdi/js';
 import { Cocktail } from '../services/cocktail.service';
+import { AdminService } from '../services/admin.service';
 
 interface CocktailCardProps {
   cocktail: Cocktail;
+  onEdit?: (cocktail: Cocktail) => void;
 }
 
 const capitalizeWords = (str: string): string => {
@@ -14,16 +17,43 @@ const capitalizeWords = (str: string): string => {
     .join(' ');
 };
 
-export const CocktailCard: React.FC<CocktailCardProps> = ({ cocktail }) => {
+export const CocktailCard: React.FC<CocktailCardProps> = ({ cocktail, onEdit }) => {
+  const isAdmin = AdminService.isAdmin();
+
   return (
     <Box
       sx={{
-        transition: 'transform 0.2s',
-        '&:hover': {
-          transform: 'scale(1.02)',
-        }
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        '&:hover .edit-button': {
+          opacity: 1,
+        },
       }}
     >
+      {isAdmin && onEdit && (
+        <IconButton
+          className="edit-button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onEdit(cocktail);
+          }}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            opacity: 0,
+            transition: 'opacity 0.2s',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            },
+          }}
+        >
+          <Icon path={mdiPencil} size={1} />
+        </IconButton>
+      )}
       <Link 
         to={`/cocktails/${cocktail.id}`} 
         style={{ 
@@ -42,8 +72,7 @@ export const CocktailCard: React.FC<CocktailCardProps> = ({ cocktail }) => {
           )}
           <h3
             style={{
-              fontFamily: 'Italianno, cursive',
-              fontSize: '1.8rem',
+              fontFamily: "'Old Standard TT', serif",
               color: '#1a1a1a',
               margin: 0,
               padding: 0

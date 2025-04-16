@@ -48,7 +48,8 @@ export class CreateCocktailDto {
   paperlessId?: number;
 
   @IsNumber()
-  glassTypeId: number;
+  @IsOptional()
+  glassTypeId: number | null;
 
   @IsNumber()
   @IsOptional()

@@ -17,6 +17,7 @@ import {
   FormControl,
   ListItemIcon,
   ListItemText,
+  Alert,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import { Icon } from '@mdi/react';
@@ -44,6 +45,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
     order: 0,
     ingredient: { name: '' },
   });
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Update internal state if the initial prop changes (e.g., parent data reloads)
   // Although unlikely in the current setup where it's tied to expandedRow
@@ -59,17 +61,24 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
     setEditingCocktail(prev => {
       if (!prev) return prev;
       const newIngredients = [...prev.ingredients];
+      const currentIngredientItem = newIngredients[index];
+
       if (field === 'ingredient.name') {
-          newIngredients[index] = {
-              ...newIngredients[index],
-              ingredient: { ...newIngredients[index].ingredient, name: value as string }
-          };
+        // Ensure we preserve the ID when updating the name
+        newIngredients[index] = {
+          ...currentIngredientItem,
+          ingredient: {
+            ...currentIngredientItem.ingredient, // Spread existing ingredient to keep ID
+            name: value as string
+          }
+        };
       } else if (field === 'amount') {
-          newIngredients[index] = { ...newIngredients[index], [field]: value ? parseFloat(value as string) : undefined };
+        newIngredients[index] = { ...currentIngredientItem, amount: value ? parseFloat(value as string) : undefined };
       } else if (field === 'unit') {
-          newIngredients[index] = { ...newIngredients[index], unit: value as MeasurementUnit || undefined };
+        newIngredients[index] = { ...currentIngredientItem, unit: value as MeasurementUnit || undefined };
       } else if (field === 'notes') {
-          newIngredients[index] = { ...newIngredients[index], notes: value as string || undefined };
+        // Assuming notes might be added later, let's handle it safely
+        newIngredients[index] = { ...currentIngredientItem, notes: value as string || undefined };
       }
       return { ...prev, ingredients: newIngredients };
     });
@@ -101,6 +110,21 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
     }));
   };
 
+  // Sort ingredients for display
+  const sortedIngredients = React.useMemo(() => {
+    return [...editingCocktail.ingredients].sort((a, b) => a.order - b.order);
+  }, [editingCocktail.ingredients]);
+
+  const handleSaveClick = () => {
+    setSaveError(null);
+    if (editingCocktail.ingredients.length === 0) {
+      setSaveError('Cannot save cocktail with no ingredients. Please add at least one.');
+      return;
+    }
+
+    console.log('[CocktailEditForm] Saving cocktail:', JSON.stringify(editingCocktail, null, 2));
+    onSave(editingCocktail);
+  };
 
   return (
     <Box sx={{ margin: 1 }}>
@@ -181,13 +205,16 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {editingCocktail.ingredients.map((ingredient, index) => (
+                {sortedIngredients.map((ingredient, index) => (
                   <TableRow key={`${ingredient.ingredient.name}-${index}`} hover>
                     <TableCell>
                       <TextField
                         size="small"
                         value={ingredient.amount || ''}
-                        onChange={(e) => handleIngredientChange(index, 'amount', e.target.value)}
+                        onChange={(e) => {
+                          const originalIndex = editingCocktail.ingredients.findIndex(item => item === ingredient);
+                          handleIngredientChange(originalIndex, 'amount', e.target.value)
+                        }}
                         type="number"
                         inputProps={{ step: "0.25" }}
                         fullWidth
@@ -197,7 +224,10 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                       <TextField
                         size="small"
                         value={ingredient.unit || ''}
-                        onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
+                        onChange={(e) => {
+                          const originalIndex = editingCocktail.ingredients.findIndex(item => item === ingredient);
+                          handleIngredientChange(originalIndex, 'unit', e.target.value as MeasurementUnit || undefined)
+                        }}
                         fullWidth
                       />
                     </TableCell>
@@ -205,7 +235,10 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                       <TextField
                         size="small"
                         value={ingredient.ingredient.name}
-                        onChange={(e) => handleIngredientChange(index, 'ingredient.name', e.target.value)}
+                        onChange={(e) => {
+                          const originalIndex = editingCocktail.ingredients.findIndex(item => item === ingredient);
+                          handleIngredientChange(originalIndex, 'ingredient.name', e.target.value)
+                        }}
                         fullWidth
                       />
                     </TableCell>
@@ -214,7 +247,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleRemoveIngredient(index);
+                          const originalIndex = editingCocktail.ingredients.findIndex(item => item === ingredient);
+                          handleRemoveIngredient(originalIndex);
                         }}
                       >
                         <Delete fontSize="small" />
@@ -280,26 +314,25 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
           />
         </Box>
 
+        {/* Display Save Error Alert */}
+        {saveError && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {saveError}
+          </Alert>
+        )}
+
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-           <Button
-            variant="outlined"
-            onClick={(e) => {
-                e.stopPropagation();
-                onCancel(); // Call the cancel handler
-            }}
-            >
-                Cancel
-            </Button>
+          <Button onClick={onCancel} variant="outlined" size="small">
+            Cancel
+          </Button>
           <Button
+            onClick={handleSaveClick}
             variant="contained"
             color="primary"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSave(editingCocktail); // Call the save handler
-            }}
+            size="small"
           >
-            Save Changes
+            Save
           </Button>
         </Box>
       </Box>

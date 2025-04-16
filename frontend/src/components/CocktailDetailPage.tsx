@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -17,7 +17,10 @@ const titleize = (text: string): string => {
     .join(' ');
 };
 
-const sentenceCapitalize = (text: string): string => {
+const sentenceCapitalize = (text: string | null | undefined): string => {
+  if (!text) {
+    return ''; // Return empty string if input is null, undefined, or empty
+  }
   return text
     .toLowerCase()
     .split('. ')
@@ -47,9 +50,16 @@ const convertToFraction = (amount: number): string => {
   return amount.toString();
 };
 
+// Define type for the API response
+interface CocktailDetailData {
+  cocktail: Cocktail;
+  potentialAkas: { id: number; name: string }[];
+  potentialVariations: { id: number; name: string }[];
+}
+
 export const CocktailDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [cocktail, setCocktail] = useState<Cocktail | null>(null);
+  const [cocktailData, setCocktailData] = useState<CocktailDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,8 +70,8 @@ export const CocktailDetailPage: React.FC = () => {
         if (!response.ok) {
           throw new Error('Failed to fetch cocktail');
         }
-        const data = await response.json();
-        setCocktail(data);
+        const data: CocktailDetailData = await response.json();
+        setCocktailData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
@@ -80,9 +90,11 @@ export const CocktailDetailPage: React.FC = () => {
     return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
   }
 
-  if (!cocktail) {
+  if (!cocktailData) {
     return <div className="flex justify-center items-center h-screen">Cocktail not found</div>;
   }
+
+  const { cocktail, potentialAkas, potentialVariations } = cocktailData;
 
   const formatAmountAndUnit = (ingredient: Cocktail['ingredients'][0]) => {
     if (ingredient.unit === MeasurementUnit.OTHER || !ingredient.amount) {
@@ -167,7 +179,13 @@ export const CocktailDetailPage: React.FC = () => {
                 )}
               </div>
               <div style={{ lineHeight: 1, minWidth: '200px', marginLeft: '4px' }}>
-                {formatIngredientName(ingredient)}
+                {ingredient.ingredient.id ? (
+                  <Link to={`/ingredients/${ingredient.ingredient.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    {formatIngredientName(ingredient)}
+                  </Link>
+                ) : (
+                  formatIngredientName(ingredient)
+                )}
               </div>
             </ListItem>
           ))}
@@ -205,7 +223,7 @@ export const CocktailDetailPage: React.FC = () => {
         </List>
       </Box>
 
-      <Box>
+      <Box sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Italianno, cursive', fontSize: '2rem' }}>
           Instructions
         </Typography>
@@ -213,6 +231,40 @@ export const CocktailDetailPage: React.FC = () => {
           {sentenceCapitalize(cocktail.instructions)}
         </p>
       </Box>
+
+      {potentialAkas && potentialAkas.length > 0 && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Italianno, cursive', fontSize: '2rem' }}>
+            Also Known As
+          </Typography>
+          <List dense>
+            {potentialAkas.map(aka => (
+              <ListItem key={aka.id}>
+                <Link to={`/cocktails/${aka.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  {titleize(aka.name)}
+                </Link>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      )}
+
+      {potentialVariations && potentialVariations.length > 0 && (
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Italianno, cursive', fontSize: '2rem' }}>
+            Variations
+          </Typography>
+          <List dense>
+            {potentialVariations.map(variation => (
+              <ListItem key={variation.id}>
+                <Link to={`/cocktails/${variation.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  {titleize(variation.name)}
+                </Link>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      )}
     </Box>
   );
 }; 

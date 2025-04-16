@@ -5,6 +5,8 @@ import { CocktailCard } from './CocktailCard';
 import { getApiUrl } from '../config/api.config';
 import { BaseSpirit, getBaseSpirit } from '../utils/spiritUtils';
 import { CocktailFilters } from './CocktailFilters';
+import { CocktailEditDialog } from './CocktailEditDialog';
+import { GlassType } from '../types/glass.types';
 
 export const CocktailsPage: React.FC = () => {
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
@@ -13,6 +15,8 @@ export const CocktailsPage: React.FC = () => {
   const [selectedSpirits, setSelectedSpirits] = useState<BaseSpirit[]>([]);
   const [selectedGlassTypes, setSelectedGlassTypes] = useState<string[]>([]);
   const [glassTypeMap, setGlassTypeMap] = useState<Record<number, string>>({});
+  const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);
+  const [editingCocktail, setEditingCocktail] = useState<Cocktail | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
@@ -51,6 +55,7 @@ export const CocktailsPage: React.FC = () => {
         return acc;
       }, {});
       setGlassTypeMap(map);
+      setGlassTypes(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     }
@@ -76,14 +81,23 @@ export const CocktailsPage: React.FC = () => {
     });
   };
 
-  console.log('Glass Type Map:', glassTypeMap);
-  console.log('Selected Glass Types:', selectedGlassTypes);
+  const handleEditCocktail = (cocktail: Cocktail) => {
+    setEditingCocktail(cocktail);
+  };
+
+  const handleCocktailUpdated = (updatedCocktail: Cocktail) => {
+    setCocktails(prev => prev.map(c => c.id === updatedCocktail.id ? updatedCocktail : c));
+    setSnackbar({
+      open: true,
+      message: 'Cocktail updated successfully',
+      severity: 'success',
+    });
+  };
 
   const filteredCocktails = cocktails.filter(cocktail => {
     const spirit = getBaseSpirit(cocktail.ingredients.map(i => ({ ingredient: { name: i.ingredient.name } })));
     const matchesSpirit = selectedSpirits.length === 0 || selectedSpirits.includes(spirit);
     const glassName = cocktail.glassTypeId ? glassTypeMap[cocktail.glassTypeId] : 'Unknown';
-    console.log('Cocktail:', cocktail.name, 'Glass ID:', cocktail.glassTypeId, 'Glass Name:', glassName);
     const matchesGlass = selectedGlassTypes.length === 0 || selectedGlassTypes.includes(glassName);
     return matchesSpirit && matchesGlass;
   });
@@ -164,7 +178,10 @@ export const CocktailsPage: React.FC = () => {
                         justifyContent: 'flex-start'
                       }}
                     >
-                      <CocktailCard cocktail={cocktail} />
+                      <CocktailCard 
+                        cocktail={cocktail} 
+                        onEdit={handleEditCocktail}
+                      />
                     </Box>
                   ))}
                 </Box>
@@ -173,6 +190,16 @@ export const CocktailsPage: React.FC = () => {
           })}
         </Box>
       </Box>
+
+      {editingCocktail && (
+        <CocktailEditDialog
+          open={!!editingCocktail}
+          onClose={() => setEditingCocktail(null)}
+          cocktail={editingCocktail}
+          glassTypes={glassTypes}
+          onCocktailUpdated={handleCocktailUpdated}
+        />
+      )}
 
       <Snackbar
         open={snackbar.open}

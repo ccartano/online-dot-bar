@@ -4,6 +4,7 @@ import { CocktailIngredient } from './index';
 // This enum defines the different types of ingredients we can have
 export enum IngredientType {
   SPIRIT = 'spirit', // e.g., vodka, gin, whiskey
+  LIQUEUR = 'liqueur', // e.g., Cointreau, Campari, Chartreuse
   MIXER = 'mixer', // e.g., tonic, soda, juice
   GARNISH = 'garnish', // e.g., lime, mint, cherry
   BITTER = 'bitter', // e.g., Angostura, Peychaud's

@@ -22,6 +22,7 @@ const headCells: HeadCell[] = [
   { id: 'instructions', label: 'Instructions', sortable: false, width: '30%' },
   { id: 'created', label: 'Added', sortable: true, width: '10%' },
   { id: 'status', label: 'Status', sortable: true, width: '10%' },
+  { id: 'actions', label: '', sortable: true, width: '10%' },
 ];
 
 interface CocktailTableHeaderProps {
@@ -38,7 +39,7 @@ export const CocktailTableHeader: React.FC<CocktailTableHeaderProps> = ({
   return (
     <TableHead>
       <TableRow>
-        <TableCell width="5%" /> {/* For expand icon */}
+        <TableCell width="5%" />
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -49,7 +50,7 @@ export const CocktailTableHeader: React.FC<CocktailTableHeaderProps> = ({
               <TableSortLabel
                 active={orderBy === headCell.id}
                 direction={orderBy === headCell.id ? order : 'asc'}
-                onClick={() => onRequestSort(headCell.id as keyof Cocktail)} // Cast needed
+                onClick={() => onRequestSort(headCell.id as keyof Cocktail)}
               >
                 {headCell.label}
               </TableSortLabel>

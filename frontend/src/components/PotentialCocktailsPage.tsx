@@ -5,19 +5,22 @@ import { Cocktail } from '../services/cocktail.service';
 import { Alert, Snackbar, FormControlLabel, Switch, Box } from '@mui/material';
 import { getApiUrl } from '../config/api.config';
 import { CocktailParserService } from '../services/cocktail-parser.service';
+import { GlassType } from '../types/glass.types';
 
 export const PotentialCocktailsPage: React.FC = () => {
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showOnlyPending, setShowOnlyPending] = useState(true);
+  const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
     severity: 'success',
   });
 
-  const fetchCocktails = async () => {
+  const fetchCocktailsAndGlassTypes = async () => {
+    setLoading(true);
     try {
       const response = await fetch(getApiUrl('/paperless/documents'));
       if (!response.ok) {
@@ -43,11 +46,20 @@ export const PotentialCocktailsPage: React.FC = () => {
                 status: 'pending' as const
               };
             }
-            const data = await statusResponse.json();
-            return {
-              ...cocktail,
-              status: data.status || 'pending'
-            };
+            const contentType = statusResponse.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              const data = await statusResponse.json();
+              return {
+                ...cocktail,
+                status: data.status || 'active' // Assume active if found
+              };
+            } else {
+              // Handle cases where response is OK but not JSON (e.g., empty body for 200 OK)
+              return {
+                ...cocktail,
+                status: 'pending' as const // Or determine status based on logic
+              };
+            }
           } catch (err) {
             console.error('Error fetching status for cocktail:', err);
             return {
@@ -59,6 +71,13 @@ export const PotentialCocktailsPage: React.FC = () => {
       );
       
       setCocktails(cocktailsWithStatus);
+
+      // Fetch Glass Types
+      const glassResponse = await fetch(getApiUrl('/glass-types'));
+      if (!glassResponse.ok) throw new Error('Failed to fetch glass types');
+      const glassData = await glassResponse.json();
+      setGlassTypes(glassData);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
@@ -67,7 +86,7 @@ export const PotentialCocktailsPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchCocktails();
+    fetchCocktailsAndGlassTypes();
   }, []);
 
   const handleCocktailUpdate = async (updatedCocktail: Cocktail) => {
@@ -121,7 +140,7 @@ export const PotentialCocktailsPage: React.FC = () => {
           name: updatedCocktail.name,
           instructions: updatedCocktail.instructions,
           paperlessId: updatedCocktail.paperlessId,
-          glassTypeId: updatedCocktail.glassType?.id,
+          glassTypeId: updatedCocktail.glassType?.id ?? null,
           ingredients: updatedCocktail.ingredients.map((ingredient, index) => ({
             ingredientId: ingredientIds[index],
             amount: ingredient.amount,
@@ -184,7 +203,12 @@ export const PotentialCocktailsPage: React.FC = () => {
           label="Show only pending"
         />
       </Box>
-      <CocktailTable cocktails={filteredCocktails} onCocktailUpdate={handleCocktailUpdate} />
+      <CocktailTable 
+        cocktails={filteredCocktails} 
+        onCocktailUpdate={handleCocktailUpdate} 
+        glassTypes={glassTypes}
+        showDelete={false}
+      />
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

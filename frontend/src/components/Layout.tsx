@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
+import { AdminService } from '../services/admin.service';
 import '../App.css';
 
 interface LayoutProps {
@@ -9,6 +10,7 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
+  const isAdmin = AdminService.isAdmin();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -36,6 +38,14 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             Categories
           </Link>
+          {isAdmin && (
+            <Link 
+              to="/admin" 
+              className={isActive('/admin') ? 'active' : ''}
+            >
+              Admin
+            </Link>
+          )}
         </div>
       </nav>
       <Box component="main" sx={{ flexGrow: 1, position: 'relative' }}>

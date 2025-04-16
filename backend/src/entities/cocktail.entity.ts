@@ -16,7 +16,7 @@ export class Cocktail {
   id: number;
 
   // Name of the cocktail
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   // Optional description of the cocktail
@@ -24,7 +24,7 @@ export class Cocktail {
   description: string;
 
   // Instructions for making the cocktail (using text type for longer content)
-  @Column('text')
+  @Column({ nullable: true })
   instructions: string;
 
   // Optional URL for an image of the cocktail
@@ -44,18 +44,30 @@ export class Cocktail {
   updatedAt: Date;
 
   // Optional Paperless document ID for reference
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   paperlessId: number;
+
+  @Column({ nullable: true })
+  source: string;
 
   @Column({ nullable: true })
   glassTypeId: number;
 
-  @ManyToOne(() => GlassType)
+  @ManyToOne(() => GlassType, (glassType) => glassType.cocktails, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn({ name: 'glassTypeId' })
   glassType: GlassType;
 
-  @ManyToOne(() => Category)
-  @JoinColumn()
+  @Column({ nullable: true })
+  categoryId: number;
+
+  @ManyToOne(() => Category, (category) => category.cocktails, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'categoryId' })
   category: Category;
 
   // This will be our relationship to the ingredients through the junction table
@@ -63,6 +75,14 @@ export class Cocktail {
   @OneToMany(
     () => CocktailIngredient,
     (cocktailIngredient) => cocktailIngredient.cocktail,
+    { cascade: true },
   )
   ingredients: CocktailIngredient[];
+
+  // New fields for ingredient signatures
+  @Column({ type: 'varchar', nullable: true, length: 1024 })
+  variationSignature: string | null;
+
+  @Column({ type: 'varchar', nullable: true, length: 2048 })
+  akaSignature: string | null;
 }
