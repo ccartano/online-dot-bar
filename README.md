@@ -96,7 +96,18 @@ This section outlines the steps to deploy the Online Bar application (frontend a
     *   Ensure `npm` is also installed (usually comes with Node.js).
 *   PostgreSQL installed and running on the Pi (or accessible from it)
 *   Git installed on the Pi
-*   A process manager like `pm2` is recommended for running the backend service (`sudo npm install -g pm2`)
+*   A process manager like `pm2` is recommended for running the backend service:
+    ```bash
+    # Install PM2 globally
+    sudo npm install -g pm2
+    
+    # Create PM2 log directory
+    sudo mkdir -p /var/log/pm2
+    sudo chown -R $USER:$USER /var/log/pm2
+    
+    # Create PM2 startup script (run as root)
+    sudo pm2 startup
+    ```
 
 ### SSH Key Setup (on Raspberry Pi)
 
@@ -169,6 +180,7 @@ cd online-bar
     *   `DB_USERNAME=prod_user`
     *   `DB_PASSWORD=prod_password`
     *   `DB_NAME=online_bar_prod`
+    *   `NODE_ENV=production`  # Important: Set this to production for production deployment
     *   `PAPERLESS_API_URL`, `PAPERLESS_API_TOKEN`, etc. (Update Paperless config if used in production)
     *   `ADMIN_TOKEN` (Set a secure admin token)
 4.  Install dependencies (including dev dependencies needed for build):
@@ -183,13 +195,14 @@ cd online-bar
     ```bash
     npm install --omit=dev
     ```
-7.  Start the backend using a process manager like `pm2`:
+7.  Start the backend in production mode (in the background):
     ```bash
-    pm2 start dist/main.js --name online-bar-backend
-    pm2 save # Save the process list to restart on reboot
-    pm2 startup # Follow instructions to enable startup script
+    nohup npm run start:prod > backend.log 2>&1 &
     ```
-    *(Alternatively, you can run `npm run start:prod` but using `pm2` is recommended for production)*
+    You can check the logs with:
+    ```bash
+    tail -f backend.log
+    ```
 
 ### 5. Configure Frontend
 

@@ -15,17 +15,23 @@ async function bootstrap() {
 
   dotenv.config({ path: envPath });
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
+
+  // Set global prefix for all routes
   app.setGlobalPrefix('api');
+
+  // Enable CORS
   app.enableCors({
-    origin: 'http://localhost:5173',
+    origin: true, // Allow all origins
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
   const port = process.env.PORT ?? 3000;
-  await app.listen(port);
-  logger.log(`Application is running on: http://localhost:${port}`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`Application is running on: http://0.0.0.0:${port}`);
 }
 
 bootstrap();
