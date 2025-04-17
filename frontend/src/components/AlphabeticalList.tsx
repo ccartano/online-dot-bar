@@ -1,6 +1,31 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, Typography, styled } from '@mui/material';
 import { Link } from 'react-router-dom';
+
+const StyledLink = styled(Box)({
+  position: 'relative',
+  display: 'inline-block',
+  transition: 'color 0.2s ease',
+  color: '#1A1A1A',
+  '&:hover': {
+    color: '#9CB4A3',
+    '&::after': {
+      transform: 'scaleX(1)'
+    }
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: '-2px',
+    left: 0,
+    right: 0,
+    height: '2px',
+    backgroundColor: '#9CB4A3',
+    transform: 'scaleX(0)',
+    transition: 'transform 0.2s ease',
+    transformOrigin: 'center'
+  }
+});
 
 interface AlphabeticalListProps<T> {
   items: T[];
@@ -79,56 +104,24 @@ export const AlphabeticalList = <T,>({
                   {renderItem ? (
                     renderItem(item)
                   ) : (
-                    <Box
-                      sx={{
-                        position: 'relative',
-                        '&:hover': {
-                          color: '#9CB4A3',
-                          '&::after': {
-                            transform: 'scaleX(1)'
-                          }
-                        },
-                        transition: 'color 0.2s ease',
-                        color: '#1A1A1A',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: '-2px',
-                          left: '16px',
-                          right: '16px',
-                          height: '2px',
-                          backgroundColor: '#9CB4A3',
-                          transform: 'scaleX(0)',
-                          transition: 'transform 0.2s ease',
-                          transformOrigin: 'center'
-                        }
-                      }}
+                    <Link
+                      to={getItemLink(item)}
+                      style={{ textDecoration: 'none' }}
                     >
-                      <Link 
-                        to={getItemLink(item)} 
-                        style={{ 
-                          textDecoration: 'none',
-                          display: 'block',
-                          padding: '16px',
-                          width: '100%',
-                          color: 'inherit'
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-                          <h3
-                            style={{
-                              fontFamily: "'Old Standard TT', serif",
-                              color: 'inherit',
-                              margin: 0,
-                              padding: 0,
-                              textAlign: 'left'
-                            }}
-                          >
-                            {getItemName(item)}
-                          </h3>
-                        </Box>
-                      </Link>
-                    </Box>
+                      <StyledLink>
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            fontWeight: 'medium',
+                            fontFamily: "'Old Standard TT', serif",
+                            color: 'inherit',
+                            fontSize: '1.2rem'
+                          }}
+                        >
+                          {getItemName(item)}
+                        </Typography>
+                      </StyledLink>
+                    </Link>
                   )}
                 </Box>
               ))}

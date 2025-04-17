@@ -9,11 +9,37 @@ import {
   ListItem,
   ListItemText,
   Divider,
+  styled
 } from '@mui/material';
 import { Ingredient } from '../types/ingredient.types';
 import { Cocktail } from '../services/cocktail.service'; // Import Cocktail type
 import { fetchIngredientById } from '../services/ingredient.service';
 import { fetchCocktailsByIngredient } from '../services/cocktail.service';
+
+const StyledLink = styled(Box)({
+  position: 'relative',
+  display: 'inline-block',
+  transition: 'color 0.2s ease',
+  color: '#1A1A1A',
+  '&:hover': {
+    color: '#9CB4A3',
+    '&::after': {
+      transform: 'scaleX(1)'
+    }
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: '-2px',
+    left: 0,
+    right: 0,
+    height: '2px',
+    backgroundColor: '#9CB4A3',
+    transform: 'scaleX(0)',
+    transition: 'transform 0.2s ease',
+    transformOrigin: 'center'
+  }
+});
 
 // Helper function to capitalize enum values for display
 const formatTypeName = (type: string): string => {
@@ -193,20 +219,22 @@ export const IngredientDetailPage: React.FC = () => {
                 component={Link}
                 to={`/cocktails/${cocktail.id}`}
                 sx={{
-                  color: 'inherit',
                   mb: 1,
                   borderRadius: 1,
                   display: 'block',
                   p: 1,
+                  textDecoration: 'none',
                   '&:hover': {
-                    textDecoration: 'underline',
-                  },
+                    textDecoration: 'none'
+                  }
                 }}
               >
-                <ListItemText
-                  primary={capitalizeWords(cocktail.name)}
-                  primaryTypographyProps={{ fontWeight: 'medium', fontFamily: "'Old Standard TT', serif" }}
-                />
+                <StyledLink>
+                  <ListItemText
+                    primary={capitalizeWords(cocktail.name)}
+                    primaryTypographyProps={{ fontWeight: 'medium', fontFamily: "'Old Standard TT', serif" }}
+                  />
+                </StyledLink>
               </ListItem>
             ))}
           </List>
