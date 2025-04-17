@@ -2,11 +2,6 @@ export class AdminService {
   private static ADMIN_TOKEN_KEY = 'admin_token';
   private static ENV_ADMIN_TOKEN = import.meta.env.VITE_ADMIN_TOKEN;
 
-  // Add log here to check env variable on load
-  static {
-    console.log('[AdminService] Loaded VITE_ADMIN_TOKEN:', this.ENV_ADMIN_TOKEN);
-  }
-
   static isAdmin(): boolean {
     return !!localStorage.getItem(this.ADMIN_TOKEN_KEY);
   }
