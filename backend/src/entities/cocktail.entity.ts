@@ -9,7 +9,7 @@ import {
 import { CocktailIngredient, Category, GlassType } from './index';
 
 // The @Entity() decorator tells TypeORM this is a database table
-@Entity()
+@Entity({ schema: 'online_bar_schema' })
 export class Cocktail {
   // Auto-incrementing primary key
   @PrimaryGeneratedColumn()

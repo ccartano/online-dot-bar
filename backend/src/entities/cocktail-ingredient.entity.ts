@@ -23,7 +23,7 @@ export enum MeasurementUnit {
   OTHER = 'other', // for anything else
 }
 
-@Entity()
+@Entity({ schema: 'online_bar_schema' })
 export class CocktailIngredient {
   @PrimaryGeneratedColumn()
   id: number;

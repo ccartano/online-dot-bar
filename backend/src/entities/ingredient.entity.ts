@@ -13,7 +13,7 @@ export enum IngredientType {
 }
 
 // The @Entity() decorator tells TypeORM this is a database table
-@Entity()
+@Entity({ schema: 'online_bar_schema' })
 export class Ingredient {
   // This creates an auto-incrementing primary key
   @PrimaryGeneratedColumn()

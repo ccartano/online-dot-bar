@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Cocktail } from './index';
 
-@Entity()
+@Entity({ schema: 'online_bar_schema' })
 export class GlassType {
   @PrimaryGeneratedColumn()
   id: number;

@@ -23,8 +23,8 @@ export class CreateTables1744912905103 implements MigrationInterface {
                 "categoryId" integer,
                 "variationSignature" character varying(1024),
                 "akaSignature" character varying(2048),
-                CONSTRAINT "UQ_3c44065317e8aad1dc6ecb8f7c3" UNIQUE ("name"),
-                CONSTRAINT "PK_2640ba026b49f47c99d3a3219c2" PRIMARY KEY ("id")
+                CONSTRAINT "UQ_cocktail_name" UNIQUE ("name"),
+                CONSTRAINT "PK_cocktail_id" PRIMARY KEY ("id")
             )
         `);
 
@@ -35,7 +35,7 @@ export class CreateTables1744912905103 implements MigrationInterface {
                 "description" character varying,
                 "type" character varying,
                 "imageUrl" character varying,
-                CONSTRAINT "PK_6f1e945604a0b59f56a57570e98" PRIMARY KEY ("id")
+                CONSTRAINT "PK_ingredient_id" PRIMARY KEY ("id")
             )
         `);
 
@@ -44,7 +44,7 @@ export class CreateTables1744912905103 implements MigrationInterface {
                 "id" SERIAL NOT NULL,
                 "name" character varying NOT NULL,
                 "icon" character varying,
-                CONSTRAINT "PK_8c0c0c0c0c0c0c0c0c0c0c0c0c0" PRIMARY KEY ("id")
+                CONSTRAINT "PK_glass_type_id" PRIMARY KEY ("id")
             )
         `);
 
@@ -52,7 +52,7 @@ export class CreateTables1744912905103 implements MigrationInterface {
             CREATE TABLE "online_bar_schema"."category" (
                 "id" SERIAL NOT NULL,
                 "name" character varying NOT NULL,
-                CONSTRAINT "PK_9c4e4a89e3674fc9f382d733f03" PRIMARY KEY ("id")
+                CONSTRAINT "PK_category_id" PRIMARY KEY ("id")
             )
         `);
 
@@ -65,35 +65,17 @@ export class CreateTables1744912905103 implements MigrationInterface {
                 "order" integer NOT NULL,
                 "cocktailId" integer,
                 "ingredientId" integer,
-                CONSTRAINT "PK_6f1e945604a0b59f56a57570e98" PRIMARY KEY ("id"),
-                CONSTRAINT "FK_cocktail" FOREIGN KEY ("cocktailId") REFERENCES "online_bar_schema"."cocktail"("id"),
-                CONSTRAINT "FK_ingredient" FOREIGN KEY ("ingredientId") REFERENCES "online_bar_schema"."ingredient"("id")
+                CONSTRAINT "PK_cocktail_ingredient_id" PRIMARY KEY ("id"),
+                CONSTRAINT "FK_cocktail_ingredient_cocktail" FOREIGN KEY ("cocktailId") REFERENCES "online_bar_schema"."cocktail"("id"),
+                CONSTRAINT "FK_cocktail_ingredient_ingredient" FOREIGN KEY ("ingredientId") REFERENCES "online_bar_schema"."ingredient"("id")
             )
-        `);
-
-    // Create sequences in our schema
-    await queryRunner.query(`
-            CREATE SEQUENCE "online_bar_schema"."cocktail_id_seq" OWNED BY "online_bar_schema"."cocktail"."id";
-            CREATE SEQUENCE "online_bar_schema"."ingredient_id_seq" OWNED BY "online_bar_schema"."ingredient"."id";
-            CREATE SEQUENCE "online_bar_schema"."glass_type_id_seq" OWNED BY "online_bar_schema"."glass_type"."id";
-            CREATE SEQUENCE "online_bar_schema"."category_id_seq" OWNED BY "online_bar_schema"."category"."id";
-            CREATE SEQUENCE "online_bar_schema"."cocktail_ingredient_id_seq" OWNED BY "online_bar_schema"."cocktail_ingredient"."id";
         `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`SET search_path TO online_bar_schema`);
 
-    // Drop sequences first
-    await queryRunner.query(`
-            DROP SEQUENCE IF EXISTS "online_bar_schema"."cocktail_id_seq";
-            DROP SEQUENCE IF EXISTS "online_bar_schema"."ingredient_id_seq";
-            DROP SEQUENCE IF EXISTS "online_bar_schema"."glass_type_id_seq";
-            DROP SEQUENCE IF EXISTS "online_bar_schema"."category_id_seq";
-            DROP SEQUENCE IF EXISTS "online_bar_schema"."cocktail_ingredient_id_seq";
-        `);
-
-    // Then drop tables
+    // Drop tables (sequences will be dropped automatically)
     await queryRunner.query(
       `DROP TABLE "online_bar_schema"."cocktail_ingredient"`,
     );
