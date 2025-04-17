@@ -1,65 +1,70 @@
-import { useEffect, useState } from 'react';
-import { Cocktail } from '../services/cocktail.service';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Box } from '@mui/material';
-import { getApiUrl } from '../config/api.config';
-import { BaseSpirit, getBaseSpirit } from '../utils/spiritUtils';
+import { Cocktail } from '../services/cocktail.service';
 import { GlassType } from '../types/glass.types';
 import { FilterSidebar } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
 
 // Helper function to capitalize words
 const capitalizeWords = (str: string): string => {
-  if (!str) return '';
-  return str.split(' ')
+  return str
+    .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
 
+const baseSpirits = ['Gin', 'Whiskey', 'Vodka', 'Rum', 'Tequila', 'Brandy', 'Other'] as const;
+type BaseSpirit = typeof baseSpirits[number];
+
 export const CocktailsPage: React.FC = () => {
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedSpirits, setSelectedSpirits] = useState<BaseSpirit[]>([]);
-  const [selectedGlassTypes, setSelectedGlassTypes] = useState<string[]>([]);
   const [glassTypeMap, setGlassTypeMap] = useState<Record<number, string>>({});
-  const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);
+  const [selectedGlassTypes, setSelectedGlassTypes] = useState<string[]>([]);
+  const [selectedSpirits, setSelectedSpirits] = useState<BaseSpirit[]>([]);
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
 
   useEffect(() => {
+    const fetchCocktails = async () => {
+      try {
+        const response = await fetch('/api/cocktails');
+        const data = await response.json();
+        setCocktails(data);
+      } catch (error) {
+        console.error('Error fetching cocktails:', error);
+      }
+    };
+
     fetchCocktails();
+  }, []);
+
+  useEffect(() => {
+    const fetchGlassTypes = async () => {
+      try {
+        const response = await fetch('/api/glass-types');
+        const data = await response.json();
+        const glassTypeMap = data.reduce((acc: Record<number, string>, type: GlassType) => {
+          acc[type.id] = type.name;
+          return acc;
+        }, {});
+        setGlassTypeMap(glassTypeMap);
+      } catch (error) {
+        console.error('Error fetching glass types:', error);
+      }
+    };
+
     fetchGlassTypes();
   }, []);
 
-  const fetchCocktails = async () => {
-    try {
-      const response = await fetch(getApiUrl('/cocktails'));
-      if (!response.ok) {
-        throw new Error('Failed to fetch cocktails');
+  const handleGlassTypeChange = (glassType: string) => {
+    setSelectedGlassTypes(prev => {
+      if (prev.includes(glassType)) {
+        return prev.filter(g => g !== glassType);
+      } else {
+        return [...prev, glassType];
       }
-      const data = await response.json();
-      setCocktails(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchGlassTypes = async () => {
-    try {
-      const response = await fetch(getApiUrl('/glass-types'));
-      if (!response.ok) {
-        throw new Error('Failed to fetch glass types');
-      }
-      const data = await response.json();
-      const map = data.reduce((acc: Record<number, string>, glassType: { id: number; name: string }) => {
-        acc[glassType.id] = glassType.name;
-        return acc;
-      }, {});
-      setGlassTypeMap(map);
-      setGlassTypes(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
-    }
+    });
   };
 
   const handleSpiritChange = (spirit: BaseSpirit) => {
@@ -72,28 +77,10 @@ export const CocktailsPage: React.FC = () => {
     });
   };
 
-  const handleGlassTypeChange = (glassType: string) => {
-    setSelectedGlassTypes(prev => {
-      if (prev.includes(glassType)) {
-        return prev.filter(g => g !== glassType);
-      } else {
-        return [...prev, glassType];
-      }
-    });
-  };
-
-  const filteredCocktails = cocktails.filter(cocktail => {
-    const spirit = getBaseSpirit(cocktail.ingredients.map(i => ({ ingredient: { name: i.ingredient.name } })));
-    const matchesSpirit = selectedSpirits.length === 0 || selectedSpirits.includes(spirit);
-    const glassName = cocktail.glassTypeId ? glassTypeMap[cocktail.glassTypeId] : 'Unknown';
-    const matchesGlass = selectedGlassTypes.length === 0 || selectedGlassTypes.includes(glassName);
-    return matchesSpirit && matchesGlass;
-  });
-
   const filterSections = [
     {
-      title: 'Spirit',
-      options: (['Gin', 'Whiskey', 'Vodka', 'Rum', 'Tequila', 'Brandy', 'Other'] as BaseSpirit[]).map(spirit => ({
+      title: 'Base Spirit',
+      options: baseSpirits.map(spirit => ({
         id: spirit,
         label: spirit,
         checked: selectedSpirits.includes(spirit),
@@ -102,40 +89,74 @@ export const CocktailsPage: React.FC = () => {
     },
     {
       title: 'Glass Type',
-      options: Object.values(glassTypeMap).map(glassName => ({
-        id: glassName,
-        label: glassName,
-        checked: selectedGlassTypes.includes(glassName),
-        onChange: () => handleGlassTypeChange(glassName)
+      options: Object.entries(glassTypeMap).map(([id, name]) => ({
+        id,
+        label: name,
+        checked: selectedGlassTypes.includes(name),
+        onChange: () => handleGlassTypeChange(name)
       }))
     }
   ];
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
-  }
+  const filteredCocktails = cocktails.filter(cocktail => {
+    // Apply search filter
+    if (searchQuery && !cocktail.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
 
-  if (error) {
-    return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
-  }
+    // Apply glass type filter
+    if (selectedGlassTypes.length > 0) {
+      const glassName = cocktail.glassTypeId ? glassTypeMap[cocktail.glassTypeId] : 'Unknown';
+      if (!selectedGlassTypes.includes(glassName)) {
+        return false;
+      }
+    }
+
+    // Apply spirit filter
+    if (selectedSpirits.length > 0) {
+      const cocktailSpirits = cocktail.ingredients
+        .filter(i => i.ingredient.type === 'SPIRIT')
+        .map(i => {
+          const name = i.ingredient.name.toLowerCase();
+          if (name.includes('gin')) return 'Gin';
+          if (name.includes('whiskey') || name.includes('whisky') || name.includes('bourbon')) return 'Whiskey';
+          if (name.includes('vodka')) return 'Vodka';
+          if (name.includes('rum')) return 'Rum';
+          if (name.includes('tequila') || name.includes('mezcal')) return 'Tequila';
+          if (name.includes('brandy') || name.includes('cognac')) return 'Brandy';
+          return 'Other';
+        });
+
+      if (!selectedSpirits.some(spirit => cocktailSpirits.includes(spirit))) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   return (
     <Box sx={{ 
       display: 'flex', 
       flexDirection: 'column', 
       height: '100%',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      position: 'relative'
     }}>
       <Box sx={{ 
         display: 'flex', 
-        gap: 4, 
+        gap: { xs: 0, sm: 4 }, 
         flex: 1, 
         minHeight: 0,
         overflow: 'hidden',
         position: 'relative'
       }}>
         <FilterSidebar sections={filterSections} />
-        <Box sx={{ flex: 1, overflow: 'auto' }}>
+        <Box sx={{ 
+          flex: 1, 
+          overflow: 'auto',
+          p: { xs: 2, sm: 0 }
+        }}>
           <AlphabeticalList
             items={filteredCocktails}
             getItemId={(item) => item.id}

@@ -124,13 +124,20 @@ export const CocktailDetailPage: React.FC = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: '600px', mx: 'auto', p: 4 }}>
+    <Box sx={{ 
+      maxWidth: '100%', 
+      mx: 'auto', 
+      p: { xs: 2, sm: 4 },
+      width: '100%',
+      boxSizing: 'border-box',
+      overflow: 'hidden'
+    }}>
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="h3"
           sx={{
             fontFamily: 'Italianno, cursive',
-            fontSize: '3rem',
+            fontSize: { xs: '2.5rem', sm: '3rem' },
             color: '#1a1a1a'
           }}
         >
@@ -145,40 +152,65 @@ export const CocktailDetailPage: React.FC = () => {
         <List>
           {[...cocktail.ingredients]
             .sort((a, b) => {
-              // Sort ingredients with amounts to the top
               if (a.amount && !b.amount) return -1;
               if (!a.amount && b.amount) return 1;
               return 0;
             })
             .map((ingredient, index) => (
-            <ListItem key={index} sx={{ py: 0, display: 'flex', width: '100%', alignItems: 'center' }}>
-              <div style={{ 
+            <ListItem key={index} sx={{ 
+              py: 0, 
+              display: 'flex', 
+              flexDirection: 'row',
+              alignItems: 'center',
+              width: '100%',
+              gap: 1,
+              overflow: 'hidden'
+            }}>
+              <Box sx={{ 
                 display: 'flex',
-                width: '250px',
-                alignItems: 'center'
+                width: { xs: '100px', sm: '250px' },
+                alignItems: 'center',
+                gap: 1,
+                flexShrink: 0
               }}>
-                <div style={{ 
+                <Typography sx={{ 
                   fontFamily: 'Italianno, cursive',
                   fontSize: '2rem',
                   lineHeight: 1,
-                  width: 'fit-content'
+                  minWidth: 'fit-content'
                 }}>
                   {formatAmountAndUnit(ingredient)}
-                </div>
+                </Typography>
                 {ingredient.amount && (
-                  <div style={{ 
+                  <Box sx={{ 
+                    flex: 1,
                     lineHeight: 1,
                     color: '#ccc',
                     textAlign: 'left',
-                    flex: 1,
                     overflow: 'hidden',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    alignItems: 'center',
+                    minWidth: 0
                   }}>
-                    ................................................
-                  </div>
+                    <Box sx={{ 
+                      width: '100%',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis'
+                    }}>
+                      {'................................................'.repeat(10)}
+                    </Box>
+                  </Box>
                 )}
-              </div>
-              <div style={{ lineHeight: 1, minWidth: '200px', marginLeft: '4px' }}>
+              </Box>
+              <Box sx={{ 
+                lineHeight: 1,
+                flex: 1,
+                minWidth: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
                 {ingredient.ingredient.id ? (
                   <Link to={`/ingredients/${ingredient.ingredient.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     {formatIngredientName(ingredient)}
@@ -186,38 +218,64 @@ export const CocktailDetailPage: React.FC = () => {
                 ) : (
                   formatIngredientName(ingredient)
                 )}
-              </div>
+              </Box>
             </ListItem>
           ))}
           {cocktail.glassType?.name && (
-            <ListItem sx={{ py: 0, display: 'flex', width: '100%', alignItems: 'center' }}>
-              <div style={{ 
+            <ListItem sx={{ 
+              py: 0, 
+              display: 'flex', 
+              flexDirection: 'row',
+              alignItems: 'center',
+              width: '100%',
+              gap: 1,
+              overflow: 'hidden'
+            }}>
+              <Box sx={{ 
                 display: 'flex',
-                width: '250px',
-                alignItems: 'center'
+                width: { xs: '100px', sm: '250px' },
+                alignItems: 'center',
+                gap: 1,
+                flexShrink: 0
               }}>
-                <div style={{ 
+                <Typography sx={{ 
                   fontFamily: 'Italianno, cursive',
                   fontSize: '2rem',
                   lineHeight: 1,
-                  width: 'fit-content'
+                  minWidth: 'fit-content'
                 }}>
                   Glass Type
-                </div>
-                <div style={{ 
+                </Typography>
+                <Box sx={{ 
+                  flex: 1,
                   lineHeight: 1,
                   color: '#ccc',
                   textAlign: 'left',
-                  flex: 1,
                   overflow: 'hidden',
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  minWidth: 0
                 }}>
-                  ................................................
-                </div>
-              </div>
-              <div style={{ lineHeight: 1, minWidth: '200px', marginLeft: '4px' }}>
+                  <Box sx={{ 
+                    width: '100%',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}>
+                    {'................................................'.repeat(10)}
+                  </Box>
+                </Box>
+              </Box>
+              <Box sx={{ 
+                lineHeight: 1,
+                flex: 1,
+                minWidth: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }}>
                 {titleize(cocktail.glassType.name)}
-              </div>
+              </Box>
             </ListItem>
           )}
         </List>
@@ -227,9 +285,9 @@ export const CocktailDetailPage: React.FC = () => {
         <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Italianno, cursive', fontSize: '2rem' }}>
           Instructions
         </Typography>
-        <p style={{ whiteSpace: 'pre-line' }}>
+        <Typography sx={{ whiteSpace: 'pre-line' }}>
           {sentenceCapitalize(cocktail.instructions)}
-        </p>
+        </Typography>
       </Box>
 
       {potentialAkas && potentialAkas.length > 0 && (

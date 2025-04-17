@@ -94,8 +94,8 @@ export const AlphabeticalList = <T,>({
                 <Box 
                   key={getItemId(item)} 
                   sx={{ 
-                    width: 'calc(25% - 12px)',
-                    minWidth: '250px',
+                    width: { xs: '100%', sm: 'calc(50% - 16px)', md: 'calc(33.33% - 16px)', lg: 'calc(25% - 16px)' },
+                    minWidth: { xs: 'auto', sm: '250px' },
                     flexShrink: 0,
                     display: 'flex',
                     justifyContent: 'flex-start'

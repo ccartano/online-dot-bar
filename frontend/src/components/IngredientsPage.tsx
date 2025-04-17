@@ -1,39 +1,36 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { Ingredient, IngredientType } from '../types/ingredient.types';
-import { fetchIngredients } from '../services/ingredient.service';
 import { FilterSidebar } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
 
-// Helper function to capitalize words (similar to CocktailCard)
+// Helper function to capitalize words
 const capitalizeWords = (str: string): string => {
-  if (!str) return '';
-  return str.split(' ')
+  return str
+    .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ');
 };
 
 export const IngredientsPage: React.FC = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedTypes, setSelectedTypes] = useState<IngredientType[]>([]);
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
 
   useEffect(() => {
-    const loadIngredients = async () => {
+    const fetchIngredients = async () => {
       try {
-        setLoading(true);
-        const data = await fetchIngredients();
+        const response = await fetch('/api/ingredients');
+        const data = await response.json();
         setIngredients(data);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      } finally {
-        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching ingredients:', error);
       }
     };
 
-    loadIngredients();
+    fetchIngredients();
   }, []);
 
   const handleTypeChange = (type: IngredientType) => {
@@ -45,13 +42,6 @@ export const IngredientsPage: React.FC = () => {
       }
     });
   };
-
-  const filteredIngredients = useMemo(() => {
-    if (selectedTypes.length === 0) {
-      return ingredients;
-    }
-    return ingredients.filter(ingredient => selectedTypes.includes(ingredient.type));
-  }, [ingredients, selectedTypes]);
 
   const filterSections = [
     {
@@ -65,31 +55,42 @@ export const IngredientsPage: React.FC = () => {
     }
   ];
 
-  if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
-  }
+  const filteredIngredients = ingredients.filter(ingredient => {
+    // Apply search filter
+    if (searchQuery && !ingredient.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
 
-  if (error) {
-    return <div className="flex justify-center items-center h-screen text-red-500">Error: {error}</div>;
-  }
+    // Apply type filter
+    if (selectedTypes.length > 0 && !selectedTypes.includes(ingredient.type)) {
+      return false;
+    }
+
+    return true;
+  });
 
   return (
     <Box sx={{ 
       display: 'flex', 
       flexDirection: 'column', 
       height: '100%',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      position: 'relative'
     }}>
       <Box sx={{ 
         display: 'flex', 
-        gap: 4, 
+        gap: { xs: 0, sm: 4 }, 
         flex: 1, 
         minHeight: 0,
         overflow: 'hidden',
         position: 'relative'
       }}>
         <FilterSidebar sections={filterSections} />
-        <Box sx={{ flex: 1, overflow: 'auto' }}>
+        <Box sx={{ 
+          flex: 1, 
+          overflow: 'auto',
+          p: { xs: 2, sm: 0 }
+        }}>
           <AlphabeticalList
             items={filteredIngredients}
             getItemId={(item) => item.id}
