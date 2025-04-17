@@ -15,7 +15,9 @@
     "build:backend": "cd backend && npm run build",
     "start": "cross-env NODE_ENV=production concurrently \"npm run start:frontend\" \"npm run start:backend\"",
     "start:frontend": "cd frontend && npm run preview",
-    "start:backend": "cd backend && npm run start:prod"
+    "start:backend": "cd backend && npm run start:prod",
+    "clean": "rm -rf frontend/dist backend/dist",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
   },
   "devDependencies": {
     "@types/express": "^5.0.1",
