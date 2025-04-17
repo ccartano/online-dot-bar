@@ -7,6 +7,20 @@ export class CreateTables1744912905103 implements MigrationInterface {
     // Set the search path to our schema
     await queryRunner.query(`SET search_path TO online_bar_schema`);
 
+    // Create enum type for ingredient types
+    await queryRunner.query(`
+            CREATE TYPE "online_bar_schema"."ingredient_type_enum" AS ENUM (
+                'spirit', 'liqueur', 'mixer', 'garnish', 'bitter', 'syrup', 'other'
+            )
+        `);
+
+    // Create enum type for measurement units
+    await queryRunner.query(`
+            CREATE TYPE "online_bar_schema"."measurement_unit_enum" AS ENUM (
+                'oz', 'ml', 'dash', 'pinch', 'piece', 'slice', 'sprig', 'twist', 'wedge', 'tsp', 'tbsp', 'other'
+            )
+        `);
+
     // Create tables with explicit schema
     await queryRunner.query(`
             CREATE TABLE "online_bar_schema"."cocktail" (
@@ -33,7 +47,7 @@ export class CreateTables1744912905103 implements MigrationInterface {
                 "id" SERIAL NOT NULL,
                 "name" character varying NOT NULL,
                 "description" character varying,
-                "type" character varying,
+                "type" "online_bar_schema"."ingredient_type_enum" NOT NULL DEFAULT 'other',
                 "imageUrl" character varying,
                 CONSTRAINT "PK_ingredient_id" PRIMARY KEY ("id")
             )
@@ -43,6 +57,8 @@ export class CreateTables1744912905103 implements MigrationInterface {
             CREATE TABLE "online_bar_schema"."glass_type" (
                 "id" SERIAL NOT NULL,
                 "name" character varying NOT NULL,
+                "description" character varying,
+                "imageUrl" character varying,
                 "icon" character varying,
                 CONSTRAINT "PK_glass_type_id" PRIMARY KEY ("id")
             )
@@ -61,7 +77,7 @@ export class CreateTables1744912905103 implements MigrationInterface {
             CREATE TABLE "online_bar_schema"."cocktail_ingredient" (
                 "id" SERIAL NOT NULL,
                 "amount" double precision,
-                "unit" character varying,
+                "unit" "online_bar_schema"."measurement_unit_enum" NOT NULL DEFAULT 'other',
                 "notes" character varying,
                 "order" integer NOT NULL,
                 "cocktailId" integer,
@@ -76,7 +92,7 @@ export class CreateTables1744912905103 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`SET search_path TO online_bar_schema`);
 
-    // Drop tables (sequences will be dropped automatically)
+    // Drop tables first
     await queryRunner.query(
       `DROP TABLE "online_bar_schema"."cocktail_ingredient"`,
     );
@@ -84,5 +100,13 @@ export class CreateTables1744912905103 implements MigrationInterface {
     await queryRunner.query(`DROP TABLE "online_bar_schema"."glass_type"`);
     await queryRunner.query(`DROP TABLE "online_bar_schema"."ingredient"`);
     await queryRunner.query(`DROP TABLE "online_bar_schema"."cocktail"`);
+
+    // Drop enum types
+    await queryRunner.query(
+      `DROP TYPE "online_bar_schema"."measurement_unit_enum"`,
+    );
+    await queryRunner.query(
+      `DROP TYPE "online_bar_schema"."ingredient_type_enum"`,
+    );
   }
 }
