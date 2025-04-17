@@ -96,7 +96,7 @@ export class CocktailsService {
         queryBuilder.andWhere(
           new Brackets((qb) => {
             ingredientIds.forEach((id, index) => {
-              qb.andWhere(
+              qb.orWhere(
                 `EXISTS (SELECT 1 FROM cocktail_ingredient ci WHERE ci."cocktailId" = cocktail.id AND ci."ingredientId" = :ingredientId${index})`,
                 { [`ingredientId${index}`]: id },
               );
@@ -106,7 +106,6 @@ export class CocktailsService {
       }
 
       if (glassTypeNames && glassTypeNames.length > 0) {
-        // Since we're not joining glassType, we need to use the ID
         const glassTypeIds = await this.glassTypesRepository
           .createQueryBuilder('glassType')
           .select('glassType.id')
@@ -123,7 +122,6 @@ export class CocktailsService {
     }
 
     const cocktails = await queryBuilder.getMany();
-
     return cocktails;
   }
 

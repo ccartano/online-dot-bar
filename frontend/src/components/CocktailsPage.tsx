@@ -28,7 +28,31 @@ export const CocktailsPage: React.FC = () => {
   useEffect(() => {
     const fetchCocktails = async () => {
       try {
-        const response = await fetch('/api/cocktails');
+        const params = new URLSearchParams();
+        if (searchQuery) {
+          params.append('name', searchQuery);
+        }
+        if (selectedGlassTypes.length > 0) {
+          params.append('glassTypeNames', selectedGlassTypes.join(','));
+        }
+        if (selectedSpirits.length > 0) {
+          // Convert spirits to ingredient IDs - this is a simplification
+          // In a real app, you'd want to map spirits to specific ingredient IDs
+          const spiritIngredientIds = selectedSpirits.map(spirit => {
+            switch(spirit) {
+              case 'Gin': return 1;
+              case 'Whiskey': return 2;
+              case 'Vodka': return 3;
+              case 'Rum': return 4;
+              case 'Tequila': return 5;
+              case 'Brandy': return 6;
+              default: return 7;
+            }
+          });
+          params.append('ingredientIds', spiritIngredientIds.join(','));
+        }
+        
+        const response = await fetch(`/api/cocktails?${params.toString()}`);
         const data = await response.json();
         setCocktails(data);
       } catch (error) {
@@ -37,7 +61,7 @@ export const CocktailsPage: React.FC = () => {
     };
 
     fetchCocktails();
-  }, []);
+  }, [searchQuery, selectedGlassTypes, selectedSpirits]);
 
   useEffect(() => {
     const fetchGlassTypes = async () => {
@@ -98,43 +122,6 @@ export const CocktailsPage: React.FC = () => {
     }
   ];
 
-  const filteredCocktails = cocktails.filter(cocktail => {
-    // Apply search filter
-    if (searchQuery && !cocktail.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-
-    // Apply glass type filter
-    if (selectedGlassTypes.length > 0) {
-      const glassName = cocktail.glassTypeId ? glassTypeMap[cocktail.glassTypeId] : 'Unknown';
-      if (!selectedGlassTypes.includes(glassName)) {
-        return false;
-      }
-    }
-
-    // Apply spirit filter
-    if (selectedSpirits.length > 0) {
-      const cocktailSpirits = cocktail.ingredients
-        .filter(i => i.ingredient.type === 'SPIRIT')
-        .map(i => {
-          const name = i.ingredient.name.toLowerCase();
-          if (name.includes('gin')) return 'Gin';
-          if (name.includes('whiskey') || name.includes('whisky') || name.includes('bourbon')) return 'Whiskey';
-          if (name.includes('vodka')) return 'Vodka';
-          if (name.includes('rum')) return 'Rum';
-          if (name.includes('tequila') || name.includes('mezcal')) return 'Tequila';
-          if (name.includes('brandy') || name.includes('cognac')) return 'Brandy';
-          return 'Other';
-        });
-
-      if (!selectedSpirits.some(spirit => cocktailSpirits.includes(spirit))) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
   return (
     <Box sx={{ 
       display: 'flex', 
@@ -164,7 +151,7 @@ export const CocktailsPage: React.FC = () => {
           overflowX: 'hidden'
         }}>
           <AlphabeticalList
-            items={filteredCocktails}
+            items={cocktails}
             getItemId={(item) => item.id}
             getItemName={(item) => capitalizeWords(item.name)}
             getItemLink={(item) => `/cocktails/${item.id}`}
