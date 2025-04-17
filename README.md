@@ -26,7 +26,7 @@ nvm install --lts
 nvm use --lts
 ```
 
-## Quick Start
+## Environment Setup
 
 1. Clone the repository:
 ```bash
@@ -34,37 +34,98 @@ git clone <repository-url>
 cd online-bar
 ```
 
-2. Install dependencies:
+2. Set up environment variables:
 ```bash
+# Backend
+cp backend/.env.example backend/.env
+# Edit backend/.env with your database credentials
+
+# Frontend
+cp frontend/.env.example frontend/.env
+```
+
+3. Install dependencies:
+```bash
+# Install backend dependencies
+cd backend
+npm install
+
+# Install frontend dependencies
+cd ../frontend
 npm install
 ```
 
-3. Set up the database (see Backend README for detailed instructions)
+## Database Setup
 
-4. Start the development servers:
+1. Create the database:
 ```bash
+# Connect to PostgreSQL
+psql -U postgres
+
+# Create the database
+CREATE DATABASE online_bar;
+```
+
+2. Run migrations:
+```bash
+cd backend
+npm run migration:run
+```
+
+3. Seed initial data:
+```bash
+npm run seed
+```
+
+## Development Mode
+
+1. Start the backend server:
+```bash
+cd backend
+npm run start:dev
+```
+
+2. Start the frontend server (in a new terminal):
+```bash
+cd frontend
 npm run dev
 ```
 
-This will start both frontend and backend in development mode.
+The application will be available at:
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3000
+
+## Database Management
+
+### Reset Database
+To completely reset the database (useful for development):
+```bash
+cd backend
+# Drop and recreate the database
+psql -U postgres -c "DROP DATABASE IF EXISTS online_bar;"
+psql -U postgres -c "CREATE DATABASE online_bar;"
+
+# Run migrations and seed data
+npm run migration:run
+npm run seed
+```
+
+### Migration Commands
+```bash
+# Generate a new migration
+npm run migration:generate -- -n MigrationName
+
+# Run migrations
+npm run migration:run
+
+# Revert last migration
+npm run migration:revert
+```
 
 ## Project Structure
 
 - `/frontend` - React frontend application ([Frontend README](./frontend/README.md))
 - `/backend` - NestJS backend application ([Backend README](./backend/README.md))
-
-## Development Mode
-
-```bash
-# Start both frontend and backend in development mode
-npm run dev
-
-# Start only frontend
-npm run dev:frontend
-
-# Start only backend
-npm run dev:backend
-```
 
 ## Production Mode
 
