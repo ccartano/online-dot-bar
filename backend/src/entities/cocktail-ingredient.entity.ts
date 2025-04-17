@@ -3,9 +3,11 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { Cocktail, Ingredient } from './index';
+import { Cocktail } from './cocktail.entity';
+import { Ingredient } from './ingredient.entity';
 
 // Enum for different measurement units
 export enum MeasurementUnit {
@@ -23,40 +25,44 @@ export enum MeasurementUnit {
   OTHER = 'other', // for anything else
 }
 
-@Entity({ schema: 'online_bar_schema' })
+@Entity()
 export class CocktailIngredient {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // Relationship to the Cocktail
-  @ManyToOne(() => Cocktail, (cocktail) => cocktail.ingredients)
-  @JoinColumn()
-  cocktail: Cocktail;
-
-  // Relationship to the Ingredient
-  @ManyToOne(() => Ingredient, (ingredient) => ingredient.cocktails)
-  @JoinColumn()
-  ingredient: Ingredient;
-
   // Amount of the ingredient (nullable because some ingredients might not need a specific amount)
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   amount: number;
 
   // The unit of measurement
-  @Column({
-    type: 'enum',
-    enum: MeasurementUnit,
-    default: MeasurementUnit.OTHER,
-  })
-  unit: MeasurementUnit;
+  @Column({ nullable: true })
+  unit: string;
 
   // Optional notes about how to use/prepare this ingredient
   @Column({ nullable: true })
   notes: string;
 
   // Order in which ingredients should be listed/added
-  @Column()
+  @Column({ default: 0 })
   order: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @ManyToOne(() => Cocktail, (cocktail) => cocktail.ingredients)
+  cocktail: Cocktail;
+
+  @Column()
+  cocktailId: number;
+
+  @ManyToOne(() => Ingredient, (ingredient) => ingredient.cocktailIngredients)
+  ingredient: Ingredient;
+
+  @Column()
+  ingredientId: number;
 
   /**
    * Parses a cocktail ingredient string into its components

@@ -5,11 +5,13 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { CocktailIngredient, Category, GlassType } from './index';
 
 // The @Entity() decorator tells TypeORM this is a database table
-@Entity({ schema: 'online_bar_schema' })
+@Entity()
 export class Cocktail {
   // Auto-incrementing primary key
   @PrimaryGeneratedColumn()
@@ -32,15 +34,11 @@ export class Cocktail {
   imageUrl: string;
 
   // Timestamp for when the cocktail was created
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   createdAt: Date;
 
   // Timestamp that updates whenever the cocktail is modified
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
+  @UpdateDateColumn()
   updatedAt: Date;
 
   // Optional Paperless document ID for reference

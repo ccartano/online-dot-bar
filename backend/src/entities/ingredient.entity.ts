@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { CocktailIngredient } from './index';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { CocktailIngredient } from './cocktail-ingredient.entity';
 
 // This enum defines the different types of ingredients we can have
 export enum IngredientType {
@@ -13,14 +20,14 @@ export enum IngredientType {
 }
 
 // The @Entity() decorator tells TypeORM this is a database table
-@Entity({ schema: 'online_bar_schema' })
+@Entity()
 export class Ingredient {
   // This creates an auto-incrementing primary key
   @PrimaryGeneratedColumn()
   id: number;
 
   // Basic text column for the ingredient name
-  @Column()
+  @Column({ unique: true })
   name: string;
 
   // Optional description of the ingredient
@@ -39,9 +46,15 @@ export class Ingredient {
   @Column({ nullable: true })
   imageUrl: string;
 
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
   @OneToMany(
     () => CocktailIngredient,
     (cocktailIngredient) => cocktailIngredient.ingredient,
   )
-  cocktails: CocktailIngredient[];
+  cocktailIngredients: CocktailIngredient[];
 }
