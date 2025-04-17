@@ -275,23 +275,83 @@ export const AdminPage: React.FC = () => {
   });
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100vh',
+      backgroundColor: '#F5F5F1'
+    }}>
       {error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
-      <AppBar position="static" sx={{ backgroundColor: '#333' }}>
+      <AppBar position="static" sx={{ 
+        backgroundColor: '#F5F5F1',
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+        borderBottom: '1px solid rgba(0, 0, 0, 0.05)'
+      }}>
         <Toolbar variant="dense">
-          <Typography variant="h6" sx={{ flexGrow: 1, color: '#eee' }}>Admin Dashboard</Typography>
-          <Button color="inherit" component={Link} to="/">Back to Menu</Button>
+          <Typography variant="h6" sx={{ 
+            flexGrow: 1, 
+            color: '#1A1A1A',
+            fontFamily: 'Old Standard TT, serif'
+          }}>
+            Admin Dashboard
+          </Typography>
+          <Button 
+            color="inherit" 
+            component={Link} 
+            to="/"
+            onClick={() => AdminService.logout()}
+            sx={{
+              color: '#1A1A1A',
+              '&:hover': {
+                color: '#9CB4A3'
+              }
+            }}
+          >
+            Log Out
+          </Button>
         </Toolbar>
       </AppBar>
-      <Box sx={{ display: 'flex', flexGrow: 1, overflow: 'hidden' }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
-          <Tabs value={view} onChange={handleViewChange} aria-label="admin view selection">
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        flexGrow: 1, 
+        overflow: 'hidden',
+        backgroundColor: '#F5F5F1'
+      }}>
+        <Box sx={{ 
+          borderBottom: 1, 
+          borderColor: 'divider', 
+          px: 2,
+          backgroundColor: '#FFFFFF'
+        }}>
+          <Tabs 
+            value={view} 
+            onChange={handleViewChange} 
+            aria-label="admin view selection"
+            sx={{
+              '& .MuiTab-root': {
+                fontFamily: 'Old Standard TT, serif',
+                color: '#1A1A1A',
+                '&.Mui-selected': {
+                  color: '#9CB4A3'
+                }
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#9CB4A3'
+              }
+            }}
+          >
             <Tab label="Current Cocktails" value="current" />
             <Tab label="Potential Cocktails" value="potential" />
             <Tab label="Ingredients" value="ingredients" />
           </Tabs>
         </Box>
-        <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+        <Box sx={{ 
+          flex: 1, 
+          overflow: 'auto', 
+          p: 2,
+          backgroundColor: '#F5F5F1'
+        }}>
           {view === 'current' && (
             loading ? 
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>

@@ -190,8 +190,7 @@ export const PotentialCocktailsPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <h1 className="text-3xl font-bold">Potential Cocktail Recipes</h1>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 4 }}>
         <FormControlLabel
           control={
             <Switch

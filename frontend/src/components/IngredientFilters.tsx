@@ -24,14 +24,18 @@ export const IngredientFilters: React.FC<IngredientFiltersProps> = ({
       p: 2, 
       borderRight: '1px solid #e0e0e0',
       overflowY: 'auto',
-      height: '100%', // Ensure it takes full height within flex container
-      bgcolor: 'background.paper' // Match potential theme background
+      height: '100%'
     }}>
       <Typography variant="h5" sx={{ fontFamily: 'Italianno, cursive', mb: 1 }}>
         Filters
       </Typography>
       <Divider sx={{ mb: 2 }} />
-      <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, fontSize: '1rem' }}>
+      <Typography variant="h6" sx={{ 
+        fontFamily: 'Old Standard TT, serif',
+        fontSize: '1rem',
+        fontWeight: 'bold',
+        mb: 0.5
+      }}>
         Ingredient Type
       </Typography>
       <FormGroup sx={{ pl: 1, mb: 4 }}>

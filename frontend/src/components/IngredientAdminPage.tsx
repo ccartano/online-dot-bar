@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Box, Typography, CircularProgress, Alert, Snackbar } from '@mui/material';
+import { Box, CircularProgress, Alert, Snackbar } from '@mui/material';
 import { Ingredient } from '../types/ingredient.types';
 import { fetchIngredients } from '../services/ingredient.service';
 import { IngredientAdminTable } from './IngredientAdminTable';
@@ -53,9 +53,6 @@ export const IngredientAdminPage: React.FC = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" component="h1" gutterBottom>
-        Manage Ingredients
-      </Typography>
       <IngredientAdminTable 
         ingredients={ingredients} 
         onIngredientUpdate={handleIngredientUpdate}
