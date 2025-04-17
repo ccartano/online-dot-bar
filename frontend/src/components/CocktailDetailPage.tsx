@@ -125,12 +125,12 @@ export const CocktailDetailPage: React.FC = () => {
 
   return (
     <Box sx={{ 
-      maxWidth: '100%', 
-      mx: 'auto', 
-      p: { xs: 2, sm: 4 },
-      width: '100%',
-      boxSizing: 'border-box',
-      overflow: 'hidden'
+      p: 3, 
+      maxWidth: '600px', 
+      margin: 'auto',
+      minHeight: 'calc(100vh - 64px)', // Account for header height
+      display: 'flex',
+      flexDirection: 'column'
     }}>
       <Box sx={{ mb: 4 }}>
         <Typography

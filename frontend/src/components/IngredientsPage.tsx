@@ -73,23 +73,25 @@ export const IngredientsPage: React.FC = () => {
     <Box sx={{ 
       display: 'flex', 
       flexDirection: 'column', 
-      height: '100%',
-      overflow: 'hidden',
+      minHeight: 'calc(100vh - 64px)',
       position: 'relative'
     }}>
       <Box sx={{ 
         display: 'flex', 
         gap: { xs: 0, sm: 4 }, 
-        flex: 1, 
-        minHeight: 0,
-        overflow: 'hidden',
+        flex: 1,
         position: 'relative'
       }}>
         <FilterSidebar sections={filterSections} />
         <Box sx={{ 
           flex: 1, 
           overflow: 'auto',
-          p: { xs: 2, sm: 0 }
+          p: 2,
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          },
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
         }}>
           <AlphabeticalList
             items={filteredIngredients}

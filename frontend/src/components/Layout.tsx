@@ -4,8 +4,6 @@ import { Box, IconButton, Drawer, List, ListItem, ListItemText, Typography } fro
 import MenuIcon from '@mui/icons-material/Menu';
 import '../App.css';
 
-const drawerWidth = 240;
-
 const navItems = [
   { text: 'Cocktails', path: '/cocktails' },
   { text: 'Ingredients', path: '/ingredients' },
@@ -38,7 +36,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           height: '64px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
           px: 3
         }}
       >
@@ -61,18 +58,113 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <MenuIcon />
           </IconButton>
         </Box>
-        <Typography
-          sx={{
-            fontFamily: 'Italianno, cursive',
-            fontSize: '2.5rem',
-            color: '#1a1a1a',
-            textAlign: 'center',
-            flex: 1
-          }}
-        >
-          The Online.Bar
-        </Typography>
-        <Box sx={{ width: '40px' }} />
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          width: '100%',
+          position: 'relative'
+        }}>
+          <Link 
+            to="/"
+            style={{ 
+              textDecoration: 'none',
+              color: '#1a1a1a',
+              transition: 'color 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#9CB4A3';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#1a1a1a';
+            }}
+          >
+            <Typography
+              sx={{
+                fontFamily: 'Italianno, cursive',
+                fontSize: '2.5rem',
+                display: { xs: 'none', sm: 'block' },
+                whiteSpace: 'nowrap'
+              }}
+            >
+              The Online.Bar
+            </Typography>
+          </Link>
+          
+          {/* Mobile Title */}
+          <Typography
+            sx={{
+              fontFamily: 'Italianno, cursive',
+              fontSize: '2.5rem',
+              display: { xs: 'block', sm: 'none' },
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            The Online.Bar
+          </Typography>
+
+          <Box
+            sx={{
+              display: { xs: 'none', sm: 'flex' },
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 2,
+              flex: 1
+            }}
+          >
+            {navItems.map((item) => (
+              <Box
+                key={item.text}
+                sx={{
+                  position: 'relative',
+                  '&:hover::after': {
+                    transform: 'scaleX(1)'
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: 0,
+                    left: '1rem',
+                    right: '1rem',
+                    height: '2px',
+                    backgroundColor: '#9CB4A3',
+                    transform: isActive(item.path) ? 'scaleX(1)' : 'scaleX(0)',
+                    transition: 'transform 0.2s ease',
+                    transformOrigin: 'center'
+                  }
+                }}
+              >
+                <Link 
+                  to={item.path} 
+                  style={{ 
+                    textDecoration: 'none',
+                    color: isActive(item.path) ? '#1a1a1a' : '#666',
+                    fontFamily: "'Italianno', cursive",
+                    fontSize: '1.8rem',
+                    margin: '0 1rem',
+                    padding: '0.5rem 1rem',
+                    display: 'block',
+                    transition: 'color 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#9CB4A3';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = isActive(item.path) ? '#1a1a1a' : '#666';
+                  }}
+                >
+                  {item.text}
+                </Link>
+              </Box>
+            ))}
+          </Box>
+          <Box sx={{ width: '200px' }} /> {/* Spacer to balance the title */}
+        </Box>
+        <Box sx={{ width: '40px', display: { sm: 'none' } }} />
         <Drawer
           variant="temporary"
           anchor="left"
@@ -148,41 +240,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             ))}
           </List>
         </Drawer>
-        <Box
-          sx={{
-            display: { xs: 'none', sm: 'flex' },
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            height: '100%'
-          }}
-        >
-          {navItems.map((item) => (
-            <Link 
-              key={item.text}
-              to={item.path} 
-              style={{ 
-                textDecoration: 'none',
-                color: isActive(item.path) ? '#1a1a1a' : '#666',
-                fontFamily: "'Italianno', cursive",
-                fontSize: '1.8rem',
-                margin: '0 1rem',
-                padding: '0.5rem 1rem',
-                borderRadius: '4px'
-              }}
-            >
-              {item.text}
-            </Link>
-          ))}
-        </Box>
       </Box>
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` }
+          width: '100%'
         }}
       >
         {children}

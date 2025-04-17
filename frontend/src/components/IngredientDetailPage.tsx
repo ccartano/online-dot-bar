@@ -121,7 +121,14 @@ export const IngredientDetailPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 3, maxWidth: '600px', margin: 'auto' }}>
+    <Box sx={{ 
+      p: { xs: 2, sm: 3 }, 
+      maxWidth: '600px', 
+      margin: 'auto',
+      minHeight: 'calc(100vh - 64px)',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
       <Box sx={{ mb: 4 }}>
         <Typography
           variant="h3"
@@ -129,7 +136,7 @@ export const IngredientDetailPage: React.FC = () => {
           gutterBottom
           sx={{
             fontFamily: 'Italianno, cursive',
-            fontSize: '3rem',
+            fontSize: { xs: '2.5rem', sm: '3rem' },
             color: '#1a1a1a',
             mb: 1
           }}
@@ -138,42 +145,42 @@ export const IngredientDetailPage: React.FC = () => {
         </Typography>
       </Box>
       
-        <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2, width: 'fit-content' }}>
-          <Typography
-            sx={{
-              fontFamily: 'Italianno, cursive',
-              fontSize: '1.8rem',
-              lineHeight: 1,
-              width: 'fit-content',
-              mr: 1,
-            }}
-          >
-            Categorization:
-          </Typography>
-          <Box
-            sx={{
-              color: '#ccc',
-              textAlign: 'left',
-              flex: '1 1 auto',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-              lineHeight: 1,
-              mr: 1,
-            }}
-          >
-            .....................................
-          </Box>
-          <Typography
-            sx={{
-              lineHeight: 1,
-              minWidth: '100px',
-              fontWeight: 'medium',
-              fontFamily: "'Old Standard TT', serif",
-            }}
-          >
-            {formatTypeName(ingredient.type)}
-          </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2, width: 'fit-content' }}>
+        <Typography
+          sx={{
+            fontFamily: 'Italianno, cursive',
+            fontSize: { xs: '1.5rem', sm: '1.8rem' },
+            lineHeight: 1,
+            width: 'fit-content',
+            mr: 1,
+          }}
+        >
+          Categorization:
+        </Typography>
+        <Box
+          sx={{
+            color: '#ccc',
+            textAlign: 'left',
+            flex: '1 1 auto',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            lineHeight: 1,
+            mr: 1,
+          }}
+        >
+          .....................................
         </Box>
+        <Typography
+          sx={{
+            lineHeight: 1,
+            minWidth: '100px',
+            fontWeight: 'medium',
+            fontFamily: "'Old Standard TT', serif",
+          }}
+        >
+          {formatTypeName(ingredient.type)}
+        </Typography>
+      </Box>
 
       <Box sx={{ pt:3 }}>
       {ingredient.description && (

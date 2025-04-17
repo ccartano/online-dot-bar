@@ -58,11 +58,12 @@ export const AlphabeticalList = <T,>({
   return (
     <Box sx={{ 
       flex: 1,
-      height: '100%',
+      height: 'fit-content',
       pr: 2,
       position: 'relative',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      minHeight: '100%'
     }}>
       {sortedLetters.map((letter) => {
         const letterItems = itemsByLetter[letter] || [];

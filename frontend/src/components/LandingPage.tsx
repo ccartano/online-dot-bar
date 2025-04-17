@@ -1,43 +1,20 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Box, TextField, Button, Container } from '@mui/material';
-import { styled } from '@mui/material/styles';
-
-const SearchInput = styled(TextField)(({ theme }) => ({
-  '& .MuiOutlinedInput-root': {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '8px',
-    '& fieldset': {
-      borderColor: '#E5E5E5',
-    },
-    '&:hover fieldset': {
-      borderColor: theme.palette.primary.main,
-    },
-    '&.Mui-focused fieldset': {
-      borderColor: theme.palette.primary.main,
-    },
-  },
-}));
+import React from 'react';
+import { Box, Container } from '@mui/material';
 
 const LandingPage: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate();
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/cocktails?search=${encodeURIComponent(searchQuery)}`);
-    }
-  };
-
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 100px)', // Subtract navbar height
+        height: '100%',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#F5F5F1',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
       }}
     >
       <Container maxWidth="md">
@@ -66,6 +43,7 @@ const LandingPage: React.FC = () => {
             The Online.Bar
           </h1>
           
+          {/* Search functionality temporarily disabled
           <Box
             component="form"
             onSubmit={handleSearch}
@@ -108,6 +86,7 @@ const LandingPage: React.FC = () => {
               Search
             </Button>
           </Box>
+          */}
         </Box>
       </Container>
     </Box>

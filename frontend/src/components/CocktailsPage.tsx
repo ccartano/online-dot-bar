@@ -139,15 +139,14 @@ export const CocktailsPage: React.FC = () => {
     <Box sx={{ 
       display: 'flex', 
       flexDirection: 'column', 
-      height: '100%',
+      height: 'calc(100vh - 64px)',
       overflow: 'hidden',
       position: 'relative'
     }}>
       <Box sx={{ 
         display: 'flex', 
         gap: { xs: 0, sm: 4 }, 
-        flex: 1, 
-        minHeight: 0,
+        height: '100%',
         overflow: 'hidden',
         position: 'relative'
       }}>
@@ -155,7 +154,14 @@ export const CocktailsPage: React.FC = () => {
         <Box sx={{ 
           flex: 1, 
           overflow: 'auto',
-          p: { xs: 2, sm: 0 }
+          p: 2,
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          },
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          overflowY: 'auto',
+          overflowX: 'hidden'
         }}>
           <AlphabeticalList
             items={filteredCocktails}

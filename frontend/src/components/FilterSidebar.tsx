@@ -28,7 +28,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ sections }) => {
   };
 
   const drawer = (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 0 }}>
       <h2 style={{ fontFamily: 'Italianno, cursive', fontSize: '2rem', marginBottom: '1rem' }}>
         Filters
       </h2>
@@ -99,7 +99,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ sections }) => {
               maxWidth: '400px',
               borderTopRightRadius: 0,
               borderBottomRightRadius: 0,
-              bgcolor: 'white'
+              bgcolor: 'white',
+              p: 2
             }
           }}
         >
@@ -113,14 +114,18 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ sections }) => {
     <Box sx={{ 
       width: 240, 
       flexShrink: 0, 
-      p: 2, 
       borderRight: '1px solid #e0e0e0',
-      position: 'sticky',
-      top: 0,
-      height: '100%',
-      overflowY: 'auto'
+      position: 'relative'
     }}>
-      {drawer}
+      <Box sx={{
+        position: 'sticky',
+        top: 0,
+        height: '100vh',
+        overflow: 'auto',
+        p: 2
+      }}>
+        {drawer}
+      </Box>
     </Box>
   );
 }; 
