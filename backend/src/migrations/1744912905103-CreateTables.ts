@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateTables implements MigrationInterface {
-  name = 'CreateTables';
+export class CreateTables1744912905103 implements MigrationInterface {
+  name = 'CreateTables1744912905103';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Set the search path to our schema
