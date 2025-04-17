@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
-import { AdminService } from '../services/admin.service';
 import '../App.css';
 
 interface LayoutProps {
@@ -10,47 +9,89 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
-  const isAdmin = AdminService.isAdmin();
 
   const isActive = (path: string) => {
     return location.pathname === path;
   };
 
   return (
-    <div className="layout" style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <nav className="navbar" style={{ position: 'sticky', top: 0, zIndex: 1000 }}>
-        <div className="nav-links">
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      minHeight: '100vh',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0
+    }}>
+      <Box 
+        component="nav" 
+        sx={{ 
+          position: 'sticky', 
+          top: 0, 
+          zIndex: 1000,
+          backgroundColor: 'white',
+          borderBottom: '1px solid #e0e0e0',
+          padding: '1rem'
+        }}
+      >
+        <Box 
+          className="nav-links" 
+          sx={{ 
+            display: 'flex', 
+            gap: '2rem',
+            justifyContent: 'center'
+          }}
+        >
           <Link 
             to="/cocktails" 
             className={isActive('/cocktails') ? 'active' : ''}
+            style={{ 
+              textDecoration: 'none',
+              color: isActive('/cocktails') ? '#1a1a1a' : '#666',
+              fontFamily: "'Italianno', cursive",
+              fontSize: '1.8rem'
+            }}
           >
             Cocktails
           </Link>
           <Link 
             to="/ingredients" 
             className={isActive('/ingredients') ? 'active' : ''}
+            style={{ 
+              textDecoration: 'none',
+              color: isActive('/ingredients') ? '#1a1a1a' : '#666',
+              fontFamily: "'Italianno', cursive",
+              fontSize: '1.8rem'
+            }}
           >
             Ingredients
           </Link>
           <Link 
             to="/categories" 
             className={isActive('/categories') ? 'active' : ''}
+            style={{ 
+              textDecoration: 'none',
+              color: isActive('/categories') ? '#1a1a1a' : '#666',
+              fontFamily: "'Italianno', cursive",
+              fontSize: '1.8rem'
+            }}
           >
             Categories
           </Link>
-          {isAdmin && (
-            <Link 
-              to="/admin" 
-              className={isActive('/admin') ? 'active' : ''}
-            >
-              Admin
-            </Link>
-          )}
-        </div>
-      </nav>
-      <Box component="main" sx={{ flexGrow: 1, position: 'relative' }}>
+        </Box>
+      </Box>
+      <Box 
+        component="main" 
+        sx={{ 
+          flexGrow: 1, 
+          position: 'relative',
+          overflow: 'auto'
+        }}
+      >
         {children}
       </Box>
-    </div>
+    </Box>
   );
 }; 

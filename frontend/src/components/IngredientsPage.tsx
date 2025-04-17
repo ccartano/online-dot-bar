@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Box, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Box } from '@mui/material';
 import { Ingredient, IngredientType } from '../types/ingredient.types';
 import { fetchIngredients } from '../services/ingredient.service';
-import { IngredientFilters } from './IngredientFilters';
+import { FilterSidebar } from './FilterSidebar';
+import { AlphabeticalList } from './AlphabeticalList';
 
 // Helper function to capitalize words (similar to CocktailCard)
 const capitalizeWords = (str: string): string => {
@@ -53,18 +53,17 @@ export const IngredientsPage: React.FC = () => {
     return ingredients.filter(ingredient => selectedTypes.includes(ingredient.type));
   }, [ingredients, selectedTypes]);
 
-  const ingredientsByLetter = useMemo(() => {
-    return filteredIngredients.reduce((acc, ingredient) => {
-      const firstLetter = ingredient.name.charAt(0).toUpperCase();
-      if (!acc[firstLetter]) {
-        acc[firstLetter] = [];
-      }
-      acc[firstLetter].push(ingredient);
-      return acc;
-    }, {} as Record<string, Ingredient[]>);
-  }, [filteredIngredients]);
-
-  const sortedLetters = useMemo(() => Object.keys(ingredientsByLetter).sort(), [ingredientsByLetter]);
+  const filterSections = [
+    {
+      title: 'Ingredient Type',
+      options: Object.values(IngredientType).map(type => ({
+        id: type,
+        label: capitalizeWords(type),
+        checked: selectedTypes.includes(type),
+        onChange: () => handleTypeChange(type)
+      }))
+    }
+  ];
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -75,79 +74,28 @@ export const IngredientsPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)',
-    overflow: 'hidden' }}>
-      <Box sx={{ display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' }}>
-        <IngredientFilters
-          selectedTypes={selectedTypes}
-          onTypeChange={handleTypeChange}
-        />
-
-        <Box sx={{ 
-          flex: 1,
-          height: '100%',
-          p: 3,
-          overflowY: 'auto',
-          position: 'relative'
-        }}>
-          {sortedLetters.length > 0 ? (
-            sortedLetters.map((letter) => {
-              const letterIngredients = ingredientsByLetter[letter] || [];
-              if (letterIngredients.length === 0) return null;
-
-              return (
-                <Box key={letter} sx={{ mb: 4 }}>
-                  <Typography 
-                    variant="h4" 
-                    component="h2" 
-                    sx={{
-                      fontFamily: 'Italianno, cursive',
-                      fontSize: '2.5rem',
-                      color: 'text.primary',
-                      mb: 2,
-                    }}
-                  >
-                    {letter}
-                  </Typography>
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexWrap: 'wrap', 
-                    gap: 2,
-                    '& > *': {
-                      flex: '1 1 200px',
-                      minWidth: '200px',
-                      maxWidth: '300px',
-                    }
-                  }}>
-                    {letterIngredients.map((ingredient) => (
-                      <Box key={ingredient.id}>
-                        <Link to={`/ingredients/${ingredient.id}`} style={{ textDecoration: 'none' }}>
-                          <Typography
-                            component="h3"
-                            sx={{
-                              fontFamily: 'Italianno, cursive',
-                              fontSize: '1.8rem',
-                              color: 'text.primary',
-                              margin: 0,
-                              padding: 0,
-                              textAlign: 'center',
-                              '&:hover': {
-                                color: 'primary.main',
-                              }
-                            }}
-                          >
-                            {capitalizeWords(ingredient.name)}
-                          </Typography>
-                        </Link>
-                      </Box>
-                    ))}
-                  </Box>
-                </Box>
-              );
-            })
-          ) : (
-            <Typography>No ingredients match the current filters.</Typography>
-          )}
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100%',
+      overflow: 'hidden'
+    }}>
+      <Box sx={{ 
+        display: 'flex', 
+        gap: 4, 
+        flex: 1, 
+        minHeight: 0,
+        overflow: 'hidden',
+        position: 'relative'
+      }}>
+        <FilterSidebar sections={filterSections} />
+        <Box sx={{ flex: 1, overflow: 'auto' }}>
+          <AlphabeticalList
+            items={filteredIngredients}
+            getItemId={(item) => item.id}
+            getItemName={(item) => capitalizeWords(item.name)}
+            getItemLink={(item) => `/ingredients/${item.id}`}
+          />
         </Box>
       </Box>
     </Box>

@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Cocktail } from '../services/cocktail.service';
-import { Alert, Snackbar, Box } from '@mui/material';
-import { CocktailCard } from './CocktailCard';
+import { Box } from '@mui/material';
 import { getApiUrl } from '../config/api.config';
 import { BaseSpirit, getBaseSpirit } from '../utils/spiritUtils';
-import { CocktailFilters } from './CocktailFilters';
-import { CocktailEditDialog } from './CocktailEditDialog';
 import { GlassType } from '../types/glass.types';
+import { FilterSidebar } from './FilterSidebar';
+import { AlphabeticalList } from './AlphabeticalList';
+
+// Helper function to capitalize words
+const capitalizeWords = (str: string): string => {
+  if (!str) return '';
+  return str.split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
 
 export const CocktailsPage: React.FC = () => {
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
@@ -16,12 +23,6 @@ export const CocktailsPage: React.FC = () => {
   const [selectedGlassTypes, setSelectedGlassTypes] = useState<string[]>([]);
   const [glassTypeMap, setGlassTypeMap] = useState<Record<number, string>>({});
   const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);
-  const [editingCocktail, setEditingCocktail] = useState<Cocktail | null>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
 
   useEffect(() => {
     fetchCocktails();
@@ -81,19 +82,6 @@ export const CocktailsPage: React.FC = () => {
     });
   };
 
-  const handleEditCocktail = (cocktail: Cocktail) => {
-    setEditingCocktail(cocktail);
-  };
-
-  const handleCocktailUpdated = (updatedCocktail: Cocktail) => {
-    setCocktails(prev => prev.map(c => c.id === updatedCocktail.id ? updatedCocktail : c));
-    setSnackbar({
-      open: true,
-      message: 'Cocktail updated successfully',
-      severity: 'success',
-    });
-  };
-
   const filteredCocktails = cocktails.filter(cocktail => {
     const spirit = getBaseSpirit(cocktail.ingredients.map(i => ({ ingredient: { name: i.ingredient.name } })));
     const matchesSpirit = selectedSpirits.length === 0 || selectedSpirits.includes(spirit);
@@ -102,18 +90,26 @@ export const CocktailsPage: React.FC = () => {
     return matchesSpirit && matchesGlass;
   });
 
-  // Group cocktails by first letter
-  const cocktailsByLetter = filteredCocktails.reduce((acc, cocktail) => {
-    const firstLetter = cocktail.name.charAt(0).toUpperCase();
-    if (!acc[firstLetter]) {
-      acc[firstLetter] = [];
+  const filterSections = [
+    {
+      title: 'Spirit',
+      options: (['Gin', 'Whiskey', 'Vodka', 'Rum', 'Tequila', 'Brandy', 'Other'] as BaseSpirit[]).map(spirit => ({
+        id: spirit,
+        label: spirit,
+        checked: selectedSpirits.includes(spirit),
+        onChange: () => handleSpiritChange(spirit)
+      }))
+    },
+    {
+      title: 'Glass Type',
+      options: Object.values(glassTypeMap).map(glassName => ({
+        id: glassName,
+        label: glassName,
+        checked: selectedGlassTypes.includes(glassName),
+        onChange: () => handleGlassTypeChange(glassName)
+      }))
     }
-    acc[firstLetter].push(cocktail);
-    return acc;
-  }, {} as Record<string, Cocktail[]>);
-
-  // Sort letters alphabetically
-  const sortedLetters = Object.keys(cocktailsByLetter).sort();
+  ];
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -124,96 +120,30 @@ export const CocktailsPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <Box sx={{ display: 'flex', gap: 4, flex: 1, minHeight: 0, overflow: 'hidden' }}>
-        <CocktailFilters
-          selectedSpirits={selectedSpirits}
-          selectedGlassTypes={selectedGlassTypes}
-          glassTypeMap={glassTypeMap}
-          onSpiritChange={handleSpiritChange}
-          onGlassTypeChange={handleGlassTypeChange}
-        />
-
-        <Box sx={{ 
-          flex: 1,
-          height: '100%',
-          pr: 2,
-          overflowY: 'auto',
-          position: 'relative'
-        }}>
-          {sortedLetters.map((letter) => {
-            const letterCocktails = cocktailsByLetter[letter] || [];
-            if (letterCocktails.length === 0) return null;
-
-            return (
-              <Box key={letter} sx={{ mb: 6 }}>
-                <h2 
-                  style={{
-                    fontFamily: 'Italianno, cursive',
-                    fontSize: '2.5rem',
-                    color: '#1a1a1a',
-                    marginBottom: '1.5rem',
-                    marginBlockStart: 0,
-                    marginBlockEnd: 0,
-                    marginInlineStart: 0,
-                    marginInlineEnd: 0,
-                  }}
-                >
-                  {letter}
-                </h2>
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexWrap: 'wrap', 
-                  gap: 4,
-                  justifyContent: 'flex-start'
-                }}>
-                  {letterCocktails.map((cocktail) => (
-                    <Box 
-                      key={cocktail.id} 
-                      sx={{ 
-                        width: 'calc(25% - 12px)',
-                        minWidth: '250px',
-                        flexShrink: 0,
-                        display: 'flex',
-                        justifyContent: 'flex-start'
-                      }}
-                    >
-                      <CocktailCard 
-                        cocktail={cocktail} 
-                        onEdit={handleEditCocktail}
-                      />
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-            );
-          })}
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100%',
+      overflow: 'hidden'
+    }}>
+      <Box sx={{ 
+        display: 'flex', 
+        gap: 4, 
+        flex: 1, 
+        minHeight: 0,
+        overflow: 'hidden',
+        position: 'relative'
+      }}>
+        <FilterSidebar sections={filterSections} />
+        <Box sx={{ flex: 1, overflow: 'auto' }}>
+          <AlphabeticalList
+            items={filteredCocktails}
+            getItemId={(item) => item.id}
+            getItemName={(item) => capitalizeWords(item.name)}
+            getItemLink={(item) => `/cocktails/${item.id}`}
+          />
         </Box>
       </Box>
-
-      {editingCocktail && (
-        <CocktailEditDialog
-          open={!!editingCocktail}
-          onClose={() => setEditingCocktail(null)}
-          cocktail={editingCocktail}
-          glassTypes={glassTypes}
-          onCocktailUpdated={handleCocktailUpdated}
-        />
-      )}
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }; 

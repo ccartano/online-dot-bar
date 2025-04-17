@@ -1,0 +1,141 @@
+import React from 'react';
+import { Box } from '@mui/material';
+import { Link } from 'react-router-dom';
+
+interface AlphabeticalListProps<T> {
+  items: T[];
+  getItemId: (item: T) => number;
+  getItemName: (item: T) => string;
+  getItemLink: (item: T) => string;
+  renderItem?: (item: T) => React.ReactNode;
+}
+
+export const AlphabeticalList = <T,>({ 
+  items, 
+  getItemId, 
+  getItemName, 
+  getItemLink,
+  renderItem 
+}: AlphabeticalListProps<T>) => {
+  // Group items by first letter
+  const itemsByLetter = items.reduce((acc, item) => {
+    const firstLetter = getItemName(item).charAt(0).toUpperCase();
+    if (!acc[firstLetter]) {
+      acc[firstLetter] = [];
+    }
+    acc[firstLetter].push(item);
+    return acc;
+  }, {} as Record<string, T[]>);
+
+  // Sort letters alphabetically
+  const sortedLetters = Object.keys(itemsByLetter).sort();
+
+  return (
+    <Box sx={{ 
+      flex: 1,
+      height: '100%',
+      pr: 2,
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      {sortedLetters.map((letter) => {
+        const letterItems = itemsByLetter[letter] || [];
+        if (letterItems.length === 0) return null;
+
+        return (
+          <Box key={letter} sx={{ mb: 6 }}>
+            <h2 
+              style={{
+                fontFamily: 'Italianno, cursive',
+                fontSize: '2.5rem',
+                color: '#1a1a1a',
+                marginBottom: '1.5rem',
+                marginBlockStart: 0,
+                marginBlockEnd: 0,
+                marginInlineStart: 0,
+                marginInlineEnd: 0,
+              }}
+            >
+              {letter}
+            </h2>
+            <Box sx={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: 4,
+              justifyContent: 'flex-start'
+            }}>
+              {letterItems.map((item) => (
+                <Box 
+                  key={getItemId(item)} 
+                  sx={{ 
+                    width: 'calc(25% - 12px)',
+                    minWidth: '250px',
+                    flexShrink: 0,
+                    display: 'flex',
+                    justifyContent: 'flex-start'
+                  }}
+                >
+                  {renderItem ? (
+                    renderItem(item)
+                  ) : (
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        '&:hover': {
+                          color: '#9CB4A3',
+                          '&::after': {
+                            transform: 'scaleX(1)'
+                          }
+                        },
+                        transition: 'color 0.2s ease',
+                        color: '#1A1A1A',
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: '-2px',
+                          left: '16px',
+                          right: '16px',
+                          height: '2px',
+                          backgroundColor: '#9CB4A3',
+                          transform: 'scaleX(0)',
+                          transition: 'transform 0.2s ease',
+                          transformOrigin: 'center'
+                        }
+                      }}
+                    >
+                      <Link 
+                        to={getItemLink(item)} 
+                        style={{ 
+                          textDecoration: 'none',
+                          display: 'block',
+                          padding: '16px',
+                          width: '100%',
+                          color: 'inherit'
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+                          <h3
+                            style={{
+                              fontFamily: "'Old Standard TT', serif",
+                              color: 'inherit',
+                              margin: 0,
+                              padding: 0,
+                              textAlign: 'left'
+                            }}
+                          >
+                            {getItemName(item)}
+                          </h3>
+                        </Box>
+                      </Link>
+                    </Box>
+                  )}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}; 
