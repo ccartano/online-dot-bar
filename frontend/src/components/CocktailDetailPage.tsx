@@ -89,57 +89,61 @@ export const CocktailDetailPage: React.FC = () => {
   const { cocktail, potentialAkas, potentialVariations } = cocktailData;
 
   const formatAmountAndUnit = (ingredient: Cocktail['ingredients'][0]) => {
-    if (ingredient.unit === MeasurementUnit.OTHER || !ingredient.amount) {
-      return '\u00A0'; // non-breaking space
+    // If there's no amount or unit is OTHER (case-insensitive), return empty string
+    if (!ingredient.amount || (ingredient.unit && ingredient.unit.toLowerCase() === MeasurementUnit.OTHER.toLowerCase())) {
+      return '';
     }
     
-    let amount = ingredient.amount;
+    const amount = ingredient.amount as number;
     let unit = ingredient.unit || MeasurementUnit.OZ; // Provide default value
     
     // Convert ml to oz if needed (case-insensitive comparison)
     if (unit.toLowerCase() === MeasurementUnit.ML.toLowerCase()) {
       // 1 ml = 0.033814 oz (more precise conversion)
-      amount = amount * 0.033814;
+      const convertedAmount = amount * 0.033814;
       unit = MeasurementUnit.OZ;
-    }
-    
-    // Map decimal parts to fraction characters
-    const fractionMap: Record<number, string> = {
-      0.25: '¼',
-      0.33: '⅓',
-      0.5: '½',
-      0.67: '⅔',
-      0.75: '¾'
-    };
+      
+      // Map decimal parts to fraction characters
+      const fractionMap: Record<number, string> = {
+        0.25: '¼',
+        0.33: '⅓',
+        0.5: '½',
+        0.67: '⅔',
+        0.75: '¾'
+      };
 
-    // Get the whole number and decimal part
-    const wholeNumber = Math.floor(amount);
-    const decimalPart = amount - wholeNumber;
+      // Get the whole number and decimal part
+      const wholeNumber = Math.floor(convertedAmount);
+      const decimalPart = convertedAmount - wholeNumber;
 
-    // Find the closest fraction for the decimal part
-    let closestFraction = '';
-    let minDiff = Infinity;
-    
-    for (const [decimal, fraction] of Object.entries(fractionMap)) {
-      const diff = Math.abs(decimalPart - parseFloat(decimal));
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestFraction = fraction;
+      // Find the closest fraction for the decimal part
+      let closestFraction = '';
+      let minDiff = Infinity;
+      
+      for (const [decimal, fraction] of Object.entries(fractionMap)) {
+        const diff = Math.abs(decimalPart - parseFloat(decimal));
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestFraction = fraction;
+        }
       }
-    }
 
-    // If the decimal part is close enough to a fraction, use it
-    if (minDiff < 0.05) {
-      return `${wholeNumber ? `${wholeNumber}${closestFraction}` : closestFraction} ${unit.toLowerCase()}`;
-    }
+      // If the decimal part is close enough to a fraction, use it
+      if (minDiff < 0.05) {
+        return `${wholeNumber ? `${wholeNumber}${closestFraction}` : closestFraction} ${unit.toLowerCase()}`;
+      }
 
-    // Otherwise, round to 1 decimal place
-    return `${Math.round(amount * 10) / 10} ${unit.toLowerCase()}`;
+      // Otherwise, round to 1 decimal place
+      return `${Math.round(convertedAmount * 10) / 10} ${unit.toLowerCase()}`;
+    }
+    
+    // For non-ml units, use the original amount
+    return `${amount} ${unit.toLowerCase()}`;
   };
 
   const formatIngredientName = (ingredient: Cocktail['ingredients'][0]) => {
-    if (!ingredient.amount && ingredient.unit && ingredient.unit !== MeasurementUnit.OTHER) {
-      return `${titleize(ingredient.unit)} ${titleize(ingredient.ingredient.name)}`;
+    if (!ingredient.amount && ingredient.unit && ingredient.unit.toLowerCase() !== MeasurementUnit.OTHER.toLowerCase()) {
+      return `${titleize(ingredient.unit)} of ${titleize(ingredient.ingredient.name)}`;
     }
     return titleize(ingredient.ingredient.name);
   };
@@ -198,7 +202,10 @@ export const CocktailDetailPage: React.FC = () => {
                   fontFamily: 'Corinthia, cursive',
                   fontSize: '2.5rem',
                   lineHeight: 1,
-                  minWidth: 'fit-content'
+                  minWidth: 'fit-content',
+                  minHeight: '2.5rem', // Add minimum height to match font size
+                  display: 'flex',
+                  alignItems: 'center'
                 }}>
                   {formatAmountAndUnit(ingredient)}
                 </Typography>
