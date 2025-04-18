@@ -139,7 +139,11 @@ export const CocktailDetailPage: React.FC = () => {
     
     // For non-ml units, use the original amount
     const amountNum = typeof amount === 'number' ? amount : parseFloat(amount as string);
-    const formattedAmount = Number.isInteger(amountNum) ? amountNum.toString() : amountNum.toFixed(1).replace(/\.0$/, '');
+    const formattedAmount = Number.isInteger(amountNum) 
+      ? amountNum.toString() 
+      : amountNum % 0.5 === 0 
+        ? amountNum.toString() 
+        : Math.round(amountNum).toString();
     const formattedUnit = unit.toLowerCase();
     
     // Handle pluralization for dash
