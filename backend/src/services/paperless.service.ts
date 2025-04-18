@@ -10,6 +10,9 @@ interface PaperlessTag {
 }
 
 interface PaperlessApiResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
   results: Array<{
     id: number;
     title: string;
@@ -99,16 +102,19 @@ export class PaperlessService implements OnModuleInit {
     }
   }
 
-  async getAllDocuments(): Promise<PaperlessDocument[]> {
+  async getAllDocuments(page: number = 1): Promise<{ documents: PaperlessDocument[]; hasMore: boolean }> {
     try {
       const response = await axios.get<PaperlessApiResponse>(
         `${this.apiUrl}/documents/`,
         {
           headers: this.getAuthHeaders(),
+          params: {
+            page: page,
+          },
         },
       );
 
-      return response.data.results.map((doc) => ({
+      const documents = response.data.results.map((doc) => ({
         id: doc.id,
         title: doc.title,
         content: doc.content,
@@ -116,6 +122,11 @@ export class PaperlessService implements OnModuleInit {
         modified: doc.modified,
         tags: this.getTagNames(doc.tags || []),
       }));
+
+      return {
+        documents,
+        hasMore: response.data.next !== null,
+      };
     } catch (error) {
       const axiosError = error as AxiosError;
       this.logger.error('Error fetching documents:', axiosError.message);

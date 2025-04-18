@@ -99,7 +99,7 @@ export const CocktailDetailPage: React.FC = () => {
     
     // Convert ml to oz if needed (case-insensitive comparison)
     if (unit.toLowerCase() === MeasurementUnit.ML.toLowerCase()) {
-      // 1 ml = 0.033814 oz (more precise conversion)
+      // 1 ml = 0.033814 oz
       const convertedAmount = amount * 0.033814;
       unit = MeasurementUnit.OZ;
       
@@ -118,23 +118,30 @@ export const CocktailDetailPage: React.FC = () => {
 
       // Find the closest fraction for the decimal part
       let closestFraction = '';
-      let minDiff = Infinity;
       
       for (const [decimal, fraction] of Object.entries(fractionMap)) {
         const diff = Math.abs(decimalPart - parseFloat(decimal));
-        if (diff < minDiff) {
-          minDiff = diff;
+        if (diff < 0.05) {
           closestFraction = fraction;
         }
       }
 
-      // If the decimal part is close enough to a fraction, use it
-      if (minDiff < 0.05) {
+      // If we found a close fraction match, use it
+      if (closestFraction) {
         return `${wholeNumber ? `${wholeNumber}${closestFraction}` : closestFraction} ${unit.toLowerCase()}`;
       }
 
-      // Otherwise, round to 1 decimal place
-      return `${Math.round(convertedAmount * 10) / 10} ${unit.toLowerCase()}`;
+      // If no fraction match, apply rounding rules
+      const roundedAmount = Math.round(convertedAmount * 2) / 2; // This will give us .0 or .5
+      const roundedDecimalPart = roundedAmount % 1;
+      
+      if (roundedDecimalPart > 0.1 && roundedDecimalPart < 0.5) {
+        return `${Math.floor(roundedAmount)} ${unit.toLowerCase()}`;
+      } else if (roundedDecimalPart > 0.5 && roundedDecimalPart < 0.9) {
+        return `${Math.ceil(roundedAmount)} ${unit.toLowerCase()}`;
+      }
+      
+      return `${roundedAmount} ${unit.toLowerCase()}`;
     }
     
     // For non-ml units, use the original amount

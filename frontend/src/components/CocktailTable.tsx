@@ -33,27 +33,18 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
   const [order, setOrder] = useState<Order>('desc');
   const [orderBy, setOrderBy] = useState<keyof Cocktail | string>('createdAt');
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedCocktail, setSelectedCocktail] = useState<Cocktail | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const handleRequestSort = (property: keyof Cocktail) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
-  };
-
-  const handleChangePage = (_event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
   };
 
   const sortedCocktails = React.useMemo(() => {
@@ -78,13 +69,6 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
       return 0;
     });
   }, [cocktails, order, orderBy]);
-
-  const paginatedCocktails = React.useMemo(() => {
-    return sortedCocktails.slice(
-      page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
-    );
-  }, [sortedCocktails, page, rowsPerPage]);
 
   const handleViewThumbnail = async (cocktail: Cocktail) => {
     if (!cocktail.paperlessId) return;
@@ -115,14 +99,26 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
     setExpandedRow(null);
   };
 
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const isPotentialCocktails = cocktails.every(c => c.status === 'pending');
+  const displayCocktails = isPotentialCocktails 
+    ? sortedCocktails 
+    : sortedCocktails.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <>
       <TableContainer
         component={Paper}
         sx={{
           width: '100%',
-          height: 'calc(100vh - 200px)',
-          overflow: 'auto',
           '& .MuiTableCell-root': {
             whiteSpace: 'normal',
             wordBreak: 'break-word',
@@ -143,7 +139,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
             onRequestSort={handleRequestSort}
           />
           <TableBody>
-            {paginatedCocktails.map((cocktail) => (
+            {displayCocktails.map((cocktail) => (
               <CocktailTableRow
                 key={cocktail.id}
                 cocktail={cocktail}
@@ -158,22 +154,17 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
             ))}
           </TableBody>
         </Table>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 50]}
-          component="div"
-          count={cocktails.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          sx={{
-            position: 'sticky',
-            bottom: 0,
-            backgroundColor: 'white',
-            borderTop: '1px solid rgba(224, 224, 224, 1)',
-            zIndex: 1
-          }}
-        />
+        {!isPotentialCocktails && (
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={cocktails.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        )}
       </TableContainer>
 
       <ThumbnailViewDialog

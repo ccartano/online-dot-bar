@@ -8,8 +8,8 @@ export class PaperlessController {
   constructor(private readonly paperlessService: PaperlessService) {}
 
   @Get('documents')
-  async getAllDocuments(): Promise<PaperlessDocument[]> {
-    return this.paperlessService.getAllDocuments();
+  async getAllDocuments(@Query('page') page: number = 1): Promise<{ documents: PaperlessDocument[]; hasMore: boolean }> {
+    return this.paperlessService.getAllDocuments(page);
   }
 
   @Get(':id')

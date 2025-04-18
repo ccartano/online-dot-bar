@@ -98,42 +98,44 @@ export const CocktailsPage: React.FC = () => {
     }
   ];
 
-  const filteredCocktails = cocktails.filter(cocktail => {
-    // Apply search filter
-    if (searchQuery && !cocktail.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-
-    // Apply glass type filter
-    if (selectedGlassTypes.length > 0) {
-      const glassName = cocktail.glassTypeId ? glassTypeMap[cocktail.glassTypeId] : 'Unknown';
-      if (!selectedGlassTypes.includes(glassName)) {
+  const filteredCocktails = cocktails
+    .filter(cocktail => {
+      // Apply search filter
+      if (searchQuery && !cocktail.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
-    }
 
-    // Apply spirit filter
-    if (selectedSpirits.length > 0) {
-      const cocktailSpirits = cocktail.ingredients
-        .filter(i => i.ingredient.type === 'SPIRIT')
-        .map(i => {
-          const name = i.ingredient.name.toLowerCase();
-          if (name.includes('gin')) return 'Gin';
-          if (name.includes('whiskey') || name.includes('whisky') || name.includes('bourbon')) return 'Whiskey';
-          if (name.includes('vodka')) return 'Vodka';
-          if (name.includes('rum')) return 'Rum';
-          if (name.includes('tequila') || name.includes('mezcal')) return 'Tequila';
-          if (name.includes('brandy') || name.includes('cognac')) return 'Brandy';
-          return 'Other';
-        });
-
-      if (!selectedSpirits.some(spirit => cocktailSpirits.includes(spirit))) {
-        return false;
+      // Apply glass type filter
+      if (selectedGlassTypes.length > 0) {
+        const glassName = cocktail.glassTypeId ? glassTypeMap[cocktail.glassTypeId] : 'Unknown';
+        if (!selectedGlassTypes.includes(glassName)) {
+          return false;
+        }
       }
-    }
 
-    return true;
-  });
+      // Apply spirit filter
+      if (selectedSpirits.length > 0) {
+        const cocktailSpirits = cocktail.ingredients
+          .filter(i => i.ingredient.type === 'SPIRIT')
+          .map(i => {
+            const name = i.ingredient.name.toLowerCase();
+            if (name.includes('gin')) return 'Gin';
+            if (name.includes('whiskey') || name.includes('whisky') || name.includes('bourbon')) return 'Whiskey';
+            if (name.includes('vodka')) return 'Vodka';
+            if (name.includes('rum')) return 'Rum';
+            if (name.includes('tequila') || name.includes('mezcal')) return 'Tequila';
+            if (name.includes('brandy') || name.includes('cognac')) return 'Brandy';
+            return 'Other';
+          });
+
+        if (!selectedSpirits.some(spirit => cocktailSpirits.includes(spirit))) {
+          return false;
+        }
+      }
+
+      return true;
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <Box sx={{ 

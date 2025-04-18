@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CocktailTable } from './CocktailTable';
 import { PaperlessDocument } from '../types/paperless.types';
 import { Cocktail } from '../services/cocktail.service';
-import { Alert, Snackbar, FormControlLabel, Switch, Box } from '@mui/material';
+import { Alert, Snackbar, FormControlLabel, Switch, Box, Button } from '@mui/material';
 import { getApiUrl } from '../config/api.config';
 import { CocktailParserService } from '../services/cocktail-parser.service';
 import { GlassType } from '../types/glass.types';
@@ -18,21 +18,28 @@ export const PotentialCocktailsPage: React.FC = () => {
     message: '',
     severity: 'success',
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const fetchCocktailsAndGlassTypes = async () => {
-    setLoading(true);
+  const fetchCocktailsAndGlassTypes = async (page: number = 1) => {
+    if (page === 1) {
+      setLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
     try {
-      const response = await fetch(getApiUrl('/paperless/documents'));
+      const response = await fetch(getApiUrl(`/paperless/documents?page=${page}`));
       if (!response.ok) {
         throw new Error('Failed to fetch documents');
       }
-      const documents: PaperlessDocument[] = await response.json();
+      const { documents, hasMore: morePages } = await response.json();
       
       // Parse cocktails using the appropriate service based on document tags
       const parsedCocktails = CocktailParserService.parseCocktailsFromDocuments(documents)
         .map(cocktail => ({
           ...cocktail,
-          created: documents.find(doc => doc.id === cocktail.paperlessId)?.created
+          created: documents.find((doc: PaperlessDocument) => doc.id === cocktail.paperlessId)?.created
         }));
       
       // Check status for each cocktail
@@ -51,13 +58,12 @@ export const PotentialCocktailsPage: React.FC = () => {
               const data = await statusResponse.json();
               return {
                 ...cocktail,
-                status: data.status || 'active' // Assume active if found
+                status: data.status || 'active'
               };
             } else {
-              // Handle cases where response is OK but not JSON (e.g., empty body for 200 OK)
               return {
                 ...cocktail,
-                status: 'pending' as const // Or determine status based on logic
+                status: 'pending' as const
               };
             }
           } catch (err) {
@@ -70,7 +76,9 @@ export const PotentialCocktailsPage: React.FC = () => {
         })
       );
       
-      setCocktails(cocktailsWithStatus);
+      setCocktails(prev => page === 1 ? cocktailsWithStatus : [...prev, ...cocktailsWithStatus]);
+      setHasMore(morePages);
+      setCurrentPage(page);
 
       // Fetch Glass Types
       const glassResponse = await fetch(getApiUrl('/glass-types'));
@@ -82,11 +90,18 @@ export const PotentialCocktailsPage: React.FC = () => {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setLoading(false);
+      setIsLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!isLoadingMore && hasMore) {
+      fetchCocktailsAndGlassTypes(currentPage + 1);
     }
   };
 
   useEffect(() => {
-    fetchCocktailsAndGlassTypes();
+    fetchCocktailsAndGlassTypes(1);
   }, []);
 
   const handleCocktailUpdate = async (updatedCocktail: Cocktail) => {
@@ -176,9 +191,10 @@ export const PotentialCocktailsPage: React.FC = () => {
     }
   };
 
-  const filteredCocktails = showOnlyPending
+  const filteredCocktails = (showOnlyPending
     ? cocktails.filter(cocktail => cocktail.status === 'pending')
-    : cocktails;
+    : cocktails
+  ).sort((a, b) => a.name.localeCompare(b.name));
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -190,24 +206,37 @@ export const PotentialCocktailsPage: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ mb: 2 }}>
         <FormControlLabel
           control={
             <Switch
               checked={showOnlyPending}
               onChange={(e) => setShowOnlyPending(e.target.checked)}
-              color="primary"
             />
           }
-          label="Show only pending"
+          label="Show only pending cocktails"
         />
       </Box>
-      <CocktailTable 
-        cocktails={filteredCocktails} 
-        onCocktailUpdate={handleCocktailUpdate} 
-        glassTypes={glassTypes}
-        showDelete={false}
-      />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <CocktailTable 
+          cocktails={filteredCocktails} 
+          onCocktailUpdate={handleCocktailUpdate} 
+          glassTypes={glassTypes}
+          showDelete={false}
+        />
+        {hasMore && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Button
+              variant="contained"
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              sx={{ minWidth: 200 }}
+            >
+              {isLoadingMore ? 'Loading...' : 'Load More'}
+            </Button>
+          </Box>
+        )}
+      </Box>
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

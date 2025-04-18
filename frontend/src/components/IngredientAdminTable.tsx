@@ -94,7 +94,7 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof Ingredient | string>('name');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
   const [editingIngredientId, setEditingIngredientId] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -189,8 +189,8 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
   };
 
   return (
-    <Box sx={{ width: '100%', height: 'calc(100vh - 150px)', display: 'flex', flexDirection: 'column' }}>
-      <TableContainer component={Paper} sx={{ flexGrow: 1, overflow: 'auto' }}>
+    <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+      <TableContainer component={Paper} sx={{ flexGrow: 1 }}>
         <Table stickyHeader aria-label="ingredients admin table">
           <IngredientAdminTableHeader
             order={order}
