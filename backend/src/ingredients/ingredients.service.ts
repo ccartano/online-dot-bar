@@ -39,6 +39,14 @@ export class IngredientsService {
   }
 
   async create(ingredient: Partial<Ingredient>): Promise<Ingredient> {
+    // Generate slug from name if not provided
+    if (!ingredient.slug) {
+      ingredient.slug = ingredient.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+    }
+
     const newIngredient = this.ingredientsRepository.create(ingredient);
     return this.ingredientsRepository.save(newIngredient);
   }

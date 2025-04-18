@@ -138,7 +138,15 @@ export const CocktailDetailPage: React.FC = () => {
     }
     
     // For non-ml units, use the original amount
-    return `${amount} ${unit.toLowerCase()}`;
+    const formattedAmount = Number.isInteger(amount) ? amount.toString() : amount.toFixed(1).replace(/\.0$/, '');
+    const formattedUnit = unit.toLowerCase();
+    
+    // Handle pluralization for dash
+    if (formattedUnit === 'dash' && amount > 1) {
+      return `${formattedAmount} dashes`;
+    }
+    
+    return `${formattedAmount} ${formattedUnit}`;
   };
 
   const formatIngredientName = (ingredient: Cocktail['ingredients'][0]) => {

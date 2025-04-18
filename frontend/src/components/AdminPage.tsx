@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Box, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tabs, Tab, CircularProgress } from '@mui/material';
 import { AdminLogin } from './AdminLogin';
 import { AdminService } from '../services/admin.service';
@@ -57,6 +57,7 @@ export const AdminPage: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [cocktailToDelete, setCocktailToDelete] = useState<number | null>(null);
   const [view, setView] = useState<'current' | 'potential' | 'ingredients'>('current');
+  const updateInProgress = useRef(false);
 
   const fetchCocktailsAndGlassTypes = useCallback(async () => {
     setLoading(true);
@@ -99,6 +100,11 @@ export const AdminPage: React.FC = () => {
   };
 
   const handleCocktailUpdate = async (updatedCocktail: Cocktail) => {
+    if (updateInProgress.current) {
+      return;
+    }
+    updateInProgress.current = true;
+
     try {
       const adminToken = AdminService.getAdminToken();
       if (!adminToken) {
@@ -171,6 +177,8 @@ export const AdminPage: React.FC = () => {
         message: error instanceof Error ? error.message : 'Failed to update cocktail',
         severity: 'error',
       });
+    } finally {
+      updateInProgress.current = false;
     }
   };
 

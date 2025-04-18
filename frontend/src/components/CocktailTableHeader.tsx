@@ -22,7 +22,7 @@ const headCells: HeadCell[] = [
   { id: 'instructions', label: 'Instructions', sortable: false, width: '30%' },
   { id: 'createdAt', label: 'Added', sortable: true, width: '10%' },
   { id: 'status', label: 'Status', sortable: true, width: '10%' },
-  { id: 'actions', label: '', sortable: true, width: '10%' },
+  { id: 'actions', label: '', sortable: false, width: '10%' },
 ];
 
 interface CocktailTableHeaderProps {
