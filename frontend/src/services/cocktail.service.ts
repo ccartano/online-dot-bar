@@ -17,40 +17,43 @@ export enum MeasurementUnit {
 }
 
 export interface CocktailIngredient {
-  amount?: number;
+  id?: number;
+  amount?: number | null;
   unit?: MeasurementUnit;
-  notes?: string;
+  notes?: string | null;
   order: number;
+  createdAt?: string;
+  updatedAt?: string;
   ingredient: {
     id?: number;
     name: string;
-    description?: string;
+    description?: string | null;
     type?: string;
-    imageUrl?: string;
+    imageUrl?: string | null;
   };
 }
 
 export interface ParsedCocktail {
+  id: number;
   name: string;
-  ingredients: CocktailIngredient[];
+  description: string | null;
   instructions: string;
-  sourceDocumentId: number;
-  paperlessId?: number;
+  imageUrl: string | null;
+  paperlessId: number | null;
+  source: string | null;
+  glassTypeId: number | null;
+  categoryId: number | null;
+  createdAt?: string;
   created?: string;
-  imageUrl?: string;
-  glassType?: {
-    id: number;
-    name: string;
-    icon?: string;
-  };
-  glassTypeId?: number;
+  updatedAt: string;
+  ingredients: CocktailIngredient[];
+  akaSignature?: string;
+  variationSignature?: string;
   status: 'active' | 'pending';
   tags?: string[];
 }
 
-export interface Cocktail extends ParsedCocktail {
-  id: number;
-}
+export type Cocktail = ParsedCocktail;
 
 export class CocktailService {
   // Core service functionality can be added here if needed

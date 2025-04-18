@@ -87,13 +87,32 @@ export class AmericanBartendersHandbookService {
     }
 
     const name = lines[0];
-    const instructions = lines[lines.length - 1];
+    let instructions = '';
     const ingredients: CocktailIngredient[] = [];
 
-    // Parse ingredients according to American Bartender's Handbook format
-    for (let i = 1; i < lines.length - 1; i++) {
+    // Parse ingredients and instructions according to American Bartender's Handbook format
+    for (let i = 1; i < lines.length; i++) {
       const line = lines[i];
       if (!line) continue;
+
+      // Check if the line contains instruction-like content
+      if (line.toLowerCase().includes('pour') || 
+          line.toLowerCase().includes('add') || 
+          line.toLowerCase().includes('stir') || 
+          line.toLowerCase().includes('strain') ||
+          line.toLowerCase().includes('shake') ||
+          line.toLowerCase().includes('into') ||
+          line.toLowerCase().includes('fill') ||
+          line.toLowerCase().includes('serve') ||
+          line.toLowerCase().includes('squeeze')) {
+        // Add this line to the instructions with proper spacing
+        if (instructions) {
+          instructions += ' ' + line;
+        } else {
+          instructions = line;
+        }
+        continue;
+      }
 
       // Handle asterisk case by removing it before parsing
       const cleanLine = line.replace(/^\*\s*/, '');
@@ -128,10 +147,16 @@ export class AmericanBartendersHandbookService {
       name: this.normalizeString(name),
       ingredients,
       instructions: this.normalizeString(instructions),
-      sourceDocumentId: doc.id,
       paperlessId: doc.id,
       status: 'pending',
-      tags: ['american-bartenders-handbook']
+      tags: ['american-bartenders-handbook'],
+      description: '',
+      imageUrl: '',
+      source: 'American Bartender\'s Handbook',
+      glassTypeId: null,
+      categoryId: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
   }
 

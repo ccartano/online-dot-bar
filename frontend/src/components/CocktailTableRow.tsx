@@ -66,7 +66,7 @@ export const CocktailTableRow: React.FC<CocktailTableRowProps> = ({
         </TableCell>
         <TableCell>
           <Typography variant="body2" color="text.secondary">
-            {cocktail.created ? new Date(cocktail.created).toLocaleDateString() : 'N/A'}
+            {cocktail.createdAt || cocktail.created ? new Date(cocktail.createdAt || cocktail.created).toLocaleString() : 'N/A'}
           </Typography>
         </TableCell>
         <TableCell>

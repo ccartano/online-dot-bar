@@ -31,7 +31,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
   showDelete = true
 }) => {
   const [order, setOrder] = useState<Order>('desc');
-  const [orderBy, setOrderBy] = useState<keyof Cocktail | string>('created');
+  const [orderBy, setOrderBy] = useState<keyof Cocktail | string>('createdAt');
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -68,9 +68,9 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
           ? a.status.localeCompare(b.status)
           : b.status.localeCompare(a.status);
       }
-      if (orderBy === 'created') {
-        const dateA = a.created ? new Date(a.created).getTime() : 0;
-        const dateB = b.created ? new Date(b.created).getTime() : 0;
+      if (orderBy === 'createdAt') {
+        const dateA = (a.createdAt || a.created || '') ? new Date(a.createdAt || a.created || '').getTime() : 0;
+        const dateB = (b.createdAt || b.created || '') ? new Date(b.createdAt || b.created || '').getTime() : 0;
         return order === 'asc' ? dateA - dateB : dateB - dateA;
       }
       return 0;
