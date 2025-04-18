@@ -137,7 +137,10 @@ export class AmericanBartendersHandbookService {
           unit,
           ingredient: {
             id: -1, // Temporary ID that will be replaced when saving to the backend
-            name: ingredientName
+            name: ingredientName,
+            slug: this.normalizeString(ingredientName)
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/-+$/, '') // Remove trailing dashes
           }
         });
       }

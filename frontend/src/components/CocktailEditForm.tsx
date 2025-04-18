@@ -40,8 +40,16 @@ interface NewIngredientState {
   notes?: string;
   ingredient: {
     name: string;
+    slug: string;
   };
 }
+
+const generateSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
 
 export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
   initialCocktail,
@@ -54,7 +62,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
   const [newIngredient, setNewIngredient] = useState<NewIngredientState>({
     order: 0,
     ingredient: { 
-      name: '' 
+      name: '',
+      slug: ''
     },
   });
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -80,11 +89,13 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
       const currentIngredientItem = newIngredients[index];
 
       if (field === 'ingredient.name') {
+        const newName = value as string;
         newIngredients[index] = {
           ...currentIngredientItem,
           ingredient: {
             ...currentIngredientItem.ingredient,
-            name: value as string
+            name: newName,
+            slug: generateSlug(newName)
           }
         };
       } else if (field === 'amount') {
@@ -139,7 +150,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
         notes: newIngredient.notes,
         order: editingCocktail.ingredients.length + 1,
         ingredient: {
-          name: newIngredient.ingredient.name.trim()
+          name: newIngredient.ingredient.name.trim(),
+          slug: generateSlug(newIngredient.ingredient.name.trim())
         },
       };
       setEditingCocktail(prev => ({
@@ -149,7 +161,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
       setNewIngredient({ 
         order: 0, 
         ingredient: { 
-          name: '' 
+          name: '',
+          slug: ''
         } 
       });
     }
