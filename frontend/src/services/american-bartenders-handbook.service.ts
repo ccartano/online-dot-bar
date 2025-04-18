@@ -136,6 +136,7 @@ export class AmericanBartendersHandbookService {
           amount: value,
           unit,
           ingredient: {
+            id: -1, // Temporary ID that will be replaced when saving to the backend
             name: ingredientName
           }
         });
@@ -145,10 +146,13 @@ export class AmericanBartendersHandbookService {
     return {
       id: doc.id,
       name: this.normalizeString(name),
+      slug: this.normalizeString(name)
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+$/, ''), // Remove trailing dashes
       ingredients,
       instructions: this.normalizeString(instructions),
       paperlessId: doc.id,
-      status: 'pending',
+      status: 'pending' as const,
       tags: ['american-bartenders-handbook'],
       description: '',
       imageUrl: '',

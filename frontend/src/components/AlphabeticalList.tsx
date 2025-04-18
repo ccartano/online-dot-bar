@@ -29,7 +29,7 @@ const StyledLink = styled(Box)({
 
 interface AlphabeticalListProps<T> {
   items: T[];
-  getItemId: (item: T) => number;
+  getItemId: (item: T) => number | string;
   getItemName: (item: T) => string;
   getItemLink: (item: T) => string;
   renderItem?: (item: T) => React.ReactNode;

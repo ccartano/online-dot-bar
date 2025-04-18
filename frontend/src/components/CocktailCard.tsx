@@ -55,7 +55,7 @@ export const CocktailCard: React.FC<CocktailCardProps> = ({ cocktail, onEdit }) 
         </IconButton>
       )}
       <Link 
-        to={`/cocktails/${cocktail.id}`} 
+        to={`/cocktails/${cocktail.slug}`} 
         style={{ 
           textDecoration: 'none',
           display: 'block',

@@ -21,6 +21,9 @@ export class Cocktail {
   @Column({ unique: true })
   name: string;
 
+  @Column({ unique: true })
+  slug: string;
+
   // Optional description of the cocktail
   @Column({ nullable: true })
   description: string;

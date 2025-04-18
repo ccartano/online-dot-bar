@@ -1,19 +1,28 @@
 import { getApiUrl } from '../config/api.config';
+import { GlassType } from '../types/glass.types';
+import { Category } from '../types/category.types';
 
 // Match the backend MeasurementUnit enum
 export enum MeasurementUnit {
-  OZ = 'oz',
-  ML = 'ml',
-  DASH = 'dash',
-  PINCH = 'pinch',
-  PIECE = 'piece',
-  SLICE = 'slice',
-  SPRIG = 'sprig',
-  TWIST = 'twist',
-  WEDGE = 'wedge',
-  TSP = 'tsp',
-  TBSP = 'tbsp',
-  OTHER = 'other'
+  OZ = 'OZ',
+  ML = 'ML',
+  DASH = 'DASH',
+  DROP = 'DROP',
+  BARSPOON = 'BARSPOON',
+  PINCH = 'PINCH',
+  TWIST = 'TWIST',
+  WEDGE = 'WEDGE',
+  SLICE = 'SLICE',
+  SPRIG = 'SPRIG',
+  LEAF = 'LEAF',
+  CUBE = 'CUBE',
+  PIECE = 'PIECE',
+  WHOLE = 'WHOLE',
+  PART = 'PART',
+  TO_TASTE = 'TO_TASTE',
+  TSP = 'TSP',
+  TBSP = 'TBSP',
+  OTHER = 'OTHER',
 }
 
 export interface CocktailIngredient {
@@ -33,37 +42,36 @@ export interface CocktailIngredient {
   };
 }
 
-export interface ParsedCocktail {
+export interface Cocktail {
   id: number;
   name: string;
-  description: string | null;
-  instructions: string;
-  imageUrl: string | null;
-  paperlessId: number | null;
-  source: string | null;
-  glassTypeId: number | null;
-  glassType?: { id: number; name: string; icon?: string };
-  categoryId: number | null;
+  slug: string;
+  description?: string | null;
+  instructions?: string;
+  imageUrl?: string | null;
+  paperlessId?: number | null;
+  source?: string | null;
+  glassTypeId?: number | null;
+  glassType?: GlassType;
+  categoryId?: number | null;
+  category?: Category;
   createdAt?: string;
   created?: string;
   updatedAt: string;
   ingredients: CocktailIngredient[];
-  akaSignature?: string;
   variationSignature?: string;
+  akaSignature?: string;
   status: 'active' | 'pending';
   tags?: string[];
 }
-
-export type Cocktail = ParsedCocktail;
 
 export class CocktailService {
   // Core service functionality can be added here if needed
   // For example: API calls, data transformations, etc.
 }
 
-// Fetch all cocktails (existing function, might need updates)
+// Fetch all cocktails
 export const fetchCocktails = async (): Promise<Cocktail[]> => {
-  // ... existing implementation ...
   const response = await fetch(getApiUrl('/cocktails'));
   if (!response.ok) {
     throw new Error('Failed to fetch cocktails');
@@ -71,17 +79,16 @@ export const fetchCocktails = async (): Promise<Cocktail[]> => {
   return response.json();
 };
 
-// Fetch a single cocktail (existing function, might need updates)
-export const fetchCocktailById = async (id: string): Promise<Cocktail> => {
-  // ... existing implementation ...
-  const response = await fetch(getApiUrl(`/cocktails/${id}`));
+// Fetch a single cocktail by slug
+export const fetchCocktailBySlug = async (slug: string): Promise<Cocktail> => {
+  const response = await fetch(getApiUrl(`/cocktails/by-slug/${slug}`));
   if (!response.ok) {
     throw new Error('Failed to fetch cocktail');
   }
   return response.json();
 };
 
-// New function to fetch cocktails by ingredient ID
+// Fetch cocktails by ingredient ID
 export const fetchCocktailsByIngredient = async (
   ingredientId: number, 
   limit: number = 10, 

@@ -33,6 +33,16 @@ interface CocktailEditFormProps {
   onViewThumbnail: (cocktail: Cocktail) => void;
 }
 
+interface NewIngredientState {
+  order: number;
+  amount?: number;
+  unit?: MeasurementUnit;
+  notes?: string;
+  ingredient: {
+    name: string;
+  };
+}
+
 export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
   initialCocktail,
   glassTypes,
@@ -41,9 +51,11 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
   onViewThumbnail,
 }) => {
   const [editingCocktail, setEditingCocktail] = useState<Cocktail>(initialCocktail);
-  const [newIngredient, setNewIngredient] = useState<Partial<CocktailIngredient>>({
+  const [newIngredient, setNewIngredient] = useState<NewIngredientState>({
     order: 0,
-    ingredient: { name: '' },
+    ingredient: { 
+      name: '' 
+    },
   });
   const [saveError, setSaveError] = useState<string | null>(null);
   const [editingIngredientNames, setEditingIngredientNames] = useState<Record<number, string>>({});
@@ -120,7 +132,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
   };
 
   const handleAddIngredient = () => {
-    if (newIngredient.ingredient?.name.trim() && editingCocktail) {
+    if (newIngredient.ingredient.name.trim() && editingCocktail) {
       const ingredientToAdd: CocktailIngredient = {
         amount: newIngredient.amount,
         unit: newIngredient.unit,
@@ -134,7 +146,12 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
         ...prev!,
         ingredients: [...prev!.ingredients, ingredientToAdd],
       }));
-      setNewIngredient({ order: 0, ingredient: { name: '' } });
+      setNewIngredient({ 
+        order: 0, 
+        ingredient: { 
+          name: '' 
+        } 
+      });
     }
   };
 

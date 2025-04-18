@@ -7,7 +7,7 @@ import {
   ListItem,
 } from '@mui/material';
 import { Cocktail, MeasurementUnit } from '../services/cocktail.service';
-import { getApiUrl } from '../config/api.config';
+import { fetchCocktailBySlug } from '../services/cocktail.service';
 
 const titleize = (text: string): string => {
   return text
@@ -36,7 +36,7 @@ interface CocktailDetailData {
 }
 
 export const CocktailDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [cocktailData, setCocktailData] = useState<CocktailDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,12 +44,12 @@ export const CocktailDetailPage: React.FC = () => {
   useEffect(() => {
     const fetchCocktail = async () => {
       try {
-        const response = await fetch(getApiUrl(`/cocktails/${id}`));
-        if (!response.ok) {
-          throw new Error('Failed to fetch cocktail');
-        }
-        const data: CocktailDetailData = await response.json();
-        setCocktailData(data);
+        const cocktail = await fetchCocktailBySlug(slug || '');
+        setCocktailData({
+          cocktail,
+          potentialAkas: [], // These will be populated by the backend
+          potentialVariations: [], // These will be populated by the backend
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
       } finally {
@@ -58,7 +58,7 @@ export const CocktailDetailPage: React.FC = () => {
     };
 
     fetchCocktail();
-  }, [id]);
+  }, [slug]);
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -82,8 +82,8 @@ export const CocktailDetailPage: React.FC = () => {
     let amount = ingredient.amount;
     let unit = ingredient.unit;
     
-    // Convert ml to oz if needed
-    if (unit === MeasurementUnit.ML) {
+    // Convert ml to oz if needed (case-insensitive comparison)
+    if (unit.toLowerCase() === MeasurementUnit.ML.toLowerCase()) {
       // 1 ml = 0.033814 oz (more precise conversion)
       amount = amount * 0.033814;
       unit = MeasurementUnit.OZ;
@@ -116,11 +116,11 @@ export const CocktailDetailPage: React.FC = () => {
 
     // If the decimal part is close enough to a fraction, use it
     if (minDiff < 0.05) {
-      return `${wholeNumber ? `${wholeNumber}${closestFraction}` : closestFraction} ${unit}`;
+      return `${wholeNumber ? `${wholeNumber}${closestFraction}` : closestFraction} ${unit.toLowerCase()}`;
     }
 
     // Otherwise, round to 1 decimal place
-    return `${Math.round(amount * 10) / 10} ${unit}`;
+    return `${Math.round(amount * 10) / 10} ${unit.toLowerCase()}`;
   };
 
   const formatIngredientName = (ingredient: Cocktail['ingredients'][0]) => {
@@ -182,7 +182,7 @@ export const CocktailDetailPage: React.FC = () => {
               }}>
                 <Typography sx={{ 
                   fontFamily: 'Corinthia, cursive',
-                  fontSize: '2rem',
+                  fontSize: '2.5rem',
                   lineHeight: 1,
                   minWidth: 'fit-content'
                 }}>
@@ -247,7 +247,7 @@ export const CocktailDetailPage: React.FC = () => {
               }}>
                 <Typography sx={{ 
                   fontFamily: 'Corinthia, cursive',
-                  fontSize: '2rem',
+                  fontSize: '2.5rem',
                   lineHeight: 1,
                   minWidth: 'fit-content'
                 }}>

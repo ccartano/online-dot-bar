@@ -218,6 +218,22 @@ export class CocktailsService {
     return cocktails;
   }
 
+  async findBySlug(slug: string): Promise<Cocktail> {
+    const cocktail = await this.cocktailsRepository.findOne({
+      where: { slug },
+      relations: [
+        'glassType',
+        'category',
+        'ingredients',
+        'ingredients.ingredient',
+      ],
+    });
+    if (!cocktail) {
+      throw new NotFoundException(`Cocktail with slug ${slug} not found`);
+    }
+    return cocktail;
+  }
+
   async create(createCocktailDto: CreateCocktailDto): Promise<Cocktail> {
     const { ingredients, categoryId, glassTypeId, name, ...cocktailBaseData } =
       createCocktailDto;
@@ -227,6 +243,20 @@ export class CocktailsService {
     await queryRunner.startTransaction();
 
     try {
+      // Generate slug from name
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+$/, ''); // Remove one or more dashes at the end
+
+      // Check if slug already exists
+      const existingCocktail = await this.cocktailsRepository.findOne({
+        where: { slug },
+      });
+      if (existingCocktail) {
+        throw new Error(`A cocktail with the slug '${slug}' already exists`);
+      }
+
       // 1. Calculate signatures for the new cocktail
       const { variationSignature, akaSignature } = this._calculateSignatures(
         ingredients || [],
@@ -282,6 +312,7 @@ export class CocktailsService {
       const newCocktail = this.cocktailsRepository.create({
         ...cocktailBaseData, // Use the rest of the DTO data
         name, // Explicitly include name here
+        slug, // Add the generated slug
         glassTypeId: glassType ? glassType.id : null,
         glassType: glassType || undefined,
         category: category || undefined,
@@ -361,7 +392,8 @@ export class CocktailsService {
     id: number,
     updateCocktailDto: UpdateCocktailDto,
   ): Promise<Cocktail> {
-    const { ingredients, categoryId, ...cocktailBaseData } = updateCocktailDto;
+    const { ingredients, categoryId, name, ...cocktailBaseData } =
+      updateCocktailDto;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -369,19 +401,35 @@ export class CocktailsService {
     try {
       const cocktail = await queryRunner.manager.findOne(Cocktail, {
         where: { id },
-        relations: ['ingredients', 'category', 'glassType'], // Load existing relations
+        relations: ['ingredients', 'category', 'glassType'],
       });
 
       if (!cocktail) {
         throw new NotFoundException(`Cocktail with ID ${id} not found`);
       }
 
+      // If name is being updated, generate new slug
+      let slug = cocktail.slug;
+      if (name && name !== cocktail.name) {
+        slug = name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/-+$/, '');
+
+        // Check if new slug already exists
+        const existingCocktail = await this.cocktailsRepository.findOne({
+          where: { slug },
+        });
+        if (existingCocktail && existingCocktail.id !== id) {
+          throw new Error(`A cocktail with the slug '${slug}' already exists`);
+        }
+      }
+
       // Fetch new category if categoryId is provided
-      let categoryToUpdate: Category | null | undefined = undefined; // undefined means no change
+      let categoryToUpdate: Category | null | undefined = undefined;
       if (categoryId !== undefined) {
-        // Check if categoryId is explicitly in the DTO
         if (categoryId === null) {
-          categoryToUpdate = null; // Set to null
+          categoryToUpdate = null;
         } else {
           categoryToUpdate = await this.categoriesRepository.findOneBy({
             id: categoryId,
@@ -397,7 +445,9 @@ export class CocktailsService {
       // Merge basic data and potentially the new category
       queryRunner.manager.merge(Cocktail, cocktail, {
         ...cocktailBaseData,
-        ...(categoryToUpdate !== undefined && { category: categoryToUpdate }), // Only include category if it was changed
+        ...(name && { name }),
+        ...(slug && { slug }),
+        ...(categoryToUpdate !== undefined && { category: categoryToUpdate }),
       });
 
       await queryRunner.manager.save(Cocktail, cocktail); // Save changes to cocktail entity

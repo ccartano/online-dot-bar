@@ -46,6 +46,11 @@ export class CocktailsController {
     return this.cocktailsService.findOne(id);
   }
 
+  @Get('by-slug/:slug')
+  findBySlug(@Param('slug') slug: string): Promise<Cocktail> {
+    return this.cocktailsService.findBySlug(slug);
+  }
+
   @Post()
   create(@Body() createCocktailDto: CreateCocktailDto): Promise<Cocktail> {
     return this.cocktailsService.create(createCocktailDto);

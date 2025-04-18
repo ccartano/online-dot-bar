@@ -165,9 +165,9 @@ export const CocktailsPage: React.FC = () => {
         }}>
           <AlphabeticalList
             items={filteredCocktails}
-            getItemId={(item) => item.id}
+            getItemId={(item) => item.slug}
             getItemName={(item) => capitalizeWords(item.name)}
-            getItemLink={(item) => `/cocktails/${item.id}`}
+            getItemLink={(item) => `/cocktails/${item.slug}`}
           />
         </Box>
       </Box>

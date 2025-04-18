@@ -217,7 +217,7 @@ export const IngredientDetailPage: React.FC = () => {
               <ListItem
                 key={cocktail.id}
                 component={Link}
-                to={`/cocktails/${cocktail.id}`}
+                to={`/cocktails/${cocktail.slug}`}
                 sx={{
                   mb: 1,
                   borderRadius: 1,
