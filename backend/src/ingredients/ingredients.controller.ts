@@ -24,6 +24,11 @@ export class IngredientsController {
     return this.ingredientsService.findOne(+id);
   }
 
+  @Get('by-slug/:slug')
+  findBySlug(@Param('slug') slug: string): Promise<Ingredient> {
+    return this.ingredientsService.findBySlug(slug);
+  }
+
   @Post()
   create(@Body() ingredient: Partial<Ingredient>): Promise<Ingredient> {
     return this.ingredientsService.create(ingredient);

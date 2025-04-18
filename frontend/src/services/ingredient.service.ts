@@ -19,6 +19,15 @@ export const fetchIngredientById = async (id: number): Promise<Ingredient> => {
   return response.json();
 };
 
+// Fetch a single ingredient by slug
+export const fetchIngredientBySlug = async (slug: string): Promise<Ingredient> => {
+  const response = await fetch(getApiUrl(`/ingredients/by-slug/${slug}`));
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ingredient with slug ${slug}`);
+  }
+  return response.json();
+};
+
 // Update an existing ingredient
 export const updateIngredient = async (id: number, ingredientData: Partial<Omit<Ingredient, 'id'>>): Promise<Ingredient> => {
   const response = await fetch(getApiUrl(`/ingredients/${id}`), {

@@ -30,6 +30,10 @@ export class Ingredient {
   @Column({ unique: true })
   name: string;
 
+  // Slug for URL-friendly ingredient names
+  @Column({ unique: true })
+  slug: string;
+
   // Optional description of the ingredient
   @Column({ nullable: true })
   description: string;

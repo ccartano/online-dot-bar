@@ -97,7 +97,7 @@ export const IngredientsPage: React.FC = () => {
             items={filteredIngredients}
             getItemId={(item) => item.id}
             getItemName={(item) => capitalizeWords(item.name)}
-            getItemLink={(item) => `/ingredients/${item.id}`}
+            getItemLink={(item) => `/ingredients/${item.slug}`}
           />
         </Box>
       </Box>

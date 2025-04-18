@@ -19,7 +19,23 @@ export class IngredientsService {
   }
 
   async findOne(id: number): Promise<Ingredient> {
-    return this.ingredientsRepository.findOne({ where: { id } });
+    const ingredient = await this.ingredientsRepository.findOne({
+      where: { id },
+    });
+    if (!ingredient) {
+      throw new NotFoundException(`Ingredient with ID ${id} not found`);
+    }
+    return ingredient;
+  }
+
+  async findBySlug(slug: string): Promise<Ingredient> {
+    const ingredient = await this.ingredientsRepository.findOne({
+      where: { slug },
+    });
+    if (!ingredient) {
+      throw new NotFoundException(`Ingredient with slug ${slug} not found`);
+    }
+    return ingredient;
   }
 
   async create(ingredient: Partial<Ingredient>): Promise<Ingredient> {

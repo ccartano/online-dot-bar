@@ -36,6 +36,7 @@ export interface CocktailIngredient {
   ingredient: {
     id?: number;
     name: string;
+    slug: string;
     description?: string | null;
     type?: string;
     imageUrl?: string | null;

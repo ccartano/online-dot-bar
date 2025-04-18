@@ -5,6 +5,8 @@ import {
   Typography,
   List,
   ListItem,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import { Cocktail, MeasurementUnit } from '../services/cocktail.service';
 import { fetchCocktailBySlug } from '../services/cocktail.service';
@@ -50,8 +52,8 @@ export const CocktailDetailPage: React.FC = () => {
           potentialAkas: [], // These will be populated by the backend
           potentialVariations: [], // These will be populated by the backend
         });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } catch {
+        setError('Cocktail not found');
       } finally {
         setLoading(false);
       }
@@ -61,15 +63,27 @@ export const CocktailDetailPage: React.FC = () => {
   }, [slug]);
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (error) {
-    return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
+    return (
+      <Box sx={{ p: 3, maxWidth: '600px', margin: 'auto' }}>
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
   }
 
   if (!cocktailData) {
-    return <div className="flex justify-center items-center h-screen">Cocktail not found</div>;
+    return (
+      <Box sx={{ p: 3, maxWidth: '600px', margin: 'auto' }}>
+        <Alert severity="warning">Cocktail not found.</Alert>
+      </Box>
+    );
   }
 
   const { cocktail, potentialAkas, potentialVariations } = cocktailData;
@@ -80,7 +94,7 @@ export const CocktailDetailPage: React.FC = () => {
     }
     
     let amount = ingredient.amount;
-    let unit = ingredient.unit;
+    let unit = ingredient.unit || MeasurementUnit.OZ; // Provide default value
     
     // Convert ml to oz if needed (case-insensitive comparison)
     if (unit.toLowerCase() === MeasurementUnit.ML.toLowerCase()) {
@@ -219,7 +233,7 @@ export const CocktailDetailPage: React.FC = () => {
                 textOverflow: 'ellipsis'
               }}>
                 {ingredient.ingredient.id ? (
-                  <Link to={`/ingredients/${ingredient.ingredient.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <Link to={`/ingredients/${ingredient.ingredient.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                     {formatIngredientName(ingredient)}
                   </Link>
                 ) : (
@@ -247,7 +261,7 @@ export const CocktailDetailPage: React.FC = () => {
               }}>
                 <Typography sx={{ 
                   fontFamily: 'Corinthia, cursive',
-                  fontSize: '2.5rem',
+                  fontSize: '1.75rem',
                   lineHeight: 1,
                   minWidth: 'fit-content'
                 }}>

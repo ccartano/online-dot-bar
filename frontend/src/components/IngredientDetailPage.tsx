@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import { Ingredient } from '../types/ingredient.types';
 import { Cocktail } from '../services/cocktail.service'; // Import Cocktail type
-import { fetchIngredientById } from '../services/ingredient.service';
+import { fetchIngredientBySlug } from '../services/ingredient.service';
 import { fetchCocktailsByIngredient } from '../services/cocktail.service';
 
 const StyledLink = styled(Box)({
@@ -56,7 +56,7 @@ const capitalizeWords = (str: string): string => {
 };
 
 export const IngredientDetailPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [ingredient, setIngredient] = useState<Ingredient | null>(null);
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,37 +64,28 @@ export const IngredientDetailPage: React.FC = () => {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!id) {
-        setError('Ingredient ID is missing');
+      if (!slug) {
+        setError('Ingredient not found');
         setLoading(false);
         return;
       }
       try {
         setLoading(true);
-        const ingredientIdNum = parseInt(id, 10);
-        if (isNaN(ingredientIdNum)) {
-          throw new Error('Invalid Ingredient ID');
-        }
-
-        // Fetch ingredient details and cocktails concurrently
-        const [ingredientData, cocktailData] = await Promise.all([
-          fetchIngredientById(ingredientIdNum),
-          fetchCocktailsByIngredient(ingredientIdNum, 10, true), // Fetch 10 random cocktails
-        ]);
+        const ingredientData = await fetchIngredientBySlug(slug);
+        const cocktailData = await fetchCocktailsByIngredient(ingredientData.id, 10, true); // Fetch 10 random cocktails
 
         setIngredient(ingredientData);
         setCocktails(cocktailData);
         setError(null);
       } catch (err) {
-        console.error('Error loading ingredient detail page:', err);
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setError('Ingredient not found');
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
-  }, [id]);
+  }, [slug]);
 
   if (loading) {
     return (

@@ -13,6 +13,7 @@ export enum IngredientType {
 export interface Ingredient {
   id: number;
   name: string;
+  slug: string;
   description?: string | null;
   type: IngredientType;
   imageUrl?: string | null;
