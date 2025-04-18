@@ -15,6 +15,7 @@ import {
   Box,
   Collapse,
   Alert,
+  Snackbar,
 } from '@mui/material';
 import { Edit } from '@mui/icons-material'; // Remove unused Delete icon
 import { Ingredient, IngredientType } from '../types/ingredient.types';
@@ -97,6 +98,7 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
   const [editingIngredientId, setEditingIngredientId] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
 
   const handleRequestSort = (property: keyof Ingredient) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -134,6 +136,21 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
       const savedIngredient = await updateIngredient(editingIngredientId, updatedData);
       onIngredientUpdate(savedIngredient); // Notify parent component
       setEditingIngredientId(null); // Close form on success
+      
+      // Show success message with merge info if the ingredient was merged
+      if (savedIngredient.id !== editingIngredientId) {
+        setSnackbar({
+          open: true,
+          message: `Ingredient was merged with existing ingredient '${savedIngredient.name}'`,
+          severity: 'success'
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: `Ingredient '${savedIngredient.name}' updated successfully!`,
+          severity: 'success'
+        });
+      }
     } catch (error) {
       console.error("Failed to save ingredient:", error);
       setSaveError(error instanceof Error ? error.message : "An unknown error occurred while saving.");
@@ -256,6 +273,19 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
           flexShrink: 0 
         }}
       />
+      <Snackbar
+        open={snackbar?.open || false}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar(null)}
+      >
+        <Alert 
+          onClose={() => setSnackbar(null)} 
+          severity={snackbar?.severity || 'success'}
+          sx={{ width: '100%' }}
+        >
+          {snackbar?.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }; 

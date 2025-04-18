@@ -28,28 +28,6 @@ const sentenceCapitalize = (text: string | null | undefined): string => {
     .join('. ');
 };
 
-const convertToFraction = (amount: number): string => {
-  // Common fractions and their decimal equivalents
-  const fractions: Record<number, string> = {
-    0.5: '1/2',
-    0.33: '1/3',
-    0.67: '2/3',
-    0.25: '1/4',
-    0.75: '3/4'
-  };
-
-  // Check if the amount is close to any of our common fractions
-  for (const [decimal, fraction] of Object.entries(fractions)) {
-    const decimalValue = parseFloat(decimal);
-    if (Math.abs(amount - decimalValue) < 0.01) {
-      return fraction;
-    }
-  }
-
-  // If not a common fraction, return the amount as is
-  return amount.toString();
-};
-
 // Define type for the API response
 interface CocktailDetailData {
   cocktail: Cocktail;
@@ -106,14 +84,43 @@ export const CocktailDetailPage: React.FC = () => {
     
     // Convert ml to oz if needed
     if (unit === MeasurementUnit.ML) {
-      amount = amount * (1/30); // 30ml = 1oz
+      // 1 ml = 0.033814 oz (more precise conversion)
+      amount = amount * 0.033814;
       unit = MeasurementUnit.OZ;
     }
     
-    // Format the amount as a fraction
-    const formattedAmount = convertToFraction(amount);
+    // Map decimal parts to fraction characters
+    const fractionMap: Record<number, string> = {
+      0.25: '¼',
+      0.33: '⅓',
+      0.5: '½',
+      0.67: '⅔',
+      0.75: '¾'
+    };
+
+    // Get the whole number and decimal part
+    const wholeNumber = Math.floor(amount);
+    const decimalPart = amount - wholeNumber;
+
+    // Find the closest fraction for the decimal part
+    let closestFraction = '';
+    let minDiff = Infinity;
     
-    return `${formattedAmount} ${unit}`;
+    for (const [decimal, fraction] of Object.entries(fractionMap)) {
+      const diff = Math.abs(decimalPart - parseFloat(decimal));
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestFraction = fraction;
+      }
+    }
+
+    // If the decimal part is close enough to a fraction, use it
+    if (minDiff < 0.05) {
+      return `${wholeNumber ? `${wholeNumber}${closestFraction}` : closestFraction} ${unit}`;
+    }
+
+    // Otherwise, round to 1 decimal place
+    return `${Math.round(amount * 10) / 10} ${unit}`;
   };
 
   const formatIngredientName = (ingredient: Cocktail['ingredients'][0]) => {
@@ -136,7 +143,7 @@ export const CocktailDetailPage: React.FC = () => {
         <Typography
           variant="h3"
           sx={{
-            fontFamily: 'Italianno, cursive',
+            fontFamily: 'Corinthia, cursive',
             fontSize: { xs: '2.5rem', sm: '3rem' },
             color: '#1a1a1a'
           }}
@@ -146,7 +153,7 @@ export const CocktailDetailPage: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Italianno, cursive', fontSize: '2rem' }}>
+        <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
           Ingredients
         </Typography>
         <List>
@@ -174,7 +181,7 @@ export const CocktailDetailPage: React.FC = () => {
                 flexShrink: 0
               }}>
                 <Typography sx={{ 
-                  fontFamily: 'Italianno, cursive',
+                  fontFamily: 'Corinthia, cursive',
                   fontSize: '2rem',
                   lineHeight: 1,
                   minWidth: 'fit-content'
@@ -221,7 +228,7 @@ export const CocktailDetailPage: React.FC = () => {
               </Box>
             </ListItem>
           ))}
-          {cocktail.glassType?.name && (
+          {cocktail.glassType && (
             <ListItem sx={{ 
               py: 0, 
               display: 'flex', 
@@ -239,7 +246,7 @@ export const CocktailDetailPage: React.FC = () => {
                 flexShrink: 0
               }}>
                 <Typography sx={{ 
-                  fontFamily: 'Italianno, cursive',
+                  fontFamily: 'Corinthia, cursive',
                   fontSize: '2rem',
                   lineHeight: 1,
                   minWidth: 'fit-content'
@@ -282,17 +289,22 @@ export const CocktailDetailPage: React.FC = () => {
       </Box>
 
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Italianno, cursive', fontSize: '2rem' }}>
+        <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
           Instructions
         </Typography>
-        <Typography sx={{ whiteSpace: 'pre-line', fontFamily: "'Old Standard TT', serif" }}>
+        <Typography 
+          variant="serif"
+          sx={{ 
+            whiteSpace: 'pre-line'
+          }}
+        >
           {sentenceCapitalize(cocktail.instructions)}
         </Typography>
       </Box>
 
       {potentialAkas && potentialAkas.length > 0 && (
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Italianno, cursive', fontSize: '2rem' }}>
+          <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
             Also Known As
           </Typography>
           <List dense>
@@ -309,7 +321,7 @@ export const CocktailDetailPage: React.FC = () => {
 
       {potentialVariations && potentialVariations.length > 0 && (
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Italianno, cursive', fontSize: '2rem' }}>
+          <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
             Variations
           </Typography>
           <List dense>

@@ -26,7 +26,7 @@ export const IngredientFilters: React.FC<IngredientFiltersProps> = ({
       overflowY: 'auto',
       height: '100%'
     }}>
-      <Typography variant="h5" sx={{ fontFamily: 'Italianno, cursive', mb: 1 }}>
+      <Typography variant="decorative" sx={{ mb: 1 }}>
         Filters
       </Typography>
       <Divider sx={{ mb: 2 }} />

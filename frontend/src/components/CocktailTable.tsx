@@ -69,9 +69,11 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
           : b.status.localeCompare(a.status);
       }
       if (orderBy === 'createdAt') {
-        const dateA = (a.createdAt || a.created || '') ? new Date(a.createdAt || a.created || '').getTime() : 0;
-        const dateB = (b.createdAt || b.created || '') ? new Date(b.createdAt || b.created || '').getTime() : 0;
-        return order === 'asc' ? dateA - dateB : dateB - dateA;
+        const dateA = a.createdAt || a.created || new Date(0).toISOString();
+        const dateB = b.createdAt || b.created || new Date(0).toISOString();
+        return order === 'asc' ? 
+          new Date(dateA).getTime() - new Date(dateB).getTime() : 
+          new Date(dateB).getTime() - new Date(dateA).getTime();
       }
       return 0;
     });

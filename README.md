@@ -52,7 +52,8 @@ npm install
 
 # Install frontend dependencies
 cd ../frontend
-npm install
+npm install --include=dev
+npm run build
 ```
 
 ## Database Setup
@@ -129,13 +130,36 @@ npm run migration:revert
 
 ## Production Mode
 
+1. Install all dependencies (including dev dependencies):
 ```bash
-# Build both frontend and backend
+# Install backend dependencies
+cd backend
+npm install --production=false
+
+# Install frontend dependencies
+cd ../frontend
+npm install --production=false
+```
+
+2. Build both frontend and backend:
+```bash
+# Build backend
+cd ../backend
 npm run build
 
-# Start both in production mode
-npm start
+# Build frontend
+cd ../frontend
+npm run build
 ```
+
+3. Start in production mode:
+```bash
+# Start backend
+cd ../backend
+npm run start:prod
+```
+
+The frontend build will be available in the `frontend/dist` directory, which you can serve using any static file server.
 
 ## Detailed Documentation
 

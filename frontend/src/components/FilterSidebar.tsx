@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Divider, FormGroup, FormControlLabel, Checkbox, IconButton, Drawer, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Divider, FormGroup, FormControlLabel, Checkbox, IconButton, Drawer, useMediaQuery, useTheme, Typography } from '@mui/material';
 import FilterListIcon from '@mui/icons-material/FilterList';
 
 interface FilterOption {
@@ -29,9 +29,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ sections }) => {
 
   const drawer = (
     <Box sx={{ p: 0 }}>
-      <h2 style={{ fontFamily: 'Italianno, cursive', fontSize: '2rem', marginBottom: '1rem' }}>
+      <Typography variant="decorative" sx={{ mb: 1 }}>
         Filters
-      </h2>
+      </Typography>
       <Divider sx={{ mb: 2 }} />
       
       {sections.map((section, index) => (

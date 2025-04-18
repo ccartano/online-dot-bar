@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container } from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
 
 const LandingPage: React.FC = () => {
   return (
@@ -26,22 +26,16 @@ const LandingPage: React.FC = () => {
             gap: 4,
           }}
         >
-          <h1
-            style={{
-              fontFamily: 'Italianno, cursive',
-              fontSize: '6rem',
-              color: '#1A1A1A',
+          <Typography
+            variant="h1"
+            sx={{
               textAlign: 'center',
               lineHeight: 1,
-              marginBottom: '1rem',
-              marginBlockStart: 0,
-              marginBlockEnd: 0,
-              marginInlineStart: 0,
-              marginInlineEnd: 0,
+              margin: 0,
             }}
           >
             The Online.Bar
-          </h1>
+          </Typography>
           
           {/* Search functionality temporarily disabled
           <Box
@@ -73,7 +67,7 @@ const LandingPage: React.FC = () => {
               variant="contained"
               size="large"
               sx={{
-                fontFamily: 'Italianno, cursive',
+                fontFamily: 'Corinthia, cursive',
                 fontSize: '1.5rem',
                 px: 4,
                 backgroundColor: '#9CB4A3',

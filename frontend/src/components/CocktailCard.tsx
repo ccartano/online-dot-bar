@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, IconButton } from '@mui/material';
+import { Box, IconButton, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { Icon } from '@mdi/react';
 import { mdiPencil } from '@mdi/js';
@@ -70,16 +70,15 @@ export const CocktailCard: React.FC<CocktailCardProps> = ({ cocktail, onEdit }) 
               color="#1a1a1a"
             />
           )}
-          <h3
-            style={{
-              fontFamily: "'Old Standard TT', serif",
-              color: '#1a1a1a',
+          <Typography
+            variant="serifMedium"
+            sx={{
               margin: 0,
               padding: 0
             }}
           >
             {capitalizeWords(cocktail.name)}
-          </h3>
+          </Typography>
         </Box>
       </Link>
     </Box>

@@ -135,9 +135,7 @@ export const IngredientDetailPage: React.FC = () => {
           component="h1"
           gutterBottom
           sx={{
-            fontFamily: 'Italianno, cursive',
             fontSize: { xs: '2.5rem', sm: '3rem' },
-            color: '#1a1a1a',
             mb: 1
           }}
         >
@@ -147,8 +145,8 @@ export const IngredientDetailPage: React.FC = () => {
       
       <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2, width: 'fit-content' }}>
         <Typography
+          variant="decorative"
           sx={{
-            fontFamily: 'Italianno, cursive',
             fontSize: { xs: '1.5rem', sm: '1.8rem' },
             lineHeight: 1,
             width: 'fit-content',
@@ -171,11 +169,10 @@ export const IngredientDetailPage: React.FC = () => {
           .....................................
         </Box>
         <Typography
+          variant="serifMedium"
           sx={{
             lineHeight: 1,
             minWidth: '100px',
-            fontWeight: 'medium',
-            fontFamily: "'Old Standard TT', serif",
           }}
         >
           {formatTypeName(ingredient.type)}
@@ -190,8 +187,6 @@ export const IngredientDetailPage: React.FC = () => {
               component="h2"
               gutterBottom
               sx={{
-                fontFamily: 'Italianno, cursive',
-                fontSize: '2rem',
                 mb: 1
               }}
             >
@@ -210,8 +205,6 @@ export const IngredientDetailPage: React.FC = () => {
           component="h2"
           gutterBottom
           sx={{
-            fontFamily: 'Italianno, cursive',
-            fontSize: '2rem',
             mb: 2
           }}
         >
@@ -239,7 +232,9 @@ export const IngredientDetailPage: React.FC = () => {
                 <StyledLink>
                   <ListItemText
                     primary={capitalizeWords(cocktail.name)}
-                    primaryTypographyProps={{ fontWeight: 'medium', fontFamily: "'Old Standard TT', serif" }}
+                    primaryTypographyProps={{ 
+                      variant: 'serifMedium'
+                    }}
                   />
                 </StyledLink>
               </ListItem>

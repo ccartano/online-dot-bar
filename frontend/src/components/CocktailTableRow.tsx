@@ -35,9 +35,10 @@ export const CocktailTableRow: React.FC<CocktailTableRowProps> = ({
   showDelete = true,
 }) => {
   // Ensure the glass type object is properly set
-  const cocktailWithGlassType: Cocktail & { status: 'active' | 'pending' } = {
+  const cocktailWithGlassType = {
     ...cocktail,
-    glassType: cocktail.glassTypeId ? glassTypes.find(gt => gt.id === cocktail.glassTypeId) || undefined : undefined
+    glassTypeId: cocktail.glassTypeId,
+    glassTypeName: cocktail.glassTypeId ? glassTypes.find(gt => gt.id === cocktail.glassTypeId)?.name : undefined
   };
 
   return (
@@ -66,7 +67,9 @@ export const CocktailTableRow: React.FC<CocktailTableRowProps> = ({
         </TableCell>
         <TableCell>
           <Typography variant="body2" color="text.secondary">
-            {cocktail.createdAt || cocktail.created ? new Date(cocktail.createdAt || cocktail.created).toLocaleString() : 'N/A'}
+            {(cocktail.createdAt || cocktail.created) ? 
+              new Date(cocktail.createdAt || cocktail.created || 0).toLocaleString() : 
+              'N/A'}
           </Typography>
         </TableCell>
         <TableCell>

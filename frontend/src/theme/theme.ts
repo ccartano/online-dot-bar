@@ -1,5 +1,55 @@
 import { createTheme } from '@mui/material/styles';
 
+// Extend the theme to include custom variants
+declare module '@mui/material/styles' {
+  interface TypographyVariants {
+    decorative: React.CSSProperties;
+    decorativeLarge: React.CSSProperties;
+    decorativeSmall: React.CSSProperties;
+    serif: React.CSSProperties;
+    serifMedium: React.CSSProperties;
+  }
+
+  interface TypographyVariantsOptions {
+    decorative?: React.CSSProperties;
+    decorativeLarge?: React.CSSProperties;
+    decorativeSmall?: React.CSSProperties;
+    serif?: React.CSSProperties;
+    serifMedium?: React.CSSProperties;
+  }
+}
+
+// Update the Button variants
+declare module '@mui/material/Button' {
+  interface ButtonPropsVariantOverrides {
+    decorative: true;
+  }
+}
+
+// Update the Typography variants
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    decorative: true;
+    decorativeLarge: true;
+    decorativeSmall: true;
+    serif: true;
+    serifMedium: true;
+  }
+}
+
+// Define common styles that use Corinthia font
+const corinthiaStyles = {
+  fontFamily: 'Corinthia, cursive',
+  fontWeight: 700,
+  color: '#1A1A1A',
+};
+
+// Define common styles for Old Standard TT
+const serifStyles = {
+  fontFamily: "'Old Standard TT', serif",
+  color: '#1A1A1A',
+};
+
 export const theme = createTheme({
   palette: {
     primary: {
@@ -33,42 +83,79 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: [
-      'system-ui',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      'Segoe UI',
-      'Roboto',
-      'Oxygen',
-      'Ubuntu',
-      'Cantarell',
-      'Fira Sans',
-      'Droid Sans',
-      'Helvetica Neue',
-      'sans-serif',
-    ].join(','),
+    fontFamily: "'Old Standard TT', serif",
     h1: {
-      fontFamily: 'Italianno, cursive',
+      ...corinthiaStyles,
       fontSize: '5rem',
-      color: '#1A1A1A',
     },
     h2: {
-      fontFamily: 'Italianno, cursive',
+      ...corinthiaStyles,
       fontSize: '4rem',
-      color: '#1A1A1A',
     },
     h3: {
-      fontFamily: 'Italianno, cursive',
+      ...corinthiaStyles,
       fontSize: '3rem',
-      color: '#1A1A1A',
     },
     h4: {
-      fontFamily: 'Italianno, cursive',
-      fontSize: '2.5rem',
-      color: '#1A1A1A',
+      ...corinthiaStyles,
+      fontSize: '2rem',
+    },
+    h5: {
+      ...corinthiaStyles,
+      fontSize: '1.8rem',
+    },
+    h6: {
+      ...corinthiaStyles,
+      fontSize: '1.5rem',
     },
   },
   components: {
+    MuiTypography: {
+      defaultProps: {
+        variantMapping: {
+          serif: 'p',
+          serifMedium: 'p',
+        }
+      },
+      variants: [
+        {
+          props: { variant: 'decorative' },
+          style: {
+            ...corinthiaStyles,
+            fontSize: '2rem',
+          },
+        },
+        {
+          props: { variant: 'decorativeLarge' },
+          style: {
+            ...corinthiaStyles,
+            fontSize: '2.5rem',
+          },
+        },
+        {
+          props: { variant: 'decorativeSmall' },
+          style: {
+            ...corinthiaStyles,
+            fontSize: '1.5rem',
+          },
+        },
+        {
+          props: { variant: 'serif' },
+          style: {
+            ...serifStyles,
+            fontSize: '1rem',
+          },
+        },
+        {
+          props: { variant: 'serifMedium' },
+          style: {
+            ...serifStyles,
+            fontSize: '1.1rem',
+            fontWeight: 500,
+          },
+        },
+      ],
+    },
     MuiButton: {
       styleOverrides: {
         root: {
@@ -91,6 +178,15 @@ export const theme = createTheme({
           },
         },
       },
+      variants: [
+        {
+          props: { variant: 'decorative' },
+          style: {
+            ...corinthiaStyles,
+            fontSize: '1.5rem',
+          },
+        },
+      ],
     },
     MuiPaper: {
       styleOverrides: {

@@ -42,6 +42,7 @@ export interface ParsedCocktail {
   paperlessId: number | null;
   source: string | null;
   glassTypeId: number | null;
+  glassType?: { id: number; name: string; icon?: string };
   categoryId: number | null;
   createdAt?: string;
   created?: string;

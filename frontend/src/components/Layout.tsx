@@ -80,9 +80,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             }}
           >
             <Typography
+              variant="decorativeLarge"
               sx={{
-                fontFamily: 'Italianno, cursive',
-                fontSize: '2.5rem',
                 display: { xs: 'none', sm: 'block' },
                 whiteSpace: 'nowrap'
               }}
@@ -93,9 +92,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           
           {/* Mobile Title */}
           <Typography
+            variant="decorativeLarge"
             sx={{
-              fontFamily: 'Italianno, cursive',
-              fontSize: '2.5rem',
               display: { xs: 'block', sm: 'none' },
               position: 'absolute',
               left: '50%',
@@ -142,22 +140,23 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   to={item.path} 
                   style={{ 
                     textDecoration: 'none',
-                    color: isActive(item.path) ? '#1a1a1a' : '#666',
-                    fontFamily: "'Italianno', cursive",
-                    fontSize: '1.8rem',
                     margin: '0 1rem',
                     padding: '0.5rem 1rem',
                     display: 'block',
-                    transition: 'color 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = '#9CB4A3';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = isActive(item.path) ? '#1a1a1a' : '#666';
                   }}
                 >
-                  {item.text}
+                  <Typography 
+                    variant="decorative"
+                    sx={{
+                      color: isActive(item.path) ? '#1a1a1a' : '#666',
+                      transition: 'color 0.2s ease',
+                      '&:hover': {
+                        color: 'primary.main'
+                      }
+                    }}
+                  >
+                    {item.text}
+                  </Typography>
                 </Link>
               </Box>
             ))}
@@ -193,10 +192,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             alignItems: 'center'
           }}>
             <Typography
-              variant="h6"
+              variant="decorative"
               sx={{
-                fontFamily: 'Italianno, cursive',
-                fontSize: '2rem',
                 color: '#1a1a1a'
               }}
             >
@@ -219,11 +216,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 sx={{
                   justifyContent: 'center',
                   py: 2,
-                  color: isActive(item.path) ? '#1a1a1a' : '#666',
-                  '&:hover': {
-                    color: '#9CB4A3',
-                    backgroundColor: 'transparent'
-                  }
                 }}
               >
                 <ListItemText 
@@ -231,8 +223,12 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   sx={{ 
                     textAlign: 'center',
                     '& .MuiTypography-root': {
-                      fontFamily: 'Italianno, cursive',
-                      fontSize: '2rem'
+                      variant: 'decorative',
+                      color: isActive(item.path) ? '#1a1a1a' : '#666',
+                      transition: 'color 0.2s ease',
+                      '&:hover': {
+                        color: 'primary.main'
+                      }
                     }
                   }} 
                 />

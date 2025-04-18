@@ -1,4 +1,4 @@
-import { Box, Checkbox, FormControlLabel, FormGroup, Divider } from '@mui/material';
+import { Box, Checkbox, FormControlLabel, FormGroup, Divider, Typography } from '@mui/material';
 import { BaseSpirit } from '../utils/spiritUtils';
 
 interface CocktailFiltersProps {
@@ -25,9 +25,9 @@ export const CocktailFilters: React.FC<CocktailFiltersProps> = ({
       overflowY: 'auto',
       height: '100%'
     }}>
-      <h2 style={{ fontFamily: 'Italianno, cursive', fontSize: '2rem', marginBottom: '1rem' }}>
+      <Typography variant="decorative" sx={{ mb: 1 }}>
         Filters
-      </h2>
+      </Typography>
       <Divider sx={{ mb: 2 }} />
       <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
         Spirit

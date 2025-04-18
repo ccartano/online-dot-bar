@@ -71,20 +71,15 @@ export const AlphabeticalList = <T,>({
 
         return (
           <Box key={letter} sx={{ mb: 6 }}>
-            <h2 
-              style={{
-                fontFamily: 'Italianno, cursive',
-                fontSize: '2.5rem',
-                color: '#1a1a1a',
-                marginBottom: '1.5rem',
-                marginBlockStart: 0,
-                marginBlockEnd: 0,
-                marginInlineStart: 0,
-                marginInlineEnd: 0,
+            <Typography
+              variant="decorativeLarge"
+              sx={{
+                mb: 1.5,
+                m: 0
               }}
             >
               {letter}
-            </h2>
+            </Typography>
             <Box sx={{ 
               display: 'flex', 
               flexWrap: 'wrap', 
@@ -111,10 +106,8 @@ export const AlphabeticalList = <T,>({
                     >
                       <StyledLink>
                         <Typography
-                          variant="body1"
+                          variant="serifMedium"
                           sx={{
-                            fontWeight: 'medium',
-                            fontFamily: "'Old Standard TT', serif",
                             color: 'inherit',
                             fontSize: '1.2rem'
                           }}
