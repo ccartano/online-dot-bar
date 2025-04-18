@@ -46,12 +46,16 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
     ingredient: { name: '' },
   });
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [editingIngredientNames, setEditingIngredientNames] = useState<Record<number, string>>({});
 
-  // Update internal state if the initial prop changes (e.g., parent data reloads)
-  // Although unlikely in the current setup where it's tied to expandedRow
+  // Only update the editing state when the initial cocktail ID changes
   useEffect(() => {
-    setEditingCocktail(initialCocktail);
-  }, [initialCocktail]);
+    if (initialCocktail.id !== editingCocktail.id) {
+      setEditingCocktail(initialCocktail);
+      // Reset the editing names when switching cocktails
+      setEditingIngredientNames({});
+    }
+  }, [initialCocktail.id]);
 
   const handleInputChange = (field: keyof Cocktail, value: Cocktail[keyof Cocktail] | number | null) => {
     setEditingCocktail(prev => ({ ...prev!, [field]: value }));
@@ -64,27 +68,58 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
       const currentIngredientItem = newIngredients[index];
 
       if (field === 'ingredient.name') {
-        // Ensure we preserve the ID when updating the name
         newIngredients[index] = {
           ...currentIngredientItem,
           ingredient: {
-            ...currentIngredientItem.ingredient, // Spread existing ingredient to keep ID
+            ...currentIngredientItem.ingredient,
             name: value as string
           }
         };
       } else if (field === 'amount') {
-        newIngredients[index] = { ...currentIngredientItem, amount: value ? parseFloat(value as string) : undefined };
+        newIngredients[index] = { 
+          ...currentIngredientItem, 
+          amount: value ? parseFloat(value as string) : undefined 
+        };
       } else if (field === 'unit') {
-        newIngredients[index] = { ...currentIngredientItem, unit: value as MeasurementUnit || undefined };
+        newIngredients[index] = { 
+          ...currentIngredientItem, 
+          unit: value as MeasurementUnit || undefined 
+        };
       } else if (field === 'notes') {
-        // Assuming notes might be added later, let's handle it safely
-        newIngredients[index] = { ...currentIngredientItem, notes: value as string || undefined };
+        newIngredients[index] = { 
+          ...currentIngredientItem, 
+          notes: value as string || undefined 
+        };
       }
+      
+      if (JSON.stringify(newIngredients[index]) === JSON.stringify(currentIngredientItem)) {
+        return prev;
+      }
+      
       return { ...prev, ingredients: newIngredients };
     });
   };
 
- const handleAddIngredient = () => {
+  const handleIngredientNameChange = (index: number, value: string) => {
+    setEditingIngredientNames(prev => ({
+      ...prev,
+      [index]: value
+    }));
+  };
+
+  const handleIngredientNameBlur = (index: number) => {
+    const newName = editingIngredientNames[index];
+    if (newName !== undefined) {
+      handleIngredientChange(index, 'ingredient.name', newName);
+      setEditingIngredientNames(prev => {
+        const newState = { ...prev };
+        delete newState[index];
+        return newState;
+      });
+    }
+  };
+
+  const handleAddIngredient = () => {
     if (newIngredient.ingredient?.name.trim() && editingCocktail) {
       const ingredientToAdd: CocktailIngredient = {
         amount: newIngredient.amount,
@@ -99,7 +134,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
         ...prev!,
         ingredients: [...prev!.ingredients, ingredientToAdd],
       }));
-      setNewIngredient({ order: 0, ingredient: { name: '' } }); // Reset add form
+      setNewIngredient({ order: 0, ingredient: { name: '' } });
     }
   };
 
@@ -110,11 +145,6 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
     }));
   };
 
-  // Sort ingredients for display
-  const sortedIngredients = React.useMemo(() => {
-    return [...editingCocktail.ingredients].sort((a, b) => a.order - b.order);
-  }, [editingCocktail.ingredients]);
-
   const handleSaveClick = () => {
     setSaveError(null);
     if (editingCocktail.ingredients.length === 0) {
@@ -122,8 +152,23 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
       return;
     }
 
-    console.log('[CocktailEditForm] Saving cocktail:', JSON.stringify(editingCocktail, null, 2));
-    onSave(editingCocktail);
+    // Ensure all ingredient names are saved from the editing state
+    const finalCocktail = { ...editingCocktail };
+    Object.entries(editingIngredientNames).forEach(([index, name]) => {
+      const idx = parseInt(index);
+      if (finalCocktail.ingredients[idx]) {
+        finalCocktail.ingredients[idx] = {
+          ...finalCocktail.ingredients[idx],
+          ingredient: {
+            ...finalCocktail.ingredients[idx].ingredient,
+            name
+          }
+        };
+      }
+    });
+
+    console.log('[CocktailEditForm] Saving cocktail:', JSON.stringify(finalCocktail, null, 2));
+    onSave(finalCocktail);
   };
 
   return (
@@ -205,16 +250,13 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sortedIngredients.map((ingredient, index) => (
+                {editingCocktail.ingredients.map((ingredient, index) => (
                   <TableRow key={`${ingredient.ingredient.name}-${index}`} hover>
                     <TableCell>
                       <TextField
                         size="small"
                         value={ingredient.amount || ''}
-                        onChange={(e) => {
-                          const originalIndex = editingCocktail.ingredients.findIndex(item => item === ingredient);
-                          handleIngredientChange(originalIndex, 'amount', e.target.value)
-                        }}
+                        onChange={(e) => handleIngredientChange(index, 'amount', e.target.value)}
                         type="number"
                         inputProps={{ step: "0.25" }}
                         fullWidth
@@ -224,21 +266,16 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                       <TextField
                         size="small"
                         value={ingredient.unit || ''}
-                        onChange={(e) => {
-                          const originalIndex = editingCocktail.ingredients.findIndex(item => item === ingredient);
-                          handleIngredientChange(originalIndex, 'unit', e.target.value as MeasurementUnit || undefined)
-                        }}
+                        onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
                         fullWidth
                       />
                     </TableCell>
                     <TableCell>
                       <TextField
                         size="small"
-                        value={ingredient.ingredient.name}
-                        onChange={(e) => {
-                          const originalIndex = editingCocktail.ingredients.findIndex(item => item === ingredient);
-                          handleIngredientChange(originalIndex, 'ingredient.name', e.target.value)
-                        }}
+                        value={editingIngredientNames[index] ?? ingredient.ingredient.name}
+                        onChange={(e) => handleIngredientNameChange(index, e.target.value)}
+                        onBlur={() => handleIngredientNameBlur(index)}
                         fullWidth
                       />
                     </TableCell>
@@ -247,8 +284,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                         size="small"
                         onClick={(e) => {
                           e.stopPropagation();
-                          const originalIndex = editingCocktail.ingredients.findIndex(item => item === ingredient);
-                          handleRemoveIngredient(originalIndex);
+                          handleRemoveIngredient(index);
                         }}
                       >
                         <Delete fontSize="small" />

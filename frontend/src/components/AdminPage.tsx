@@ -108,41 +108,16 @@ export const AdminPage: React.FC = () => {
       const updateData = {
         ...updatedCocktail,
         glassTypeId: updatedCocktail.glassType?.id || null,
-        ingredients: updatedCocktail.ingredients.map((ing, index) => {
-          // Safely check if the nested ingredient object has an ID
-          let ingredientId: number | undefined = undefined;
-          if (ing.ingredient && typeof ing.ingredient === 'object' && 'id' in ing.ingredient) {
-             // Check if the id property exists and is potentially a number
-             const potentialId = (ing.ingredient as { id?: number }).id;
-             if (typeof potentialId === 'number') {
-               ingredientId = potentialId;
-             }
-          }
-          
-          if (ingredientId === undefined) {
-            console.warn(`[AdminPage] Ingredient at index ${index} (${ing.ingredient.name}) is missing a numeric ID in the frontend state before sending update.`);
-            // Decide how to handle: skip, use name lookup, or error out?
-            // For now, we'll prepare it with undefined ID, and filter later.
-          }
-
+        ingredients: updatedCocktail.ingredients.map((ing) => {
+          const ingredientId = ing.ingredient.id || undefined;
           return {
-            ingredientId: ingredientId, // Use the found ID or undefined
-            amount: ing.amount,
+            ingredientId: ingredientId,
+            amount: ing.amount ? Number(ing.amount) : undefined,
             unit: ing.unit,
             order: ing.order,
           };
         }),
-        // categoryId: updatedCocktail.category?.id
       };
-
-      // Filter out ingredients that didn't resolve to an ID
-      const validIngredients = updateData.ingredients.filter(ing => ing.ingredientId !== undefined);
-      if (validIngredients.length !== updateData.ingredients.length) {
-        console.error("[AdminPage] Some ingredients were missing IDs and were excluded from the update payload.");
-        // Optionally, throw an error here to prevent partial updates if required
-        // throw new Error("Cannot update: One or more ingredients are missing IDs.");
-      }
-      updateData.ingredients = validIngredients;
 
       console.log(`[AdminPage] Sending update data for cocktail ${updatedCocktail.id}:`, JSON.stringify(updateData, null, 2));
 
@@ -161,7 +136,6 @@ export const AdminPage: React.FC = () => {
           const errorData = await response.json(); 
           errorMsg = errorData.message || JSON.stringify(errorData);
         } catch (parseError) {
-          // Log the parsing error
           console.warn("[AdminPage] Could not parse JSON error response body:", parseError);
         }
         console.error(`[AdminPage] Update failed: ${errorMsg}`);
@@ -169,19 +143,32 @@ export const AdminPage: React.FC = () => {
       }
 
       const data = await response.json();
-      setCocktails(cocktails.map(c => c.id === data.id ? { ...data, glassType: glassTypes.find(gt => gt.id === data.glassTypeId) || undefined } : c));
+      
+      // Update the cocktails state with the new data
+      setCocktails(prevCocktails => {
+        return prevCocktails.map(c => {
+          if (c.id === data.id) {
+            return {
+              ...data,
+              status: 'active',
+              glassType: glassTypes.find(gt => gt.id === data.glassTypeId) || undefined,
+              ingredients: data.ingredients || []
+            };
+          }
+          return c;
+        });
+      });
+
       setSnackbar({
         open: true,
         message: 'Cocktail updated successfully',
         severity: 'success',
       });
-    } catch (err) {
-      console.error('[AdminPage] Error during cocktail update:', err);
-      // Log the current state *before* showing the snackbar
-      console.log('[AdminPage] State after update error:', JSON.stringify(cocktails.find(c => c.id === updatedCocktail.id), null, 2)); 
+    } catch (error) {
+      console.error('[AdminPage] Error updating cocktail:', error);
       setSnackbar({
         open: true,
-        message: err instanceof Error ? err.message : 'Failed to update cocktail',
+        message: error instanceof Error ? error.message : 'Failed to update cocktail',
         severity: 'error',
       });
     }
