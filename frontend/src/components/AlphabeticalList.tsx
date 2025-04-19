@@ -1,6 +1,6 @@
-import React from 'react';
-import { Box, Typography, styled } from '@mui/material';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { Box, Typography, styled, useTheme, useMediaQuery } from '@mui/material';
+import { Link, useLocation } from 'react-router-dom';
 
 const StyledLink = styled(Box)({
   position: 'relative',
@@ -42,6 +42,31 @@ export const AlphabeticalList = <T,>({
   getItemLink,
   renderItem 
 }: AlphabeticalListProps<T>) => {
+  const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle scroll restoration when navigating back
+  useEffect(() => {
+    if (location.state?.clickedItemId) {
+      const itemRef = itemRefs.current[location.state.clickedItemId];
+      if (itemRef && containerRef.current) {
+        // Calculate the offset from the top of the container
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const itemRect = itemRef.getBoundingClientRect();
+        const offset = itemRect.top - containerRect.top;
+
+        // Scroll the container to the item
+        containerRef.current.scrollTo({
+          top: containerRef.current.scrollTop + offset,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [location]);
+
   // Group items by first letter
   const itemsByLetter = items.reduce((acc, item) => {
     const firstLetter = getItemName(item).charAt(0).toUpperCase();
@@ -55,16 +80,33 @@ export const AlphabeticalList = <T,>({
   // Sort letters alphabetically
   const sortedLetters = Object.keys(itemsByLetter).sort();
 
+  const handleClick = (itemId: string | number) => {
+    // Store the clicked item ID in history state
+    window.history.replaceState(
+      { ...window.history.state, clickedItemId: itemId },
+      ''
+    );
+  };
+
   return (
-    <Box sx={{ 
-      flex: 1,
-      height: 'fit-content',
-      pr: 2,
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100%'
-    }}>
+    <Box 
+      ref={containerRef}
+      sx={{ 
+        flex: 1,
+        height: 'fit-content',
+        pr: 2,
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100%',
+        overflow: 'auto',
+        '&::-webkit-scrollbar': {
+          display: 'none'
+        },
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none'
+      }}
+    >
       {sortedLetters.map((letter) => {
         const letterItems = itemsByLetter[letter] || [];
         if (letterItems.length === 0) return null;
@@ -86,39 +128,47 @@ export const AlphabeticalList = <T,>({
               gap: 4,
               justifyContent: 'flex-start'
             }}>
-              {letterItems.map((item) => (
-                <Box 
-                  key={getItemId(item)} 
-                  sx={{ 
-                    width: { xs: '100%', sm: 'calc(50% - 16px)', md: 'calc(33.33% - 16px)', lg: 'calc(25% - 16px)' },
-                    minWidth: { xs: 'auto', sm: '250px' },
-                    flexShrink: 0,
-                    display: 'flex',
-                    justifyContent: 'flex-start'
-                  }}
-                >
-                  {renderItem ? (
-                    renderItem(item)
-                  ) : (
-                    <Link
-                      to={getItemLink(item)}
-                      style={{ textDecoration: 'none' }}
-                    >
-                      <StyledLink>
-                        <Typography
-                          variant="serifMedium"
-                          sx={{
-                            color: 'inherit',
-                            fontSize: '1.2rem'
-                          }}
-                        >
-                          {getItemName(item)}
-                        </Typography>
-                      </StyledLink>
-                    </Link>
-                  )}
-                </Box>
-              ))}
+              {letterItems.map((item) => {
+                const itemId = getItemId(item);
+                const link = getItemLink(item);
+                return (
+                  <Box 
+                    key={itemId}
+                    ref={(el: HTMLDivElement | null) => {
+                      itemRefs.current[itemId] = el;
+                    }}
+                    sx={{ 
+                      width: { xs: '100%', sm: 'calc(50% - 16px)', md: 'calc(33.33% - 16px)', lg: 'calc(25% - 16px)' },
+                      minWidth: { xs: 'auto', sm: '250px' },
+                      flexShrink: 0,
+                      display: 'flex',
+                      justifyContent: 'flex-start'
+                    }}
+                  >
+                    {renderItem ? (
+                      renderItem(item)
+                    ) : (
+                      <Link
+                        to={link}
+                        style={{ textDecoration: 'none' }}
+                        onClick={() => handleClick(itemId)}
+                      >
+                        <StyledLink>
+                          <Typography
+                            variant="serifMedium"
+                            sx={{
+                              color: 'inherit',
+                              fontSize: '1.2rem'
+                            }}
+                          >
+                            {getItemName(item)}
+                          </Typography>
+                        </StyledLink>
+                      </Link>
+                    )}
+                  </Box>
+                );
+              })}
             </Box>
           </Box>
         );

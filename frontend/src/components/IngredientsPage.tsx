@@ -95,7 +95,7 @@ export const IngredientsPage: React.FC = () => {
         }}>
           <AlphabeticalList
             items={filteredIngredients}
-            getItemId={(item) => item.id}
+            getItemId={(item) => item.slug}
             getItemName={(item) => capitalizeWords(item.name)}
             getItemLink={(item) => `/ingredients/${item.slug}`}
           />
