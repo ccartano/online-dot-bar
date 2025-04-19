@@ -36,9 +36,17 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ sections }) => {
       
       {sections.map((section, index) => (
         <React.Fragment key={section.title}>
-          <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 'bold',
+              marginBottom: '0.5rem',
+              fontFamily: 'Corinthia, cursive',
+              fontSize: '1.5rem'
+            }}
+          >
             {section.title}
-          </h3>
+          </Typography>
           <FormGroup sx={{ pl: 2, mb: index < sections.length - 1 ? 4 : 0 }}>
             {section.options.map((option) => (
               <FormControlLabel

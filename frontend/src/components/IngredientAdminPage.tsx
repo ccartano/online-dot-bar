@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Box, CircularProgress, Alert, Snackbar } from '@mui/material';
+import { Box, CircularProgress, Alert, Snackbar, useMediaQuery, useTheme } from '@mui/material';
 import { Ingredient } from '../types/ingredient.types';
 import { fetchIngredients } from '../services/ingredient.service';
 import { IngredientAdminTable } from './IngredientAdminTable';
 
 export const IngredientAdminPage: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,15 +46,19 @@ export const IngredientAdminPage: React.FC = () => {
   };
 
   if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}><CircularProgress /></Box>;
+    return <Box sx={{ display: 'flex', justifyContent: 'center', p: isMobile ? 1 : 3 }}><CircularProgress /></Box>;
   }
 
   if (error) {
-    return <Alert severity="error" sx={{ m: 3 }}>{error}</Alert>;
+    return <Alert severity="error" sx={{ m: isMobile ? 1 : 3 }}>{error}</Alert>;
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ 
+      p: isMobile ? 1 : 3,
+      width: '100%',
+      overflowX: 'auto'
+    }}>
       <IngredientAdminTable 
         ingredients={ingredients} 
         onIngredientUpdate={handleIngredientUpdate}

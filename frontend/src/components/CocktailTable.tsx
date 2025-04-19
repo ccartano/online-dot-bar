@@ -5,6 +5,8 @@ import {
   TableContainer,
   Paper,
   TablePagination,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { Cocktail } from '../services/cocktail.service';
 import { GlassType } from '../types/glass.types';
@@ -21,8 +23,6 @@ interface CocktailTableProps {
   showDelete?: boolean;
 }
 
-type Order = 'asc' | 'desc';
-
 export const CocktailTable: React.FC<CocktailTableProps> = ({ 
   cocktails, 
   onCocktailUpdate,
@@ -30,8 +30,8 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
   onDeleteRequest,
   showDelete = true
 }) => {
-  const [order, setOrder] = useState<Order>('desc');
-  const [orderBy, setOrderBy] = useState<keyof Cocktail | string>('createdAt');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [expandedRow, setExpandedRow] = useState<number | null>(null);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedCocktail, setSelectedCocktail] = useState<Cocktail | null>(null);
@@ -39,36 +39,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
   const [imageLoading, setImageLoading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  const handleRequestSort = (property: keyof Cocktail) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  const sortedCocktails = React.useMemo(() => {
-    return [...cocktails].sort((a, b) => {
-      if (orderBy === 'name') {
-        return order === 'asc'
-          ? a.name.localeCompare(b.name)
-          : b.name.localeCompare(a.name);
-      }
-      if (orderBy === 'status') {
-        return order === 'asc'
-          ? a.status.localeCompare(b.status)
-          : b.status.localeCompare(a.status);
-      }
-      if (orderBy === 'createdAt') {
-        const dateA = a.createdAt || a.created || new Date(0).toISOString();
-        const dateB = b.createdAt || b.created || new Date(0).toISOString();
-        return order === 'asc' ? 
-          new Date(dateA).getTime() - new Date(dateB).getTime() : 
-          new Date(dateB).getTime() - new Date(dateA).getTime();
-      }
-      return 0;
-    });
-  }, [cocktails, order, orderBy]);
+  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 5 : 10);
 
   const handleViewThumbnail = async (cocktail: Cocktail) => {
     if (!cocktail.paperlessId) return;
@@ -110,8 +81,8 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
 
   const isPotentialCocktails = cocktails.every(c => c.status === 'pending');
   const displayCocktails = isPotentialCocktails 
-    ? sortedCocktails 
-    : sortedCocktails.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    ? cocktails 
+    : cocktails.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <>
@@ -121,23 +92,29 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
           width: '100%',
           '& .MuiTableCell-root': {
             whiteSpace: 'normal',
-            wordBreak: 'break-word',
+            wordWrap: 'break-word',
+            borderBottom: '1px solid rgba(224, 224, 224, 0.5)',
           },
+          '& .MuiTableRow-root': {
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.02)',
+            },
+            '&:nth-of-type(odd)': {
+              backgroundColor: 'rgba(0, 0, 0, 0.01)',
+            }
+          }
         }}
       >
         <Table
           stickyHeader
           aria-label="cocktail table"
+          size={isMobile ? "small" : "medium"}
           sx={{
             tableLayout: 'fixed',
-            minWidth: '100%',
+            minWidth: isMobile ? '100%' : '500px'
           }}
         >
-          <CocktailTableHeader
-            order={order}
-            orderBy={orderBy}
-            onRequestSort={handleRequestSort}
-          />
+          <CocktailTableHeader isMobile={isMobile} />
           <TableBody>
             {displayCocktails.map((cocktail) => (
               <CocktailTableRow
@@ -156,13 +133,18 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
         </Table>
         {!isPotentialCocktails && (
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={isMobile ? [5, 10] : [5, 10, 25]}
             component="div"
             count={cocktails.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                fontSize: isMobile ? '0.9rem' : '1rem'
+              }
+            }}
           />
         )}
       </TableContainer>

@@ -115,7 +115,10 @@ export const AlphabeticalList = <T,>({
               variant="decorativeLarge"
               sx={{
                 mb: 1.5,
-                m: 0
+                m: 0,
+                fontFamily: 'Corinthia, cursive',
+                fontSize: '2.5rem',
+                fontWeight: 'bold'
               }}
             >
               {letter}

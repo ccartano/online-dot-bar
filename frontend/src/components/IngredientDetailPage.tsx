@@ -15,6 +15,7 @@ import { Ingredient } from '../types/ingredient.types';
 import { Cocktail } from '../services/cocktail.service'; // Import Cocktail type
 import { fetchIngredientBySlug } from '../services/ingredient.service';
 import { fetchCocktailsByIngredient } from '../services/cocktail.service';
+import { DocumentTitle } from './DocumentTitle';
 
 const StyledLink = styled(Box)({
   position: 'relative',
@@ -112,129 +113,132 @@ export const IngredientDetailPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ 
-      p: { xs: 2, sm: 3 }, 
-      maxWidth: '600px', 
-      margin: 'auto',
-      minHeight: 'calc(100vh - 64px)',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h3"
-          component="h1"
-          gutterBottom
-          sx={{
-            fontSize: { xs: '2.5rem', sm: '3rem' },
-            mb: 1
-          }}
-        >
-          {capitalizeWords(ingredient.name)}
-        </Typography>
-      </Box>
-      
-      <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2, width: 'fit-content' }}>
-        <Typography
-          variant="decorative"
-          sx={{
-            fontSize: { xs: '1.5rem', sm: '1.8rem' },
-            lineHeight: 1,
-            width: 'fit-content',
-            mr: 1,
-          }}
-        >
-          Categorization:
-        </Typography>
-        <Box
-          sx={{
-            color: '#ccc',
-            textAlign: 'left',
-            flex: '1 1 auto',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            lineHeight: 1,
-            mr: 1,
-          }}
-        >
-          .....................................
+    <>
+      <DocumentTitle title={capitalizeWords(ingredient.name)} />
+      <Box sx={{ 
+        p: { xs: 2, sm: 3 }, 
+        maxWidth: '600px', 
+        margin: 'auto',
+        minHeight: 'calc(100vh - 64px)',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h3"
+            component="h1"
+            gutterBottom
+            sx={{
+              fontSize: { xs: '2.5rem', sm: '3rem' },
+              mb: 1
+            }}
+          >
+            {capitalizeWords(ingredient.name)}
+          </Typography>
         </Box>
-        <Typography
-          variant="serifMedium"
-          sx={{
-            lineHeight: 1,
-            minWidth: '100px',
-          }}
-        >
-          {formatTypeName(ingredient.type)}
-        </Typography>
-      </Box>
-
-      <Box sx={{ pt:3 }}>
-      {ingredient.description && (
-          <Box sx={{ mt: 3 }}>
-            <Typography
-              variant="h4"
-              component="h2"
-              gutterBottom
-              sx={{
-                mb: 1
-              }}
-            >
-              Description:
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              {ingredient.description}
-            </Typography>
+        
+        <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2, width: 'fit-content' }}>
+          <Typography
+            // variant="decorative"
+            sx={{
+              fontSize: { xs: '1.5rem', sm: '1.8rem' },
+              lineHeight: 1,
+              width: 'fit-content',
+              mr: 1,
+            }}
+          >
+            Categorization:
+          </Typography>
+          <Box
+            sx={{
+              color: '#ccc',
+              textAlign: 'left',
+              flex: '1 1 auto',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              lineHeight: 1,
+              mr: 1,
+            }}
+          >
+            .....................................
           </Box>
-        )}
-      </Box>
+          <Typography
+            variant="serifMedium"
+            sx={{
+              lineHeight: 1,
+              minWidth: '100px',
+            }}
+          >
+            {formatTypeName(ingredient.type)}
+          </Typography>
+        </Box>
 
-      <Box sx={{ pt: 3 }}>
-        <Typography
-          variant="h4"
-          component="h2"
-          gutterBottom
-          sx={{
-            mb: 2
-          }}
-        >
-          Try cocktails featuring {capitalizeWords(ingredient.name)}
-        </Typography>
-        <Divider sx={{ mb: 2 }}/>
-        {cocktails.length > 0 ? (
-          <List>
-            {cocktails.map((cocktail) => (
-              <ListItem
-                key={cocktail.id}
-                component={Link}
-                to={`/cocktails/${cocktail.slug}`}
+        <Box sx={{ pt:3 }}>
+        {ingredient.description && (
+            <Box sx={{ mt: 3 }}>
+              <Typography
+                variant="h4"
+                component="h2"
+                gutterBottom
                 sx={{
-                  mb: 1,
-                  borderRadius: 1,
-                  display: 'block',
-                  p: 1,
-                  textDecoration: 'none',
-                  '&:hover': {
-                    textDecoration: 'none'
-                  }
+                  mb: 1
                 }}
               >
-                <StyledLink>
-                  <ListItemText
-                    primary={capitalizeWords(cocktail.name)}
-                    primaryTypographyProps={{ 
-                      variant: 'serifMedium'
-                    }}
-                  />
-                </StyledLink>
-              </ListItem>
-            ))}
-          </List>
-        ) : (
-          <Typography>No cocktails found featuring this ingredient in the current selection.</Typography>
-        )}
+                Description:
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                {ingredient.description}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+
+        <Box sx={{ pt: 3 }}>
+          <Typography
+            variant="h4"
+            component="h2"
+            gutterBottom
+            sx={{
+              mb: 2
+            }}
+          >
+            Try cocktails featuring {capitalizeWords(ingredient.name)}
+          </Typography>
+          <Divider sx={{ mb: 2 }}/>
+          {cocktails.length > 0 ? (
+            <List>
+              {cocktails.map((cocktail) => (
+                <ListItem
+                  key={cocktail.id}
+                  component={Link}
+                  to={`/cocktails/${cocktail.slug}`}
+                  sx={{
+                    mb: 1,
+                    borderRadius: 1,
+                    display: 'block',
+                    p: 1,
+                    textDecoration: 'none',
+                    '&:hover': {
+                      textDecoration: 'none'
+                    }
+                  }}
+                >
+                  <StyledLink>
+                    <ListItemText
+                      primary={capitalizeWords(cocktail.name)}
+                      primaryTypographyProps={{ 
+                        variant: 'serifMedium'
+                      }}
+                    />
+                  </StyledLink>
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography>No cocktails found featuring this ingredient in the current selection.</Typography>
+          )}
+        </Box>
       </Box>
-    </Box>
+    </>
   );
 }; 

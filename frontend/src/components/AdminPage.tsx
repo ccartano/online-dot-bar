@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Box, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tabs, Tab, CircularProgress } from '@mui/material';
+import { Box, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tabs, Tab, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { AdminLogin } from './AdminLogin';
 import { AdminService } from '../services/admin.service';
 import { CocktailTable } from './CocktailTable';
@@ -44,6 +44,8 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({ open, onClose, 
 };
 
 export const AdminPage: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isLoggedIn, setIsLoggedIn] = useState(AdminService.isAdmin());
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
   const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);
@@ -270,101 +272,50 @@ export const AdminPage: React.FC = () => {
   });
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      height: '100vh',
-      backgroundColor: '#F5F5F1'
-    }}>
-      {error && <Alert severity="error" sx={{ m: 2 }}>{error}</Alert>}
-      <AppBar position="static" sx={{ 
-        backgroundColor: '#F5F5F1',
-        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-        borderBottom: '1px solid rgba(0, 0, 0, 0.05)'
-      }}>
-        <Toolbar variant="dense">
-          <Typography variant="h6" sx={{ 
-            flexGrow: 1, 
-            color: '#1A1A1A',
-            fontFamily: 'Old Standard TT, serif'
-          }}>
+    <Box sx={{ width: '100%', minHeight: '100vh' }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
-          <Button 
-            color="inherit" 
-            component={Link} 
-            to="/"
-            onClick={() => AdminService.logout()}
-            sx={{
-              color: '#1A1A1A',
-              '&:hover': {
-                color: '#9CB4A3'
-              }
-            }}
-          >
-            Log Out
+          <Button color="inherit" component={Link} to="/">
+            Back to Home
           </Button>
         </Toolbar>
       </AppBar>
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column',
-        flexGrow: 1, 
-        overflow: 'hidden',
-        backgroundColor: '#F5F5F1'
-      }}>
-        <Box sx={{ 
-          borderBottom: 1, 
-          borderColor: 'divider', 
-          px: 2,
-          backgroundColor: '#FFFFFF'
-        }}>
-          <Tabs 
-            value={view} 
-            onChange={handleViewChange} 
-            aria-label="admin view selection"
-            sx={{
-              '& .MuiTab-root': {
-                fontFamily: 'Old Standard TT, serif',
-                color: '#1A1A1A',
-                '&.Mui-selected': {
-                  color: '#9CB4A3'
-                }
-              },
-              '& .MuiTabs-indicator': {
-                backgroundColor: '#9CB4A3'
-              }
-            }}
-          >
-            <Tab label="Current Cocktails" value="current" />
-            <Tab label="Potential Cocktails" value="potential" />
-            <Tab label="Ingredients" value="ingredients" />
-          </Tabs>
-        </Box>
-        <Box sx={{ 
-          flex: 1, 
-          overflow: 'auto', 
-          p: 2,
-          backgroundColor: '#F5F5F1'
-        }}>
-          {view === 'current' && (
-            loading ? 
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>
-            :
-            <CocktailTable 
-              cocktails={cocktails} 
-              onCocktailUpdate={handleCocktailUpdate}
+
+      <Box sx={{ width: '100%', p: isMobile ? 1 : 3 }}>
+        <Tabs
+          value={view}
+          onChange={handleViewChange}
+          variant={isMobile ? "fullWidth" : "standard"}
+          centered={!isMobile}
+          sx={{
+            mb: 3,
+            '& .MuiTab-root': {
+              minWidth: isMobile ? 'auto' : 120,
+              fontSize: isMobile ? '0.8rem' : '1rem',
+              padding: isMobile ? '6px 8px' : '12px 16px'
+            }
+          }}
+        >
+          <Tab label="Current Cocktails" value="current" />
+          <Tab label="Potential Cocktails" value="potential" />
+          <Tab label="Ingredients" value="ingredients" />
+        </Tabs>
+
+        {view === 'current' && (
+          <Box sx={{ width: '100%', overflowX: 'auto' }}>
+            <CocktailTable
+              cocktails={cocktails}
               glassTypes={glassTypes}
+              onCocktailUpdate={handleCocktailUpdate}
               onDeleteRequest={handleDeleteRequest}
             />
-          )}
-          {view === 'potential' && (
-            <PotentialCocktailsPage />
-          )}
-          {view === 'ingredients' && (
-            <IngredientAdminPage />
-          )}
-        </Box>
+          </Box>
+        )}
+        {view === 'potential' && <PotentialCocktailsPage />}
+        {view === 'ingredients' && <IngredientAdminPage />}
       </Box>
       
       <Snackbar

@@ -18,6 +18,10 @@ import {
   ListItemIcon,
   ListItemText,
   Alert,
+  useMediaQuery,
+  useTheme,
+  Stack,
+  Divider,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import { Icon } from '@mdi/react';
@@ -31,6 +35,7 @@ interface CocktailEditFormProps {
   onSave: (updatedCocktail: Cocktail) => void;
   onCancel: () => void;
   onViewThumbnail: (cocktail: Cocktail) => void;
+  isMobile?: boolean;
 }
 
 interface NewIngredientState {
@@ -57,7 +62,10 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
   onSave,
   onCancel,
   onViewThumbnail,
+  isMobile = false,
 }) => {
+  const theme = useTheme();
+  const isMobileView = useMediaQuery(theme.breakpoints.down('sm')) || isMobile;
   const [editingCocktail, setEditingCocktail] = useState<Cocktail>(initialCocktail);
   const [newIngredient, setNewIngredient] = useState<NewIngredientState>({
     order: 0,
@@ -197,13 +205,12 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
       }
     });
 
-    console.log('[CocktailEditForm] Saving cocktail:', JSON.stringify(finalCocktail, null, 2));
     onSave(finalCocktail);
   };
 
   return (
-    <Box sx={{ margin: 1 }}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ margin: isMobileView ? 0.5 : 1 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: isMobileView ? 2 : 3 }}>
         {/* Cocktail Name */}
         <Box>
           <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium', color: 'text.primary' }}>
@@ -213,8 +220,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
             value={editingCocktail.name}
             onChange={(e) => handleInputChange('name', e.target.value)}
             fullWidth
-            size="small"
-            sx={{ maxWidth: '400px' }}
+            size={isMobileView ? "small" : "medium"}
+            sx={{ maxWidth: isMobileView ? '100%' : '400px' }}
           />
         </Box>
 
@@ -226,6 +233,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
             </Typography>
             <Button
               variant="outlined"
+              size={isMobileView ? "small" : "medium"}
               onClick={(e) => {
                 e.stopPropagation();
                 onViewThumbnail(editingCocktail);
@@ -249,8 +257,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                 handleInputChange('glassType', selectedGlassType);
               }}
               displayEmpty
-              size="small"
-              sx={{ maxWidth: '300px' }}
+              size={isMobileView ? "small" : "medium"}
+              sx={{ maxWidth: isMobileView ? '100%' : '300px' }}
             >
               {glassTypes.map((glassType) => (
                 <MenuItem key={glassType.id} value={glassType.id}>
@@ -264,101 +272,201 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
           </FormControl>
         </Box>
 
-        {/* Ingredients Table */}
+        {/* Ingredients Section */}
         <Box>
           <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium', color: 'text.primary' }}>
             Ingredients
           </Typography>
-          <TableContainer component={Paper} sx={{ mb: 2, boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell width="20%">Amount</TableCell>
-                  <TableCell width="20%">Unit</TableCell>
-                  <TableCell width="50%">Name</TableCell>
-                  <TableCell width="10%" align="right"></TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {editingCocktail.ingredients.map((ingredient, index) => (
-                  <TableRow key={`${ingredient.ingredient.name}-${index}`} hover>
-                    <TableCell>
+          {isMobileView ? (
+            // Mobile view - Stack layout
+            <Stack spacing={1} sx={{ mb: 2 }}>
+              {editingCocktail.ingredients.map((ingredient, index) => (
+                <Paper key={`${ingredient.ingredient.name}-${index}`} 
+                  sx={{ 
+                    p: 1.5,
+                    backgroundColor: index % 2 === 0 ? 'rgba(0, 0, 0, 0.01)' : 'transparent'
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Ingredient {index + 1}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveIngredient(index);
+                      }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  </Box>
+                  <Stack spacing={1}>
+                    <TextField
+                      label="Name"
+                      size="small"
+                      value={editingIngredientNames[index] ?? ingredient.ingredient.name}
+                      onChange={(e) => handleIngredientNameChange(index, e.target.value)}
+                      onBlur={() => handleIngredientNameBlur(index)}
+                      fullWidth
+                    />
+                    <Box sx={{ display: 'flex', gap: 1 }}>
                       <TextField
+                        label="Amount"
                         size="small"
                         value={ingredient.amount || ''}
                         onChange={(e) => handleIngredientChange(index, 'amount', e.target.value)}
                         type="number"
                         inputProps={{ step: "0.25" }}
-                        fullWidth
+                        sx={{ width: '40%' }}
                       />
-                    </TableCell>
-                    <TableCell>
                       <TextField
+                        label="Unit"
                         size="small"
                         value={ingredient.unit || ''}
                         onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
-                        fullWidth
+                        sx={{ width: '60%' }}
                       />
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        size="small"
-                        value={editingIngredientNames[index] ?? ingredient.ingredient.name}
-                        onChange={(e) => handleIngredientNameChange(index, e.target.value)}
-                        onBlur={() => handleIngredientNameBlur(index)}
-                        fullWidth
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveIngredient(index);
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </TableCell>
+                    </Box>
+                  </Stack>
+                </Paper>
+              ))}
+            </Stack>
+          ) : (
+            // Desktop view - Table layout
+            <TableContainer component={Paper} sx={{ mb: 2, boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell width="20%">Amount</TableCell>
+                    <TableCell width="20%">Unit</TableCell>
+                    <TableCell width="50%">Name</TableCell>
+                    <TableCell width="10%" align="right"></TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {editingCocktail.ingredients.map((ingredient, index) => (
+                    <TableRow key={`${ingredient.ingredient.name}-${index}`} hover>
+                      <TableCell>
+                        <TextField
+                          size="small"
+                          value={ingredient.amount || ''}
+                          onChange={(e) => handleIngredientChange(index, 'amount', e.target.value)}
+                          type="number"
+                          inputProps={{ step: "0.25" }}
+                          fullWidth
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          size="small"
+                          value={ingredient.unit || ''}
+                          onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
+                          fullWidth
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <TextField
+                          size="small"
+                          value={editingIngredientNames[index] ?? ingredient.ingredient.name}
+                          onChange={(e) => handleIngredientNameChange(index, e.target.value)}
+                          onBlur={() => handleIngredientNameBlur(index)}
+                          fullWidth
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveIngredient(index);
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+
           {/* Add New Ingredient */}
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 2 }}>
-            <TextField
-              label="Amount"
-              size="small"
-              type="number"
-              inputProps={{ step: "0.25" }}
-              value={newIngredient.amount || ''}
-              onChange={(e) => setNewIngredient(prev => ({ ...prev, amount: e.target.value ? parseFloat(e.target.value) : undefined }))}
-              sx={{ width: '120px' }}
-            />
-            <TextField
-              label="Unit"
-              size="small"
-              value={newIngredient.unit || ''}
-              onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value as MeasurementUnit }))}
-              sx={{ width: '120px' }}
-            />
-            <TextField
-              label="Name"
-              size="small"
-              value={newIngredient.ingredient?.name || ''}
-              onChange={(e) => setNewIngredient(prev => ({ ...prev, ingredient: { ...prev.ingredient, name: e.target.value } }))}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddIngredient()}
-              sx={{ flex: 1 }}
-            />
-            <IconButton
-              color="primary"
-              onClick={handleAddIngredient}
-              disabled={!newIngredient.ingredient?.name?.trim()}
-            >
-              <Add />
-            </IconButton>
-          </Box>
+          {isMobileView ? (
+            <Stack spacing={1} sx={{ mt: 2 }}>
+              <TextField
+                label="Name"
+                size="small"
+                value={newIngredient.ingredient?.name || ''}
+                onChange={(e) => setNewIngredient(prev => ({ ...prev, ingredient: { ...prev.ingredient, name: e.target.value } }))}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddIngredient()}
+                fullWidth
+              />
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField
+                  label="Amount"
+                  size="small"
+                  type="number"
+                  inputProps={{ step: "0.25" }}
+                  value={newIngredient.amount || ''}
+                  onChange={(e) => setNewIngredient(prev => ({ ...prev, amount: e.target.value ? parseFloat(e.target.value) : undefined }))}
+                  sx={{ width: '40%' }}
+                />
+                <TextField
+                  label="Unit"
+                  size="small"
+                  value={newIngredient.unit || ''}
+                  onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value as MeasurementUnit }))}
+                  sx={{ width: '60%' }}
+                />
+              </Box>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleAddIngredient}
+                disabled={!newIngredient.ingredient?.name?.trim()}
+                fullWidth
+                startIcon={<Add />}
+              >
+                Add Ingredient
+              </Button>
+            </Stack>
+          ) : (
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mt: 2 }}>
+              <TextField
+                label="Amount"
+                size="small"
+                type="number"
+                inputProps={{ step: "0.25" }}
+                value={newIngredient.amount || ''}
+                onChange={(e) => setNewIngredient(prev => ({ ...prev, amount: e.target.value ? parseFloat(e.target.value) : undefined }))}
+                sx={{ width: '120px' }}
+              />
+              <TextField
+                label="Unit"
+                size="small"
+                value={newIngredient.unit || ''}
+                onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value as MeasurementUnit }))}
+                sx={{ width: '120px' }}
+              />
+              <TextField
+                label="Name"
+                size="small"
+                value={newIngredient.ingredient?.name || ''}
+                onChange={(e) => setNewIngredient(prev => ({ ...prev, ingredient: { ...prev.ingredient, name: e.target.value } }))}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddIngredient()}
+                sx={{ flex: 1 }}
+              />
+              <IconButton
+                color="primary"
+                onClick={handleAddIngredient}
+                disabled={!newIngredient.ingredient?.name?.trim()}
+              >
+                <Add />
+              </IconButton>
+            </Box>
+          )}
         </Box>
 
         {/* Instructions */}
@@ -368,8 +476,9 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
           </Typography>
           <TextField
             multiline
-            rows={3}
+            rows={isMobileView ? 4 : 3}
             fullWidth
+            size={isMobileView ? "small" : "medium"}
             value={editingCocktail.instructions}
             onChange={(e) => handleInputChange('instructions', e.target.value)}
             sx={{
@@ -389,14 +498,14 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
 
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-          <Button onClick={onCancel} variant="outlined" size="small">
+          <Button onClick={onCancel} variant="outlined" size={isMobileView ? "small" : "medium"}>
             Cancel
           </Button>
           <Button
             onClick={handleSaveClick}
             variant="contained"
             color="primary"
-            size="small"
+            size={isMobileView ? "small" : "medium"}
           >
             Save
           </Button>

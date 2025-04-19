@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Box } from '@mui/material';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail, CocktailIngredient } from '../services/cocktail.service';
 import { GlassType } from '../types/glass.types';
 import { FilterSidebar } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
@@ -31,6 +31,16 @@ export const CocktailsPage: React.FC = () => {
         const response = await fetch('/api/cocktails');
         const data = await response.json();
         setCocktails(data);
+        
+        // Log all ingredients from loaded cocktails
+        const allIngredients = data.flatMap((cocktail: Cocktail) => 
+          cocktail.ingredients.map((i: CocktailIngredient) => ({
+            cocktail: cocktail.name,
+            ingredient: i.ingredient.name,
+            type: i.ingredient.type
+          }))
+        );
+        console.log('All ingredients in loaded cocktails:', allIngredients);
       } catch (error) {
         console.error('Error fetching cocktails:', error);
       }
@@ -59,21 +69,21 @@ export const CocktailsPage: React.FC = () => {
 
   const handleGlassTypeChange = (glassType: string) => {
     setSelectedGlassTypes(prev => {
-      if (prev.includes(glassType)) {
-        return prev.filter(g => g !== glassType);
-      } else {
-        return [...prev, glassType];
-      }
+      const newGlassTypes = prev.includes(glassType)
+        ? prev.filter(g => g !== glassType)
+        : [...prev, glassType];
+      console.log('Selected glass type filters:', newGlassTypes);
+      return newGlassTypes;
     });
   };
 
   const handleSpiritChange = (spirit: BaseSpirit) => {
     setSelectedSpirits(prev => {
-      if (prev.includes(spirit)) {
-        return prev.filter(s => s !== spirit);
-      } else {
-        return [...prev, spirit];
-      }
+      const newSpirits = prev.includes(spirit)
+        ? prev.filter(s => s !== spirit)
+        : [...prev, spirit];
+      console.log('Selected spirit filters:', newSpirits);
+      return newSpirits;
     });
   };
 
@@ -115,19 +125,25 @@ export const CocktailsPage: React.FC = () => {
 
       // Apply spirit filter
       if (selectedSpirits.length > 0) {
-        const cocktailSpirits = cocktail.ingredients
-          .filter(i => i.ingredient.type === 'SPIRIT')
-          .map(i => {
-            const name = i.ingredient.name.toLowerCase();
-            if (name.includes('gin')) return 'Gin';
-            if (name.includes('whiskey') || name.includes('whisky') || name.includes('bourbon')) return 'Whiskey';
-            if (name.includes('vodka')) return 'Vodka';
-            if (name.includes('rum')) return 'Rum';
-            if (name.includes('tequila') || name.includes('mezcal')) return 'Tequila';
-            if (name.includes('brandy') || name.includes('cognac')) return 'Brandy';
-            return 'Other';
-          });
+        const spiritIngredients = cocktail.ingredients
+          .filter(i => i.ingredient.type.toLowerCase() === 'spirit')
+          .map(i => ({
+            name: i.ingredient.name,
+            type: i.ingredient.type,
+            category: (() => {
+              const name = i.ingredient.name.toLowerCase();
+              if (name.includes('gin')) return 'Gin';
+              if (name.includes('whiskey') || name.includes('whisky') || name.includes('bourbon') || name.includes('scotch') || name.includes('rye')) return 'Whiskey';
+              if (name.includes('vodka')) return 'Vodka';
+              if (name.includes('rum') || name.includes('rhum')) return 'Rum';
+              if (name.includes('tequila') || name.includes('mezcal')) return 'Tequila';
+              if (name.includes('brandy') || name.includes('cognac') || name.includes('armagnac')) return 'Brandy';
+              return 'Other';
+            })()
+          }));
 
+        const cocktailSpirits = spiritIngredients.map(i => i.category);
+        
         if (!selectedSpirits.some(spirit => cocktailSpirits.includes(spirit))) {
           return false;
         }
@@ -136,6 +152,15 @@ export const CocktailsPage: React.FC = () => {
       return true;
     })
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Log filtered cocktails and their ingredients
+  console.log('Filtered cocktails:', filteredCocktails.map(cocktail => ({
+    name: cocktail.name,
+    ingredients: cocktail.ingredients.map(i => ({
+      name: i.ingredient.name,
+      type: i.ingredient.type
+    }))
+  })));
 
   return (
     <Box sx={{ 

@@ -16,6 +16,8 @@ import {
   Collapse,
   Alert,
   Snackbar,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { Edit } from '@mui/icons-material'; // Remove unused Delete icon
 import { Ingredient, IngredientType } from '../types/ingredient.types';
@@ -32,21 +34,15 @@ interface HeadCell {
   width?: string;
 }
 
-const headCells: HeadCell[] = [
-  { id: 'name', label: 'Name', sortable: true, width: '25%' },
-  { id: 'type', label: 'Type', sortable: true, width: '15%' },
-  { id: 'description', label: 'Description', sortable: false, width: '40%' },
-  { id: 'actions', label: 'Actions', sortable: false, width: '20%' }, 
-];
-
 interface IngredientAdminTableHeaderProps {
   order: Order;
   orderBy: keyof Ingredient | string;
   onRequestSort: (property: keyof Ingredient) => void;
+  headCells: HeadCell[];
 }
 
 const IngredientAdminTableHeader: React.FC<IngredientAdminTableHeaderProps> = (props) => {
-  const { order, orderBy, onRequestSort } = props;
+  const { order, orderBy, onRequestSort, headCells } = props;
   const createSortHandler = (property: keyof Ingredient) => () => {
     onRequestSort(property);
   };
@@ -91,6 +87,8 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
   ingredients, 
   onIngredientUpdate 
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [order, setOrder] = useState<Order>('asc');
   const [orderBy, setOrderBy] = useState<keyof Ingredient | string>('name');
   const [page, setPage] = useState(0);
@@ -99,6 +97,12 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
+
+  const headCells: HeadCell[] = [
+    { id: 'name', label: 'Name', sortable: true, width: isMobile ? '50%' : '45%' },
+    { id: 'type', label: 'Type', sortable: true, width: isMobile ? '30%' : '35%' },
+    { id: 'actions', label: 'Actions', sortable: false, width: isMobile ? '20%' : '20%' }, 
+  ];
 
   const handleRequestSort = (property: keyof Ingredient) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -190,12 +194,42 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
 
   return (
     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-      <TableContainer component={Paper} sx={{ flexGrow: 1 }}>
-        <Table stickyHeader aria-label="ingredients admin table">
+      <TableContainer 
+        component={Paper} 
+        sx={{ 
+          flexGrow: 1,
+          '& .MuiTableCell-root': {
+            padding: isMobile ? '12px 8px' : '16px',
+            fontSize: isMobile ? '0.9rem' : '1rem',
+            borderBottom: '1px solid rgba(224, 224, 224, 0.5)',
+            whiteSpace: 'normal',
+            wordWrap: 'break-word',
+            minWidth: isMobile ? '80px' : '120px'
+          },
+          '& .MuiTableRow-root': {
+            '&:hover': {
+              backgroundColor: 'rgba(0, 0, 0, 0.02)',
+            },
+            '&:nth-of-type(odd)': {
+              backgroundColor: 'rgba(0, 0, 0, 0.01)',
+            }
+          }
+        }}
+      >
+        <Table 
+          stickyHeader 
+          aria-label="ingredients admin table" 
+          size={isMobile ? "small" : "medium"}
+          sx={{
+            tableLayout: 'fixed',
+            minWidth: isMobile ? '100%' : '500px'  // Reduced minimum width since we have fewer columns
+          }}
+        >
           <IngredientAdminTableHeader
             order={order}
             orderBy={orderBy}
             onRequestSort={handleRequestSort}
+            headCells={headCells}
           />
           <TableBody>
             {paginatedIngredients.map((ingredient) => {
@@ -204,39 +238,52 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
                 <React.Fragment key={ingredient.id}>
                   {/* Display Row - Only shown when NOT editing */}
                   <TableRow hover style={{ display: isEditing ? 'none' : undefined }}>
-                    <TableCell>
-                      <Typography variant="subtitle1" fontWeight="medium">
+                    <TableCell width={isMobile ? "50%" : "45%"}>
+                      <Typography 
+                        variant={isMobile ? "body2" : "subtitle1"} 
+                        fontWeight="medium"
+                        sx={{ 
+                          color: 'text.primary',
+                          mb: 0.5,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }}
+                      >
                         {ingredient.name}
                       </Typography>
                     </TableCell>
-                    <TableCell>
+                    <TableCell width={isMobile ? "30%" : "35%"}>
                       <Chip
                         label={ingredient.type.toUpperCase()}
                         color={getTypeChipColor(ingredient.type)}
-                        size="small"
-                        sx={{ fontWeight: 'bold' }}
+                        size={isMobile ? "small" : "medium"}
+                        sx={{ 
+                          fontWeight: 'bold',
+                          minWidth: isMobile ? '60px' : '80px',
+                          maxWidth: '100%',
+                          justifyContent: 'center'
+                        }}
                       />
                     </TableCell>
-                    <TableCell>
-                      <Typography variant="body2" color="text.secondary" sx={{ 
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}>
-                        {ingredient.description || 'N/A'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <IconButton onClick={() => handleEditClick(ingredient.id)} size="small" color="primary" disabled={isSaving}>
+                    <TableCell width={isMobile ? "20%" : "20%"}>
+                      <IconButton 
+                        onClick={() => handleEditClick(ingredient.id)} 
+                        size={isMobile ? "small" : "medium"} 
+                        color="primary" 
+                        disabled={isSaving}
+                        sx={{
+                          backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                          '&:hover': {
+                            backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                          }
+                        }}
+                      >
                         <Edit />
                       </IconButton>
-                      {/* Delete Button Placeholder */}
                     </TableCell>
                   </TableRow>
                   
-                  {/* Edit Row - Only shown when editing THIS ingredient */}
+                  {/* Edit Row */}
                   {isEditing && (
                     <TableRow> 
                       <TableCell colSpan={headCells.length} sx={{ p: 0, borderBottom: 'none' }}>
@@ -248,7 +295,7 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
                             ingredient={ingredient} 
                             onSave={handleSaveEdit}
                             onCancel={handleCancelEdit}
-                            isSaving={isSaving}
+                            isMobile={isMobile}
                           />
                         </Collapse>
                       </TableCell>
@@ -261,31 +308,31 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[5, 10, 25, 50]}
+        rowsPerPageOptions={[10, 25, 50, 100]}
         component="div"
         count={ingredients.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
-        sx={{ 
-          borderTop: '1px solid rgba(224, 224, 224, 1)',
-          flexShrink: 0 
+        sx={{
+          '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+            fontSize: isMobile ? '0.9rem' : '1rem'
+          }
         }}
       />
-      <Snackbar
-        open={snackbar?.open || false}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar(null)}
-      >
-        <Alert 
-          onClose={() => setSnackbar(null)} 
-          severity={snackbar?.severity || 'success'}
-          sx={{ width: '100%' }}
+      {snackbar && (
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-          {snackbar?.message}
-        </Alert>
-      </Snackbar>
+          <Alert onClose={() => setSnackbar(null)} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      )}
     </Box>
   );
 }; 
