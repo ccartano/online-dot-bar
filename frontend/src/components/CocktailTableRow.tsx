@@ -42,8 +42,8 @@ export const CocktailTableRow: React.FC<CocktailTableRowProps> = ({
   // Ensure the glass type object is properly set
   const cocktailWithGlassType = {
     ...cocktail,
-    glassTypeId: cocktail.glassTypeId,
-    glassTypeName: cocktail.glassTypeId ? glassTypes.find(gt => gt.id === cocktail.glassTypeId)?.name : undefined
+    glassType: cocktail.glassTypeId ? glassTypes.find(gt => gt.id === cocktail.glassTypeId) : undefined,
+    glassTypeId: cocktail.glassTypeId
   };
 
   const handleRowClick = (event: React.MouseEvent) => {

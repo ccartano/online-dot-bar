@@ -6,6 +6,7 @@ import { Alert, Snackbar, FormControlLabel, Switch, Box, Button } from '@mui/mat
 import { getApiUrl } from '../config/api.config';
 import { CocktailParserService } from '../services/cocktail-parser.service';
 import { GlassType } from '../types/glass.types';
+import { detectGlassTypeFromInstructions } from '../utils/glassTypeDetector';
 
 export const PotentialCocktailsPage: React.FC = () => {
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
@@ -35,12 +36,25 @@ export const PotentialCocktailsPage: React.FC = () => {
       }
       const { documents, hasMore: morePages } = await response.json();
       
+      // Fetch Glass Types first
+      const glassResponse = await fetch(getApiUrl('/glass-types'));
+      if (!glassResponse.ok) throw new Error('Failed to fetch glass types');
+      const glassData = await glassResponse.json();
+      setGlassTypes(glassData);
+      
       // Parse cocktails using the appropriate service based on document tags
       const parsedCocktails = CocktailParserService.parseCocktailsFromDocuments(documents)
-        .map(cocktail => ({
-          ...cocktail,
-          created: documents.find((doc: PaperlessDocument) => doc.id === cocktail.paperlessId)?.created
-        }));
+        .map(cocktail => {
+          // Detect glass type from instructions
+          const detectedGlassType = detectGlassTypeFromInstructions(cocktail.instructions || '', glassData);
+          
+          return {
+            ...cocktail,
+            created: documents.find((doc: PaperlessDocument) => doc.id === cocktail.paperlessId)?.created,
+            glassType: detectedGlassType || undefined,
+            glassTypeId: detectedGlassType?.id || undefined
+          } as Cocktail;
+        });
       
       // Check status for each cocktail
       const cocktailsWithStatus = await Promise.all(
@@ -79,12 +93,6 @@ export const PotentialCocktailsPage: React.FC = () => {
       setCocktails(prev => page === 1 ? cocktailsWithStatus : [...prev, ...cocktailsWithStatus]);
       setHasMore(morePages);
       setCurrentPage(page);
-
-      // Fetch Glass Types
-      const glassResponse = await fetch(getApiUrl('/glass-types'));
-      if (!glassResponse.ok) throw new Error('Failed to fetch glass types');
-      const glassData = await glassResponse.json();
-      setGlassTypes(glassData);
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
