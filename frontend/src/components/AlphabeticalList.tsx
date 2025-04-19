@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Box, Typography, styled, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Typography, styled } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 
 const StyledLink = styled(Box)({
@@ -43,8 +43,6 @@ export const AlphabeticalList = <T,>({
   renderItem 
 }: AlphabeticalListProps<T>) => {
   const location = useLocation();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const containerRef = useRef<HTMLDivElement>(null);
 
