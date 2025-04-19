@@ -126,7 +126,7 @@ export const CocktailsPage: React.FC = () => {
       // Apply spirit filter
       if (selectedSpirits.length > 0) {
         const spiritIngredients = cocktail.ingredients
-          .filter(i => i.ingredient.type.toLowerCase() === 'spirit')
+          .filter(i => i.ingredient?.type?.toLowerCase() === 'spirit')
           .map(i => ({
             name: i.ingredient.name,
             type: i.ingredient.type,

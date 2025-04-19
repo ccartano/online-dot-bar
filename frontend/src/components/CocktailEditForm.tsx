@@ -21,7 +21,6 @@ import {
   useMediaQuery,
   useTheme,
   Stack,
-  Divider,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import { Icon } from '@mdi/react';
