@@ -183,10 +183,22 @@ export class AmericanBartendersHandbookService {
         // If no unit was detected, suggest one based on the ingredient name
         const finalUnit = unit === MeasurementUnit.OTHER ? this.suggestUnit(ingredientName) : unit;
         
+        // For liquids with no amount, use OTHER instead of OZ
+        const isLiquid = ingredientName.toLowerCase().includes('juice') || 
+                        ingredientName.toLowerCase().includes('soda') || 
+                        ingredientName.toLowerCase().includes('tonic') || 
+                        ingredientName.toLowerCase().includes('water') || 
+                        ingredientName.toLowerCase().includes('vermouth') || 
+                        ingredientName.toLowerCase().includes('wine');
+        
+        const adjustedUnit = (finalUnit === MeasurementUnit.OZ && isLiquid && value === undefined) 
+          ? MeasurementUnit.OTHER 
+          : finalUnit;
+        
         ingredients.push({
           order: ingredients.length + 1,
           amount: value,
-          unit: finalUnit,
+          unit: adjustedUnit,
           ingredient: {
             id: -1, // Temporary ID that will be replaced when saving to the backend
             name: ingredientName,
