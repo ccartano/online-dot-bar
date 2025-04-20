@@ -3,10 +3,10 @@ export enum IngredientType {
   LIQUEUR = 'liqueur',
   MIXER = 'mixer',
   GARNISH = 'garnish',
-  WINE = 'fortified wines & wines',
+  WINE = 'wine',
   BITTER = 'bitter',
   SYRUP = 'syrup',
-  ENHANCERS = 'flavor enhancers',
+  ENHANCERS = 'enhancers',
   OTHER = 'other',
 }
 

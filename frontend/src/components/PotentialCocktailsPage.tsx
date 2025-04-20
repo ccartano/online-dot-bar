@@ -90,9 +90,34 @@ export const PotentialCocktailsPage: React.FC = () => {
         })
       );
       
-      setCocktails(prev => page === 1 ? cocktailsWithStatus : [...prev, ...cocktailsWithStatus]);
+      // Remove duplicates based on paperlessId when appending new cocktails
+      setCocktails(prev => {
+        if (page === 1) {
+          return cocktailsWithStatus;
+        }
+        
+        // Create a map of existing cocktails by paperlessId
+        const existingCocktails = new Map(prev.map(c => [c.paperlessId, c]));
+        
+        // Add new cocktails, skipping any that already exist
+        cocktailsWithStatus.forEach(cocktail => {
+          if (!existingCocktails.has(cocktail.paperlessId)) {
+            existingCocktails.set(cocktail.paperlessId, cocktail);
+          }
+        });
+        
+        // Convert the map back to an array
+        return Array.from(existingCocktails.values());
+      });
+      
       setHasMore(morePages);
       setCurrentPage(page);
+
+      // If showing only pending cocktails and all cocktails on this page are active,
+      // automatically load the next page
+      if (showOnlyPending && morePages && cocktailsWithStatus.every(c => c.status === 'active')) {
+        fetchCocktailsAndGlassTypes(page + 1);
+      }
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');

@@ -18,6 +18,10 @@ import {
   Snackbar,
   useMediaQuery,
   useTheme,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
 import { Edit } from '@mui/icons-material'; // Remove unused Delete icon
 import { Ingredient, IngredientType } from '../types/ingredient.types';
@@ -97,6 +101,7 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
+  const [typeFilter, setTypeFilter] = useState<IngredientType | 'all'>('all');
 
   const headCells: HeadCell[] = [
     { id: 'name', label: 'Name', sortable: true, width: isMobile ? '50%' : '45%' },
@@ -163,37 +168,64 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
     }
   };
 
-  const sortedIngredients = useMemo(() => {
-    return [...ingredients].sort((a, b) => {
-      const valA = a[orderBy as keyof Ingredient];
-      const valB = b[orderBy as keyof Ingredient];
-      if (typeof valA === 'string' && typeof valB === 'string') {
-        return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-      }
-      return 0;
-    });
-  }, [ingredients, order, orderBy]);
+  const filteredAndSortedIngredients = useMemo(() => {
+    return [...ingredients]
+      .filter(ingredient => typeFilter === 'all' || ingredient.type === typeFilter)
+      .sort((a, b) => {
+        const valA = a[orderBy as keyof Ingredient];
+        const valB = b[orderBy as keyof Ingredient];
+        if (typeof valA === 'string' && typeof valB === 'string') {
+          return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+        return 0;
+      });
+  }, [ingredients, order, orderBy, typeFilter]);
 
   const paginatedIngredients = useMemo(() => {
-    return sortedIngredients.slice(
+    return filteredAndSortedIngredients.slice(
       page * rowsPerPage,
       page * rowsPerPage + rowsPerPage
     );
-  }, [sortedIngredients, page, rowsPerPage]);
+  }, [filteredAndSortedIngredients, page, rowsPerPage]);
 
   const getTypeChipColor = (type: IngredientType) => {
     switch (type) {
       case IngredientType.SPIRIT: return 'primary';
-      case IngredientType.MIXER: return 'secondary';
+      case IngredientType.LIQUEUR: return 'secondary';
+      case IngredientType.MIXER: return 'info';
       case IngredientType.GARNISH: return 'success';
       case IngredientType.BITTER: return 'warning';
-      case IngredientType.SYRUP: return 'info';
+      case IngredientType.SYRUP: return 'error';
+      case IngredientType.WINE: return 'primary';
+      case IngredientType.ENHANCERS: return 'secondary';
+      case IngredientType.OTHER: return 'default';
       default: return 'default';
     }
   };
 
   return (
     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+        <FormControl size="small" sx={{ minWidth: 120 }}>
+          <InputLabel id="type-filter-label">Filter by Type</InputLabel>
+          <Select
+            labelId="type-filter-label"
+            value={typeFilter}
+            label="Filter by Type"
+            onChange={(e) => {
+              setTypeFilter(e.target.value as IngredientType | 'all');
+              setPage(0); // Reset to first page when filter changes
+            }}
+          >
+            <MenuItem value="all">All Types</MenuItem>
+            {Object.values(IngredientType).map((type) => (
+              <MenuItem key={type} value={type}>
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
       <TableContainer 
         component={Paper} 
         sx={{ 
@@ -310,7 +342,7 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
       <TablePagination
         rowsPerPageOptions={[10, 25, 50, 100]}
         component="div"
-        count={ingredients.length}
+        count={filteredAndSortedIngredients.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}

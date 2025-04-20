@@ -16,6 +16,8 @@ export enum IngredientType {
   GARNISH = 'garnish', // e.g., lime, mint, cherry
   BITTER = 'bitter', // e.g., Angostura, Peychaud's
   SYRUP = 'syrup', // e.g., simple syrup, grenadine
+  WINE = 'wine',
+  ENHANCERS = 'enhancers',
   OTHER = 'other', // for anything that doesn't fit above
 }
 

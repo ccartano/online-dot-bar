@@ -6,6 +6,53 @@ export class AmericanBartendersHandbookService {
     return str.trim().toLowerCase();
   }
 
+  // Helper function to suggest the best unit based on ingredient name
+  private static suggestUnit(ingredientName: string): MeasurementUnit {
+    // Remove 'es' or 's' from the beginning of the name
+    const cleanName = ingredientName.toLowerCase()
+      .replace(/^es\s+/, '')  // Remove 'es' at the beginning
+      .replace(/^s\s+/, '');  // Remove 's' at the beginning
+
+    // Check for specific ingredient names
+    if (cleanName.includes('bitters')) {
+      return MeasurementUnit.DASH;
+    }
+    if (cleanName.includes('sugar') || cleanName.includes('salt')) {
+      return MeasurementUnit.PINCH;
+    }
+    if (cleanName.includes('juice') || cleanName.includes('soda') || cleanName.includes('tonic')) {
+      return MeasurementUnit.OZ;
+    }
+    if (cleanName.includes('lime') || cleanName.includes('lemon') || cleanName.includes('orange')) {
+      if (cleanName.includes('twist') || cleanName.includes('peel')) {
+        return MeasurementUnit.TWIST;
+      }
+      if (cleanName.includes('wedge') || cleanName.includes('slice')) {
+        return MeasurementUnit.WEDGE;
+      }
+    }
+    if (cleanName.includes('mint') || cleanName.includes('herb')) {
+      return MeasurementUnit.SPRIG;
+    }
+    if (cleanName.includes('olive') || cleanName.includes('cherry')) {
+      return MeasurementUnit.PIECE;
+    }
+
+    // Default to ounces for liquids
+    if (cleanName.includes('water') || cleanName.includes('soda') || cleanName.includes('tonic') || 
+        cleanName.includes('juice') || cleanName.includes('vermouth') || cleanName.includes('wine')) {
+      return MeasurementUnit.OZ;
+    }
+
+    // Default to pieces for garnishes
+    if (cleanName.includes('garnish') || cleanName.includes('decor')) {
+      return MeasurementUnit.PIECE;
+    }
+
+    // Default to ounces for most other ingredients
+    return MeasurementUnit.OZ;
+  }
+
   private static parseAmount(amount: string): { value: number | undefined; unit: MeasurementUnit } {
     // Handle OCR errors by replacing common misreads
     const normalizedAmount = amount
@@ -128,13 +175,18 @@ export class AmericanBartendersHandbookService {
         .replace(/[^a-z\u00C0-\u00FF\u0100-\u017F\u0180-\u024F\s-]/g, ' ')
         .replace(/\s+/g, ' ')
         .replace(/^\s*of\s+/, '')
+        .replace(/^es\s+/, '')  // Remove 'es' at the beginning
+        .replace(/^s\s+/, '')   // Remove 's' at the beginning
         .trim();
 
       if (ingredientName && (ingredientName.length > 2 || (value !== undefined && unit !== MeasurementUnit.OTHER))) {
+        // If no unit was detected, suggest one based on the ingredient name
+        const finalUnit = unit === MeasurementUnit.OTHER ? this.suggestUnit(ingredientName) : unit;
+        
         ingredients.push({
           order: ingredients.length + 1,
           amount: value,
-          unit,
+          unit: finalUnit,
           ingredient: {
             id: -1, // Temporary ID that will be replaced when saving to the backend
             name: ingredientName,

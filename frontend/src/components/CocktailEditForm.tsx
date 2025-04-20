@@ -55,6 +55,53 @@ const generateSlug = (name: string): string => {
     .replace(/(^-|-$)/g, '');
 };
 
+// Helper function to suggest the best unit based on ingredient name
+const suggestUnit = (ingredientName: string): MeasurementUnit => {
+  // Remove 'es' or 's' from the beginning of the name
+  const cleanName = ingredientName.toLowerCase()
+    .replace(/^es\s+/, '')  // Remove 'es' at the beginning
+    .replace(/^s\s+/, '');  // Remove 's' at the beginning
+
+  // Check for specific ingredient names
+  if (cleanName.includes('bitters')) {
+    return MeasurementUnit.DASH;
+  }
+  if (cleanName.includes('sugar') || cleanName.includes('salt')) {
+    return MeasurementUnit.PINCH;
+  }
+  if (cleanName.includes('juice') || cleanName.includes('soda') || cleanName.includes('tonic')) {
+    return MeasurementUnit.OZ;
+  }
+  if (cleanName.includes('lime') || cleanName.includes('lemon') || cleanName.includes('orange')) {
+    if (cleanName.includes('twist') || cleanName.includes('peel')) {
+      return MeasurementUnit.TWIST;
+    }
+    if (cleanName.includes('wedge') || cleanName.includes('slice')) {
+      return MeasurementUnit.WEDGE;
+    }
+  }
+  if (cleanName.includes('mint') || cleanName.includes('herb')) {
+    return MeasurementUnit.SPRIG;
+  }
+  if (cleanName.includes('olive') || cleanName.includes('cherry')) {
+    return MeasurementUnit.PIECE;
+  }
+
+  // Default to ounces for liquids
+  if (cleanName.includes('water') || cleanName.includes('soda') || cleanName.includes('tonic') || 
+      cleanName.includes('juice') || cleanName.includes('vermouth') || cleanName.includes('wine')) {
+    return MeasurementUnit.OZ;
+  }
+
+  // Default to pieces for garnishes
+  if (cleanName.includes('garnish') || cleanName.includes('decor')) {
+    return MeasurementUnit.PIECE;
+  }
+
+  // Default to ounces for most other ingredients
+  return MeasurementUnit.OZ;
+};
+
 export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
   initialCocktail,
   glassTypes,
@@ -135,6 +182,10 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
       ...prev,
       [index]: value
     }));
+
+    // Auto-select the unit based on the ingredient name
+    const suggestedUnit = suggestUnit(value);
+    handleIngredientChange(index, 'unit', suggestedUnit);
   };
 
   const handleIngredientNameBlur = (index: number) => {
@@ -319,13 +370,22 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                         inputProps={{ step: "0.25" }}
                         sx={{ width: '40%' }}
                       />
-                      <TextField
-                        label="Unit"
-                        size="small"
-                        value={ingredient.unit || ''}
-                        onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
-                        sx={{ width: '60%' }}
-                      />
+                      <FormControl size="small" sx={{ width: '60%' }}>
+                        <Select
+                          value={ingredient.unit || ''}
+                          onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
+                          displayEmpty
+                        >
+                          <MenuItem value="">
+                            <em>Select unit</em>
+                          </MenuItem>
+                          {Object.values(MeasurementUnit).map((unit) => (
+                            <MenuItem key={unit} value={unit}>
+                              {unit.toLowerCase()}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
                     </Box>
                   </Stack>
                 </Paper>
@@ -357,12 +417,22 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                         />
                       </TableCell>
                       <TableCell>
-                        <TextField
-                          size="small"
-                          value={ingredient.unit || ''}
-                          onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
-                          fullWidth
-                        />
+                        <FormControl size="small" fullWidth>
+                          <Select
+                            value={ingredient.unit || ''}
+                            onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
+                            displayEmpty
+                          >
+                            <MenuItem value="">
+                              <em>Select unit</em>
+                            </MenuItem>
+                            {Object.values(MeasurementUnit).map((unit) => (
+                              <MenuItem key={unit} value={unit}>
+                                {unit.toLowerCase()}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
                       </TableCell>
                       <TableCell>
                         <TextField
@@ -412,13 +482,22 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                   onChange={(e) => setNewIngredient(prev => ({ ...prev, amount: e.target.value ? parseFloat(e.target.value) : undefined }))}
                   sx={{ width: '40%' }}
                 />
-                <TextField
-                  label="Unit"
-                  size="small"
-                  value={newIngredient.unit || ''}
-                  onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value as MeasurementUnit }))}
-                  sx={{ width: '60%' }}
-                />
+                <FormControl size="small" sx={{ width: '60%' }}>
+                  <Select
+                    value={newIngredient.unit || ''}
+                    onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value as MeasurementUnit }))}
+                    displayEmpty
+                  >
+                    <MenuItem value="">
+                      <em>Select unit</em>
+                    </MenuItem>
+                    {Object.values(MeasurementUnit).map((unit) => (
+                      <MenuItem key={unit} value={unit}>
+                        {unit.toLowerCase()}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Box>
               <Button
                 variant="contained"
@@ -442,13 +521,22 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                 onChange={(e) => setNewIngredient(prev => ({ ...prev, amount: e.target.value ? parseFloat(e.target.value) : undefined }))}
                 sx={{ width: '120px' }}
               />
-              <TextField
-                label="Unit"
-                size="small"
-                value={newIngredient.unit || ''}
-                onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value as MeasurementUnit }))}
-                sx={{ width: '120px' }}
-              />
+              <FormControl size="small" sx={{ width: '120px' }}>
+                <Select
+                  value={newIngredient.unit || ''}
+                  onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value as MeasurementUnit }))}
+                  displayEmpty
+                >
+                  <MenuItem value="">
+                    <em>Select unit</em>
+                  </MenuItem>
+                  {Object.values(MeasurementUnit).map((unit) => (
+                    <MenuItem key={unit} value={unit}>
+                      {unit.toLowerCase()}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
               <TextField
                 label="Name"
                 size="small"
