@@ -183,9 +183,9 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
       [index]: value
     }));
 
-    // Auto-select the unit based on the ingredient name
-    const suggestedUnit = suggestUnit(value);
-    handleIngredientChange(index, 'unit', suggestedUnit);
+    // Remove auto unit selection
+    // const suggestedUnit = suggestUnit(value);
+    // handleIngredientChange(index, 'unit', suggestedUnit);
   };
 
   const handleIngredientNameBlur = (index: number) => {
