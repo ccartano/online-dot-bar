@@ -1,0 +1,107 @@
+.search-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 25px;
+  outline: none;
+  transition: all 0.3s ease;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.search-input:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.search-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover,
+.search-result-item.selected {
+  background-color: #f5f5f5;
+}
+
+.result-name {
+  font-weight: 500;
+  color: #333;
+}
+
+.result-type {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.more-results-message {
+  padding: 12px 20px;
+  font-size: 0.9em;
+  color: #666;
+  text-align: center;
+  border-top: 1px solid #eee;
+  background-color: #fafafa;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .search-container {
+    padding: 0 16px;
+    position: relative; /* Ensure container maintains position context */
+  }
+
+  .search-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px 16px;
+  }
+
+  .search-results {
+    position: absolute; /* Keep dropdown absolute positioned */
+    top: 100%; /* Position below search input */
+    left: 16px; /* Account for container padding */
+    right: 16px;
+    margin-top: 8px;
+    border-radius: 8px;
+    max-height: 60vh; /* Limit height but allow more space on mobile */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .search-result-item {
+    padding: 16px 20px;
+  }
+
+  .more-results-message {
+    padding: 16px 20px;
+  }
+} 

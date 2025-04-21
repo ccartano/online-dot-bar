@@ -1,7 +1,11 @@
 import React from 'react';
-import { Box, Container, Typography } from '@mui/material';
+import { Box, Container, Typography, useTheme, useMediaQuery } from '@mui/material';
+import SearchBar from './SearchBar';
 
 const LandingPage: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <Box
       sx={{
@@ -32,55 +36,21 @@ const LandingPage: React.FC = () => {
               textAlign: 'center',
               lineHeight: 1,
               margin: 0,
+              fontSize: {
+                xs: '3rem',    // For extra-small devices
+                sm: '4rem',    // For small devices
+                md: '6rem',    // For medium devices and up
+              },
+              fontFamily: 'Corinthia, cursive',
+              fontWeight: 400,
             }}
           >
             The Online.Bar
           </Typography>
           
-          {/* Search functionality temporarily disabled
-          <Box
-            component="form"
-            onSubmit={handleSearch}
-            sx={{
-              width: '100%',
-              maxWidth: '600px',
-              display: 'flex',
-              gap: 2,
-            }}
-          >
-            <SearchInput
-              fullWidth
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search for cocktails, ingredients..."
-              variant="outlined"
-              size="medium"
-              sx={{ 
-                flex: 1,
-                '& .MuiOutlinedInput-root': {
-                  height: '56px',
-                }
-              }}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              sx={{
-                fontFamily: 'Corinthia, cursive',
-                fontSize: '1.5rem',
-                px: 4,
-                backgroundColor: '#9CB4A3',
-                color: '#1A1A1A',
-                '&:hover': {
-                  backgroundColor: '#7A9084',
-                },
-              }}
-            >
-              Search
-            </Button>
+          <Box sx={{ width: '100%', maxWidth: '600px' }}>
+            <SearchBar />
           </Box>
-          */}
         </Box>
       </Container>
     </Box>

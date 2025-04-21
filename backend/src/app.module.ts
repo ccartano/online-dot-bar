@@ -8,6 +8,7 @@ import { CocktailsModule } from './cocktails/cocktails.module';
 import { IngredientsModule } from './ingredients/ingredients.module';
 import { CategoriesModule } from './categories/categories.module';
 import { GlassTypesModule } from './glass-types/glass-types.module';
+import { SearchModule } from './search/search.module';
 import { Cocktail } from './entities/cocktail.entity';
 import { PaperlessService } from './services/paperless.service';
 import { PaperlessController } from './controllers/paperless.controller';
@@ -24,6 +25,7 @@ import { CocktailsController } from './cocktails/cocktails.controller';
     IngredientsModule,
     CategoriesModule,
     GlassTypesModule,
+    SearchModule,
   ],
   controllers: [AppController, PaperlessController, CocktailsController],
   providers: [

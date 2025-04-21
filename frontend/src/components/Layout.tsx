@@ -71,6 +71,7 @@ const StyledNav = styled('nav')`
   display: flex;
   align-items: center;
   padding: 0 16px;
+  justify-content: space-between;
 
   @media (min-width: 600px) {
     height: 64px;
@@ -85,6 +86,20 @@ const StyledLink = styled(Link)(({ theme }: { theme: Theme }) => ({
   '&:hover': {
     color: theme.palette.primary.main,
   },
+}));
+
+const StyledHomeLink = styled(Link)(({ theme }: { theme: Theme }) => ({
+  textDecoration: 'none',
+  color: theme.palette.secondary.main,
+  transition: 'color 0.2s ease',
+  '&:hover': {
+    color: theme.palette.primary.main,
+  },
+  fontSize: '1.5rem',
+  fontFamily: 'Corinthia, cursive',
+  '@media (min-width: 600px)': {
+    fontSize: '2rem',
+  }
 }));
 
 const navItems: NavItem[] = [
@@ -170,17 +185,12 @@ const MobileMenu = memo(({
       p: 2, 
       borderBottom: '1px solid #eee',
       display: 'flex',
-      alignItems: 'center'
+      alignItems: 'center',
+      justifyContent: 'center'
     }}>
-      <Typography
-        variant="decorative"
-        sx={{
-          color: 'secondary.main',
-          fontSize: '2rem'
-        }}
-      >
-        Menu
-      </Typography>
+      <StyledHomeLink to="/" onClick={onClose}>
+        The Online.Bar
+      </StyledHomeLink>
     </Box>
     <List sx={{ 
       display: 'flex',
@@ -239,71 +249,37 @@ export const Layout: React.FC<{ children: React.ReactNode }> = memo(({ children 
     <ThemeProvider theme={theme}>
       <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <StyledNav>
-          {isMobile && (
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ 
-                color: 'secondary.main',
-                '&:hover': {
-                  backgroundColor: 'transparent'
-                },
-                '& .MuiSvgIcon-root': {
-                  fontSize: '1.75rem'
-                }
-              }}
-            >
-              <MenuIcon />
-            </IconButton>
-          )}
-          
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            width: '100%',
-            position: 'relative'
-          }}>
-            <StyledLink to="/">
-              <Typography
-                variant="decorativeLarge"
-                sx={{
-                  display: { xs: 'none', sm: 'block' },
-                  whiteSpace: 'nowrap',
-                  fontSize: { sm: '2rem', md: '2.5rem' },
-                  fontFamily: 'Corinthia, cursive'
+          {isMobile ? (
+            <>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={handleDrawerToggle}
+                sx={{ 
+                  color: 'secondary.main',
+                  '&:hover': {
+                    color: 'primary.main'
+                  }
                 }}
               >
+                <MenuIcon />
+              </IconButton>
+              <StyledHomeLink to="/">
                 The Online.Bar
-              </Typography>
-            </StyledLink>
-            
-            <Typography
-              variant="decorativeLarge"
-              sx={{
-                display: { xs: 'block', sm: 'none' },
-                position: 'absolute',
-                left: '50%',
-                top: '50%',
-                transform: 'translate(-50%, -50%)',
-                whiteSpace: 'nowrap',
-                fontSize: '2rem',
-                fontFamily: 'Corinthia, cursive'
-              }}
-            >
-              The Online.Bar
-            </Typography>
-
-            {!isMobile && (
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 2,
-                  flex: 1
+              </StyledHomeLink>
+              <Box sx={{ width: 48 }} /> {/* Spacer to center the title */}
+            </>
+          ) : (
+            <>
+              <StyledHomeLink to="/">
+                The Online.Bar
+              </StyledHomeLink>
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  gap: 4,
+                  alignItems: 'center'
                 }}
               >
                 {navItems.map((item) => (
@@ -314,31 +290,23 @@ export const Layout: React.FC<{ children: React.ReactNode }> = memo(({ children 
                   />
                 ))}
               </Box>
-            )}
-            
-            {!isMobile && <Box sx={{ width: '40px' }} />}
-          </Box>
-          
-          {isMobile && <Box sx={{ width: '40px' }} />}
-          
-          <MobileMenu 
-            open={mobileOpen} 
-            onClose={handleDrawerToggle} 
-            navItems={navItems} 
-            isActive={isActive} 
-          />
+            </>
+          )}
         </StyledNav>
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            width: '100%',
-            px: { xs: 2, sm: 3, md: 4 }
-          }}
-        >
+        
+        <MobileMenu 
+          open={mobileOpen} 
+          onClose={handleDrawerToggle} 
+          navItems={navItems}
+          isActive={isActive}
+        />
+        
+        <Box component="main" sx={{ flex: 1 }}>
           {children}
         </Box>
       </Box>
     </ThemeProvider>
   );
-}); 
+});
+
+export default Layout; 
