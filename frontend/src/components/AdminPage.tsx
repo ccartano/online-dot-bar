@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Box, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tabs, Tab, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tabs, Tab, CircularProgress } from '@mui/material';
 import { AdminLogin } from './AdminLogin';
 import { AdminService } from '../services/admin.service';
 import { CocktailTable } from './CocktailTable';
@@ -43,8 +43,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({ open, onClose, 
   );
 };
 
-export const AdminPage = () => {
-  const theme = useTheme();
+export const AdminPage: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(AdminService.isAdmin());
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
   const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CocktailTable } from './CocktailTable';
 import { PaperlessDocument } from '../types/paperless.types';
 import { Cocktail } from '../services/cocktail.service';
-import { Alert, Snackbar, FormControlLabel, Switch, Box, Button, Typography } from '@mui/material';
+import { Alert, Snackbar, Box, Button, Typography } from '@mui/material';
 import { getApiUrl } from '../config/api.config';
 import { CocktailParserService } from '../services/cocktail-parser.service';
 import { GlassType } from '../types/glass.types';
@@ -12,7 +12,7 @@ export const PotentialCocktailsPage: React.FC = () => {
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showOnlyPending, setShowOnlyPending] = useState(true);
+  const [showOnlyPending] = useState(true);
   const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,

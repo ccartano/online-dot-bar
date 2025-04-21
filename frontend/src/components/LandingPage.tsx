@@ -1,10 +1,8 @@
 import React from 'react';
-import { Box, Container, Typography, useTheme } from '@mui/material';
+import { Box, Container, Typography } from '@mui/material';
 import SearchBar from './SearchBar';
 
-const LandingPage: React.FC = () => {
-  const theme = useTheme();
-
+export const LandingPage: React.FC = () => {
   return (
     <Box
       sx={{
