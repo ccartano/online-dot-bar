@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Box } from '@mui/material';
-import { Cocktail, CocktailIngredient } from '../services/cocktail.service';
+import { Cocktail } from '../services/cocktail.service';
 import { GlassType } from '../types/glass.types';
 import { FilterSidebar } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
