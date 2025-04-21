@@ -32,15 +32,7 @@ export const CocktailsPage: React.FC = () => {
         const data = await response.json();
         setCocktails(data);
         
-        // Log all ingredients from loaded cocktails
-        const allIngredients = data.flatMap((cocktail: Cocktail) => 
-          cocktail.ingredients.map((i: CocktailIngredient) => ({
-            cocktail: cocktail.name,
-            ingredient: i.ingredient.name,
-            type: i.ingredient.type
-          }))
-        );
-        console.log('All ingredients in loaded cocktails:', allIngredients);
+       
       } catch (error) {
         console.error('Error fetching cocktails:', error);
       }
@@ -72,7 +64,6 @@ export const CocktailsPage: React.FC = () => {
       const newGlassTypes = prev.includes(glassType)
         ? prev.filter(g => g !== glassType)
         : [...prev, glassType];
-      console.log('Selected glass type filters:', newGlassTypes);
       return newGlassTypes;
     });
   };
@@ -82,7 +73,6 @@ export const CocktailsPage: React.FC = () => {
       const newSpirits = prev.includes(spirit)
         ? prev.filter(s => s !== spirit)
         : [...prev, spirit];
-      console.log('Selected spirit filters:', newSpirits);
       return newSpirits;
     });
   };
@@ -152,15 +142,6 @@ export const CocktailsPage: React.FC = () => {
       return true;
     })
     .sort((a, b) => a.name.localeCompare(b.name));
-
-  // Log filtered cocktails and their ingredients
-  console.log('Filtered cocktails:', filteredCocktails.map(cocktail => ({
-    name: cocktail.name,
-    ingredients: cocktail.ingredients.map(i => ({
-      name: i.ingredient.name,
-      type: i.ingredient.type
-    }))
-  })));
 
   return (
     <Box sx={{ 

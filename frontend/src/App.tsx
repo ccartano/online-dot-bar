@@ -5,7 +5,6 @@ import { Layout } from './components/Layout';
 import LandingPage from './components/LandingPage';
 import { CocktailsPage } from './components/CocktailsPage';
 import { CocktailDetailPage } from './components/CocktailDetailPage';
-import { PotentialCocktailsPage } from './components/PotentialCocktailsPage';
 import { AdminPage } from './components/AdminPage';
 import { IngredientsPage } from './components/IngredientsPage';
 import { IngredientDetailPage } from './components/IngredientDetailPage';
@@ -24,7 +23,6 @@ const App = () => {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/cocktails" element={<CocktailsPage />} />
                 <Route path="/cocktails/:slug" element={<CocktailDetailPage />} />
-                <Route path="/potential-cocktails" element={<PotentialCocktailsPage />} />
                 <Route path="/ingredients" element={<IngredientsPage />} />
                 <Route path="/ingredients/:slug" element={<IngredientDetailPage />} />
               </Routes>
