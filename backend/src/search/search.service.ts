@@ -8,6 +8,7 @@ export interface SearchResult {
   slug: string;
   type: 'cocktail' | 'ingredient';
   ingredientType?: string;
+  matchedIngredients?: string[];
 }
 
 @Injectable()
@@ -29,6 +30,56 @@ export class SearchService {
       }
     }
     return false;
+  }
+
+  async searchByIngredients(ingredients: string[]): Promise<SearchResult[]> {
+    if (!ingredients || ingredients.length === 0) {
+      return [];
+    }
+
+    const cocktails = await this.cocktailService.findAll();
+    const results: SearchResult[] = [];
+
+    // For each cocktail, check if it contains ALL of the searched ingredients
+    cocktails.forEach(cocktail => {
+      const matchedIngredients: string[] = [];
+      let hasAllIngredients = true;
+
+      // Check each searched ingredient against the cocktail's ingredients
+      ingredients.forEach(searchedIngredient => {
+        let found = false;
+        cocktail.ingredients.forEach(cocktailIngredient => {
+          if (this.fuzzyMatch(cocktailIngredient.ingredient.name, searchedIngredient)) {
+            matchedIngredients.push(cocktailIngredient.ingredient.name);
+            found = true;
+          }
+        });
+        if (!found) {
+          hasAllIngredients = false;
+        }
+      });
+
+      // Only add to results if all ingredients were found
+      if (hasAllIngredients) {
+        results.push({
+          id: cocktail.id.toString(),
+          name: cocktail.name,
+          slug: cocktail.slug,
+          type: 'cocktail',
+          matchedIngredients: [...new Set(matchedIngredients)] // Remove duplicates
+        });
+      }
+    });
+
+    // Sort results by number of matched ingredients (most matches first)
+    const sortedResults = results.sort((a, b) => {
+      const aMatches = a.matchedIngredients?.length || 0;
+      const bMatches = b.matchedIngredients?.length || 0;
+      return bMatches - aMatches;
+    });
+
+    // Return only the top 10 results
+    return sortedResults.slice(0, 10);
   }
 
   async search(query: string): Promise<SearchResult[]> {

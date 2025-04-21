@@ -79,6 +79,9 @@ const SearchBar: React.FC = () => {
           placeholder="Search cocktails or ingredients..."
           className="search-input"
         />
+        <div className="search-helper-text">
+          Search multiple ingredients comma separated
+        </div>
         {isOpen && results.length > 0 && (
           <div className="search-results">
             {results.map((result, index) => (

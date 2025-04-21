@@ -102,6 +102,14 @@ const StyledHomeLink = styled(Link)(({ theme }: { theme: Theme }) => ({
   }
 }));
 
+const NavItemsContainer = styled(Box)`
+  display: flex;
+  gap: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+`;
+
 const navItems: NavItem[] = [
   { text: 'Cocktails', path: '/cocktails' },
   { text: 'Ingredients', path: '/ingredients' },
@@ -131,7 +139,17 @@ const NavItem = memo(({ item, isActive, onClick }: {
         transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
         transition: 'transform 0.2s ease',
         transformOrigin: 'center'
-      }
+      },
+      '&:not(:last-child)::before': {
+        content: '""',
+        position: 'absolute',
+        right: 0,
+        top: '25%',
+        bottom: '25%',
+        width: '1px',
+        backgroundColor: '#eee',
+      },
+      padding: '0 2rem'
     }}
   >
     <StyledLink 
@@ -275,13 +293,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = memo(({ children 
               <StyledHomeLink to="/">
                 The Online.Bar
               </StyledHomeLink>
-              <Box 
-                sx={{ 
-                  display: 'flex', 
-                  gap: 4,
-                  alignItems: 'center'
-                }}
-              >
+              <NavItemsContainer>
                 {navItems.map((item) => (
                   <NavItem 
                     key={item.text} 
@@ -289,7 +301,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = memo(({ children 
                     isActive={isActive(item.path)} 
                   />
                 ))}
-              </Box>
+              </NavItemsContainer>
+              <Box sx={{ width: 200 }} /> {/* Spacer to balance the layout */}
             </>
           )}
         </StyledNav>

@@ -27,6 +27,14 @@
   box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
 }
 
+.search-helper-text {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #666;
+  text-align: center;
+  font-style: italic;
+}
+
 .search-results {
   position: absolute;
   top: 100%;

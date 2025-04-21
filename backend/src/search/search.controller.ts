@@ -9,4 +9,13 @@ export class SearchController {
   async search(@Query('q') query: string) {
     return this.searchService.search(query);
   }
+
+  @Get('by-ingredients')
+  async searchByIngredients(@Query('ingredients') ingredients: string) {
+    const ingredientList = ingredients
+      .split(',')
+      .map(i => i.trim())
+      .filter(i => i.length > 0);
+    return this.searchService.searchByIngredients(ingredientList);
+  }
 } 
