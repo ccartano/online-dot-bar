@@ -3,7 +3,8 @@
 /backend/dist
 /frontend/dist
 **/dist
-/node_modules
+**/dist-ssr
+**/node_modules
 /build
 
 # Logs
@@ -30,6 +31,11 @@ lerna-debug.log*
 *.launch
 .settings/
 *.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
 # IDE - VSCode
 .vscode/*
@@ -38,12 +44,14 @@ lerna-debug.log*
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# dotenv environment variable files
+# Environment files
 .env
-.env.local
-.env.development
-.env.test
-.env.production
+.env.*
+!.env.example
+**/.env.*
+**/.env
+!/backend/.env.example
+!/frontend/.env.example
 
 # temp directory
 .temp
