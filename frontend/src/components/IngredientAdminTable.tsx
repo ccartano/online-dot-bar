@@ -209,16 +209,28 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
     );
   }, [filteredAndSortedIngredients, page, rowsPerPage]);
 
-  const getTypeChipColor = (type: IngredientType) => {
+  const getTypeColor = (type: IngredientType): 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' | 'default' => {
     switch (type) {
       case IngredientType.SPIRIT: return 'primary';
       case IngredientType.LIQUEUR: return 'secondary';
-      case IngredientType.MIXER: return 'info';
-      case IngredientType.GARNISH: return 'success';
-      case IngredientType.BITTER: return 'warning';
-      case IngredientType.SYRUP: return 'error';
-      case IngredientType.WINE: return 'primary';
-      case IngredientType.ENHANCERS: return 'secondary';
+      case IngredientType.FORTIFIED_WINE: return 'error';
+      case IngredientType.APERITIF_DIGESTIF: return 'error';
+      case IngredientType.AROMATIC_BITTER: return 'warning';
+      case IngredientType.CITRUS_BITTER: return 'warning';
+      case IngredientType.HERBAL_BITTER: return 'warning';
+      case IngredientType.CARBONATED_MIXER: return 'info';
+      case IngredientType.JUICE: return 'info';
+      case IngredientType.DAIRY: return 'info';
+      case IngredientType.HOT_BEVERAGE: return 'info';
+      case IngredientType.SIMPLE_SYRUP: return 'success';
+      case IngredientType.FLAVORED_SYRUP: return 'success';
+      case IngredientType.SPECIALTY_SYRUP: return 'success';
+      case IngredientType.FRUIT_GARNISH: return 'success';
+      case IngredientType.HERB_GARNISH: return 'success';
+      case IngredientType.SPICE_GARNISH: return 'success';
+      case IngredientType.OTHER_GARNISH: return 'success';
+      case IngredientType.WINE: return 'error';
+      case IngredientType.ENHANCERS: return 'warning';
       case IngredientType.OTHER: return 'default';
       default: return 'default';
     }
@@ -322,7 +334,7 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
                     <TableCell width={isMobile ? "30%" : "35%"}>
                       <Chip
                         label={ingredient.type.toUpperCase()}
-                        color={getTypeChipColor(ingredient.type)}
+                        color={getTypeColor(ingredient.type)}
                         size={isMobile ? "small" : "medium"}
                         sx={{ 
                           fontWeight: 'bold',
