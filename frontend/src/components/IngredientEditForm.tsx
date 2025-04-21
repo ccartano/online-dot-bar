@@ -53,6 +53,31 @@ export const IngredientEditForm: React.FC<IngredientEditFormProps> = ({
     await onSave(updatedData);
   };
 
+  // Map of enum values to human-readable labels
+  const typeOptions = {
+    [IngredientType.SPIRIT]: 'Spirit',
+    [IngredientType.LIQUEUR]: 'Liqueur',
+    [IngredientType.FORTIFIED_WINE]: 'Fortified Wine',
+    [IngredientType.APERITIF_DIGESTIF]: 'Aperitif/Digestif',
+    [IngredientType.AROMATIC_BITTER]: 'Aromatic Bitter',
+    [IngredientType.CITRUS_BITTER]: 'Citrus Bitter',
+    [IngredientType.HERBAL_BITTER]: 'Herbal Bitter',
+    [IngredientType.CARBONATED_MIXER]: 'Carbonated Mixer',
+    [IngredientType.JUICE]: 'Juice',
+    [IngredientType.DAIRY]: 'Dairy',
+    [IngredientType.HOT_BEVERAGE]: 'Hot Beverage',
+    [IngredientType.SIMPLE_SYRUP]: 'Simple Syrup',
+    [IngredientType.FLAVORED_SYRUP]: 'Flavored Syrup',
+    [IngredientType.SPECIALTY_SYRUP]: 'Specialty Syrup',
+    [IngredientType.FRUIT_GARNISH]: 'Fruit Garnish',
+    [IngredientType.HERB_GARNISH]: 'Herb Garnish',
+    [IngredientType.SPICE_GARNISH]: 'Spice Garnish',
+    [IngredientType.OTHER_GARNISH]: 'Other Garnish',
+    [IngredientType.WINE]: 'Wine',
+    [IngredientType.ENHANCERS]: 'Enhancers',
+    [IngredientType.OTHER]: 'Other',
+  };
+
   return (
     <Box component="form" sx={{ p: isMobileView ? 1 : 2, border: '1px dashed grey', borderRadius: 1 }}>
       <Box sx={{ 
@@ -84,9 +109,9 @@ export const IngredientEditForm: React.FC<IngredientEditFormProps> = ({
               value={type}
               onChange={(e) => setType(e.target.value as IngredientType)}
             >
-              {Object.values(IngredientType).map((enumValue) => (
-                <MenuItem key={enumValue} value={enumValue}>
-                  {enumValue.charAt(0).toUpperCase() + enumValue.slice(1)}
+              {Object.entries(typeOptions).map(([value, label]) => (
+                <MenuItem key={value} value={value}>
+                  {label}
                 </MenuItem>
               ))}
             </Select>
