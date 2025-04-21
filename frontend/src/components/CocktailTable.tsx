@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -7,6 +7,9 @@ import {
   TablePagination,
   useMediaQuery,
   useTheme,
+  TextField,
+  InputAdornment,
+  Box,
 } from '@mui/material';
 import { Cocktail } from '../services/cocktail.service';
 import { GlassType } from '../types/glass.types';
@@ -14,6 +17,7 @@ import { getDocumentThumbnail } from '../services/paperless.service';
 import { CocktailTableHeader } from './CocktailTableHeader';
 import { CocktailTableRow } from './CocktailTableRow';
 import { ThumbnailViewDialog } from './ThumbnailViewDialog';
+import SearchIcon from '@mui/icons-material/Search';
 
 interface CocktailTableProps {
   cocktails: (Cocktail & { status: 'active' | 'pending' })[];
@@ -21,6 +25,8 @@ interface CocktailTableProps {
   glassTypes: GlassType[];
   onDeleteRequest?: (cocktailId: number) => void;
   showDelete?: boolean;
+  searchTerm: string;
+  onSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const CocktailTable: React.FC<CocktailTableProps> = ({ 
@@ -28,7 +34,9 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
   onCocktailUpdate,
   glassTypes,
   onDeleteRequest,
-  showDelete = true
+  showDelete = true,
+  searchTerm,
+  onSearchChange
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -80,12 +88,44 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
   };
 
   const isPotentialCocktails = cocktails.every(c => c.status === 'pending');
+  const filteredCocktails = useMemo(() => {
+    if (!searchTerm) return cocktails;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return cocktails.filter(cocktail => {
+      const nameMatch = cocktail.name.toLowerCase().includes(searchLower);
+      const ingredientMatch = cocktail.ingredients.some(ing => 
+        ing.ingredient.name.toLowerCase().includes(searchLower)
+      );
+      const glassMatch = cocktail.glassType?.name.toLowerCase().includes(searchLower);
+      
+      return nameMatch || ingredientMatch || glassMatch;
+    });
+  }, [cocktails, searchTerm]);
+
   const displayCocktails = isPotentialCocktails 
     ? cocktails 
-    : cocktails.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    : filteredCocktails.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <>
+    <Box sx={{ width: '100%' }}>
+      <Box sx={{ mb: 2 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Search cocktails..."
+          value={searchTerm}
+          onChange={onSearchChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
       <TableContainer
         component={Paper}
         sx={{
@@ -135,7 +175,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
           <TablePagination
             rowsPerPageOptions={isMobile ? [5, 10] : [5, 10, 25]}
             component="div"
-            count={cocktails.length}
+            count={filteredCocktails.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -165,6 +205,6 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
         isLoading={imageLoading}
         error={imageError}
       />
-    </>
+    </Box>
   );
 }; 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Box, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tabs, Tab, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tabs, Tab, CircularProgress, useMediaQuery, useTheme, TextField, InputAdornment } from '@mui/material';
 import { AdminLogin } from './AdminLogin';
 import { AdminService } from '../services/admin.service';
 import { CocktailTable } from './CocktailTable';
@@ -10,6 +10,7 @@ import { PotentialCocktailsPage } from './PotentialCocktailsPage';
 import { IngredientAdminPage } from './IngredientAdminPage';
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -51,6 +52,8 @@ export const AdminPage: React.FC = () => {
   const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cocktailSearchTerm, setCocktailSearchTerm] = useState('');
+  const [ingredientSearchTerm, setIngredientSearchTerm] = useState('');
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
     message: '',
@@ -243,6 +246,14 @@ export const AdminPage: React.FC = () => {
     setView(newValue);
   };
 
+  const handleCocktailSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCocktailSearchTerm(event.target.value);
+  };
+
+  const handleIngredientSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIngredientSearchTerm(event.target.value);
+  };
+
   if (!isLoggedIn) {
     console.log("[AdminPage] Rendering Login");
     return <AdminLogin onLogin={handleLogin} />;
@@ -272,52 +283,68 @@ export const AdminPage: React.FC = () => {
   });
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100vh' }}>
-      <AppBar position="static">
+    <Box sx={{ width: '100%', p: 2 }}>
+      <AppBar position="static" color="default" elevation={0}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
-          <Button color="inherit" component={Link} to="/">
+          <Button component={Link} to="/" color="inherit">
             Back to Home
           </Button>
         </Toolbar>
       </AppBar>
 
-      <Box sx={{ width: '100%', p: isMobile ? 1 : 3 }}>
-        <Tabs
-          value={view}
-          onChange={handleViewChange}
-          variant={isMobile ? "fullWidth" : "standard"}
-          centered={!isMobile}
-          sx={{
-            mb: 3,
-            '& .MuiTab-root': {
-              minWidth: isMobile ? 'auto' : 120,
-              fontSize: isMobile ? '0.8rem' : '1rem',
-              padding: isMobile ? '6px 8px' : '12px 16px'
-            }
-          }}
-        >
-          <Tab label="Current Cocktails" value="current" />
-          <Tab label="Potential Cocktails" value="potential" />
-          <Tab label="Ingredients" value="ingredients" />
-        </Tabs>
+      <Tabs
+        value={view}
+        onChange={handleViewChange}
+        indicatorColor="primary"
+        textColor="primary"
+        variant="fullWidth"
+      >
+        <Tab label="Current Cocktails" value="current" />
+        <Tab label="Potential Cocktails" value="potential" />
+        <Tab label="Ingredients" value="ingredients" />
+      </Tabs>
 
-        {view === 'current' && (
-          <Box sx={{ width: '100%', overflowX: 'auto' }}>
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}
+        </Alert>
+      ) : (
+        <Box sx={{ mt: 2 }}>
+          {view === 'current' && (
             <CocktailTable
               cocktails={cocktails}
               glassTypes={glassTypes}
               onCocktailUpdate={handleCocktailUpdate}
               onDeleteRequest={handleDeleteRequest}
+              searchTerm={cocktailSearchTerm}
+              onSearchChange={handleCocktailSearchChange}
             />
-          </Box>
-        )}
-        {view === 'potential' && <PotentialCocktailsPage />}
-        {view === 'ingredients' && <IngredientAdminPage />}
-      </Box>
-      
+          )}
+          {view === 'potential' && <PotentialCocktailsPage />}
+          {view === 'ingredients' && (
+            <IngredientAdminPage 
+              searchTerm={ingredientSearchTerm}
+              onSearchChange={handleIngredientSearchChange}
+            />
+          )}
+        </Box>
+      )}
+
+      <ConfirmationDialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+        onConfirm={handleConfirmDelete}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this cocktail? This action cannot be undone."
+      />
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
@@ -331,15 +358,6 @@ export const AdminPage: React.FC = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-
-      {/* Confirmation Dialog */}
-      <ConfirmationDialog
-        open={dialogOpen}
-        onClose={handleCloseDialog}
-        onConfirm={handleConfirmDelete}
-        title="Confirm Delete"
-        message={`Are you sure you want to permanently delete cocktail ID ${cocktailToDelete}? This action cannot be undone.`}
-      />
     </Box>
   );
 }; 

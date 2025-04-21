@@ -22,11 +22,14 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  TextField,
+  InputAdornment,
 } from '@mui/material';
 import { Edit } from '@mui/icons-material'; // Remove unused Delete icon
 import { Ingredient, IngredientType } from '../types/ingredient.types';
 import { IngredientEditForm } from './IngredientEditForm'; // Import the edit form
 import { updateIngredient } from '../services/ingredient.service'; // Import update service
+import SearchIcon from '@mui/icons-material/Search';
 
 // --- Sorting Types & Header --- (Similar to IngredientTable, but simplified for admin)
 type Order = 'asc' | 'desc';
@@ -84,12 +87,15 @@ const IngredientAdminTableHeader: React.FC<IngredientAdminTableHeaderProps> = (p
 interface IngredientAdminTableProps {
   ingredients: Ingredient[];
   onIngredientUpdate: (updatedIngredient: Ingredient) => void;
-  // Add onDelete prop later if needed
+  searchTerm: string;
+  onSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({ 
   ingredients, 
-  onIngredientUpdate 
+  onIngredientUpdate,
+  searchTerm,
+  onSearchChange
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -169,17 +175,32 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
   };
 
   const filteredAndSortedIngredients = useMemo(() => {
-    return [...ingredients]
-      .filter(ingredient => typeFilter === 'all' || ingredient.type === typeFilter)
-      .sort((a, b) => {
-        const valA = a[orderBy as keyof Ingredient];
-        const valB = b[orderBy as keyof Ingredient];
-        if (typeof valA === 'string' && typeof valB === 'string') {
-          return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-        }
-        return 0;
-      });
-  }, [ingredients, order, orderBy, typeFilter]);
+    let filtered = [...ingredients];
+    
+    // Apply search filter if search term exists
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(ingredient => 
+        ingredient.name.toLowerCase().includes(searchLower) ||
+        ingredient.type.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Apply type filter
+    filtered = filtered.filter(ingredient => 
+      typeFilter === 'all' || ingredient.type === typeFilter
+    );
+    
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      const valA = a[orderBy as keyof Ingredient];
+      const valB = b[orderBy as keyof Ingredient];
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        return order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      }
+      return 0;
+    });
+  }, [ingredients, order, orderBy, typeFilter, searchTerm]);
 
   const paginatedIngredients = useMemo(() => {
     return filteredAndSortedIngredients.slice(
@@ -205,7 +226,21 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
 
   return (
     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+      <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Search ingredients..."
+          value={searchTerm}
+          onChange={onSearchChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel id="type-filter-label">Filter by Type</InputLabel>
           <Select
@@ -214,7 +249,7 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
             label="Filter by Type"
             onChange={(e) => {
               setTypeFilter(e.target.value as IngredientType | 'all');
-              setPage(0); // Reset to first page when filter changes
+              setPage(0);
             }}
           >
             <MenuItem value="all">All Types</MenuItem>

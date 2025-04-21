@@ -4,7 +4,12 @@ import { Ingredient } from '../types/ingredient.types';
 import { fetchIngredients } from '../services/ingredient.service';
 import { IngredientAdminTable } from './IngredientAdminTable';
 
-export const IngredientAdminPage: React.FC = () => {
+interface IngredientAdminPageProps {
+  searchTerm: string;
+  onSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+export const IngredientAdminPage: React.FC<IngredientAdminPageProps> = ({ searchTerm, onSearchChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -62,7 +67,8 @@ export const IngredientAdminPage: React.FC = () => {
       <IngredientAdminTable 
         ingredients={ingredients} 
         onIngredientUpdate={handleIngredientUpdate}
-        // Pass onDelete later
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
       />
       {snackbar && (
         <Snackbar
