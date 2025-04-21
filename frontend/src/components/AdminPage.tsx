@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Box, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tabs, Tab, CircularProgress, useMediaQuery, useTheme, TextField, InputAdornment } from '@mui/material';
+import { Box, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tabs, Tab, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { AdminLogin } from './AdminLogin';
 import { AdminService } from '../services/admin.service';
 import { CocktailTable } from './CocktailTable';
@@ -10,7 +10,6 @@ import { PotentialCocktailsPage } from './PotentialCocktailsPage';
 import { IngredientAdminPage } from './IngredientAdminPage';
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -44,9 +43,8 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({ open, onClose, 
   );
 };
 
-export const AdminPage: React.FC = () => {
+export const AdminPage = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [isLoggedIn, setIsLoggedIn] = useState(AdminService.isAdmin());
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
   const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);

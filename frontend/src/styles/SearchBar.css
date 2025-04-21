@@ -42,8 +42,9 @@
 }
 
 .search-result-item {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
   align-items: center;
   padding: 12px 20px;
   cursor: pointer;
@@ -58,11 +59,17 @@
 .result-name {
   font-weight: 500;
   color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .result-type {
   font-size: 0.9em;
   color: #666;
+  min-width: 120px;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .more-results-message {
@@ -99,6 +106,10 @@
 
   .search-result-item {
     padding: 16px 20px;
+  }
+
+  .result-type {
+    min-width: 100px; /* Slightly smaller on mobile */
   }
 
   .more-results-message {

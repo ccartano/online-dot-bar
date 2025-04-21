@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CocktailTable } from './CocktailTable';
 import { PaperlessDocument } from '../types/paperless.types';
 import { Cocktail } from '../services/cocktail.service';
-import { Alert, Snackbar, FormControlLabel, Switch, Box, Button } from '@mui/material';
+import { Alert, Snackbar, FormControlLabel, Switch, Box, Button, Typography } from '@mui/material';
 import { getApiUrl } from '../config/api.config';
 import { CocktailParserService } from '../services/cocktail-parser.service';
 import { GlassType } from '../types/glass.types';
@@ -22,6 +22,7 @@ export const PotentialCocktailsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchCocktailsAndGlassTypes = async (page: number = 1) => {
     if (page === 1) {
@@ -224,6 +225,10 @@ export const PotentialCocktailsPage: React.FC = () => {
     }
   };
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
   const filteredCocktails = (showOnlyPending
     ? cocktails.filter(cocktail => cocktail.status === 'pending')
     : cocktails
@@ -238,25 +243,19 @@ export const PotentialCocktailsPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Box sx={{ mb: 2 }}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={showOnlyPending}
-              onChange={(e) => setShowOnlyPending(e.target.checked)}
-            />
-          }
-          label="Show only pending cocktails"
-        />
-      </Box>
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" sx={{ mb: 3 }}>
+        Potential Cocktails
+      </Typography>
+      <CocktailTable
+        cocktails={filteredCocktails}
+        onCocktailUpdate={handleCocktailUpdate}
+        glassTypes={glassTypes}
+        showDelete={false}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+      />
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <CocktailTable 
-          cocktails={filteredCocktails} 
-          onCocktailUpdate={handleCocktailUpdate} 
-          glassTypes={glassTypes}
-          showDelete={false}
-        />
         {hasMore && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Button
@@ -283,6 +282,6 @@ export const PotentialCocktailsPage: React.FC = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </div>
+    </Box>
   );
 }; 

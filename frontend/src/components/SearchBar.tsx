@@ -61,8 +61,10 @@ const SearchBar: React.FC = () => {
     navigate(`/${route}/${result.slug}`);
   };
 
-  const getItemUrl = (result: SearchResult) => {
-    return `/${result.type}/${result.id}`;
+  const capitalizeWords = (str: string) => {
+    return str.split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
   };
 
   return (
@@ -85,11 +87,11 @@ const SearchBar: React.FC = () => {
                 className={`search-result-item ${index === selectedIndex ? 'selected' : ''}`}
                 onClick={() => handleSelect(result)}
               >
-                <span className="result-name">{result.name}</span>
+                <span className="result-name">{capitalizeWords(result.name)}</span>
                 <span className="result-type">
                   {result.type === 'ingredient' && result.ingredientType
-                    ? `${result.type} (${result.ingredientType})`
-                    : result.type}
+                    ? `${capitalizeWords(result.type)} (${capitalizeWords(result.ingredientType)})`
+                    : capitalizeWords(result.type)}
                 </span>
               </div>
             ))}
