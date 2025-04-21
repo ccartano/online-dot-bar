@@ -49,7 +49,15 @@ export class SearchService {
       ingredients.forEach(searchedIngredient => {
         let found = false;
         cocktail.ingredients.forEach(cocktailIngredient => {
-          if (this.fuzzyMatch(cocktailIngredient.ingredient.name, searchedIngredient)) {
+          // Use a more precise text-based search that looks for the ingredient name as a whole word
+          const ingredientName = cocktailIngredient.ingredient.name.toLowerCase();
+          const searchTerm = searchedIngredient.toLowerCase();
+          
+          // Check for exact match or if the ingredient name contains the search term as a whole word
+          if (ingredientName === searchTerm || 
+              ingredientName.includes(` ${searchTerm} `) || 
+              ingredientName.startsWith(`${searchTerm} `) || 
+              ingredientName.endsWith(` ${searchTerm}`)) {
             matchedIngredients.push(cocktailIngredient.ingredient.name);
             found = true;
           }
