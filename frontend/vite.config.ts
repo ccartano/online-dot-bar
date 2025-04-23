@@ -16,16 +16,9 @@ export default defineConfig(({ mode }) => ({
       }
     },
     headers: {
-      // Add caching headers for fonts
-      '*.woff2': [
-        ['Cache-Control', 'public, max-age=31536000'],
-        ['Vary', 'Accept-Encoding']
-      ],
-      '*.ttf': [
-        ['Cache-Control', 'public, max-age=31536000'],
-        ['Vary', 'Accept-Encoding']
-      ]
-    } as OutgoingHttpHeaders
+      'Cache-Control': 'public, max-age=31536000',
+      'Vary': 'Accept-Encoding'
+    }
   },
   preview: {
     host: '0.0.0.0',

@@ -14,6 +14,10 @@ export default defineConfig(function (_a) {
                     changeOrigin: true,
                     secure: false,
                 }
+            },
+            headers: {
+                'Cache-Control': 'public, max-age=31536000',
+                'Vary': 'Accept-Encoding'
             }
         },
         preview: {
