@@ -10,6 +10,7 @@ import { PotentialCocktailsPage } from './PotentialCocktailsPage';
 import { IngredientAdminPage } from './IngredientAdminPage';
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography } from '@mui/material';
+import { SEO } from './SEO';
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -280,81 +281,88 @@ export const AdminPage: React.FC = () => {
   });
 
   return (
-    <Box sx={{ width: '100%', p: 2 }}>
-      <AppBar position="static" color="default" elevation={0}>
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Admin Dashboard
-          </Typography>
-          <Button component={Link} to="/" color="inherit">
-            Back to Home
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      <Tabs
-        value={view}
-        onChange={handleViewChange}
-        indicatorColor="primary"
-        textColor="primary"
-        variant="fullWidth"
-      >
-        <Tab label="Current Cocktails" value="current" />
-        <Tab label="Potential Cocktails" value="potential" />
-        <Tab label="Ingredients" value="ingredients" />
-      </Tabs>
-
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <CircularProgress />
-        </Box>
-      ) : error ? (
-        <Alert severity="error" sx={{ mt: 2 }}>
-          {error}
-        </Alert>
-      ) : (
-        <Box sx={{ mt: 2 }}>
-          {view === 'current' && (
-            <CocktailTable
-              cocktails={cocktails}
-              glassTypes={glassTypes}
-              onCocktailUpdate={handleCocktailUpdate}
-              onDeleteRequest={handleDeleteRequest}
-              searchTerm={cocktailSearchTerm}
-              onSearchChange={handleCocktailSearchChange}
-            />
-          )}
-          {view === 'potential' && <PotentialCocktailsPage />}
-          {view === 'ingredients' && (
-            <IngredientAdminPage 
-              searchTerm={ingredientSearchTerm}
-              onSearchChange={handleIngredientSearchChange}
-            />
-          )}
-        </Box>
-      )}
-
-      <ConfirmationDialog
-        open={dialogOpen}
-        onClose={handleCloseDialog}
-        onConfirm={handleConfirmDelete}
-        title="Confirm Delete"
-        message="Are you sure you want to delete this cocktail? This action cannot be undone."
+    <>
+      <SEO 
+        title="Admin Dashboard - The Online.Bar"
+        description="Administrative dashboard for The Online.Bar"
+        noindex={true}
       />
+      <Box sx={{ width: '100%', p: 2 }}>
+        <AppBar position="static" color="default" elevation={0}>
+          <Toolbar>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+              Admin Dashboard
+            </Typography>
+            <Button component={Link} to="/" color="inherit">
+              Back to Home
+            </Button>
+          </Toolbar>
+        </AppBar>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert
-          onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
+        <Tabs
+          value={view}
+          onChange={handleViewChange}
+          indicatorColor="primary"
+          textColor="primary"
+          variant="fullWidth"
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Tab label="Current Cocktails" value="current" />
+          <Tab label="Potential Cocktails" value="potential" />
+          <Tab label="Ingredients" value="ingredients" />
+        </Tabs>
+
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        ) : (
+          <Box sx={{ mt: 2 }}>
+            {view === 'current' && (
+              <CocktailTable
+                cocktails={cocktails}
+                glassTypes={glassTypes}
+                onCocktailUpdate={handleCocktailUpdate}
+                onDeleteRequest={handleDeleteRequest}
+                searchTerm={cocktailSearchTerm}
+                onSearchChange={handleCocktailSearchChange}
+              />
+            )}
+            {view === 'potential' && <PotentialCocktailsPage />}
+            {view === 'ingredients' && (
+              <IngredientAdminPage 
+                searchTerm={ingredientSearchTerm}
+                onSearchChange={handleIngredientSearchChange}
+              />
+            )}
+          </Box>
+        )}
+
+        <ConfirmationDialog
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          onConfirm={handleConfirmDelete}
+          title="Confirm Delete"
+          message="Are you sure you want to delete this cocktail? This action cannot be undone."
+        />
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </>
   );
 }; 

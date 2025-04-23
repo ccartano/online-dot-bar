@@ -5,6 +5,7 @@ import { Cocktail } from '../services/cocktail.service';
 import { GlassType } from '../types/glass.types';
 import { FilterSidebar } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
+import { SEO } from './SEO';
 
 // Helper function to capitalize words
 const capitalizeWords = (str: string): string => {
@@ -144,41 +145,47 @@ export const CocktailsPage: React.FC = () => {
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      height: 'calc(100vh - 64px)',
-      overflow: 'hidden',
-      position: 'relative'
-    }}>
+    <>
+      <SEO 
+        title="Cocktail Recipes - The Online.Bar"
+        description="Browse our extensive collection of cocktail recipes. Find classic drinks, modern mixology creations, and detailed instructions for making the perfect cocktail."
+      />
       <Box sx={{ 
         display: 'flex', 
-        gap: { xs: 0, sm: 4 }, 
-        height: '100%',
+        flexDirection: 'column', 
+        height: 'calc(100vh - 64px)',
         overflow: 'hidden',
         position: 'relative'
       }}>
-        <FilterSidebar sections={filterSections} />
         <Box sx={{ 
-          flex: 1, 
-          overflow: 'auto',
-          p: 2,
-          '&::-webkit-scrollbar': {
-            display: 'none'
-          },
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          overflowY: 'auto',
-          overflowX: 'hidden'
+          display: 'flex', 
+          gap: { xs: 0, sm: 4 }, 
+          height: '100%',
+          overflow: 'hidden',
+          position: 'relative'
         }}>
-          <AlphabeticalList
-            items={filteredCocktails}
-            getItemId={(item) => item.slug}
-            getItemName={(item) => capitalizeWords(item.name)}
-            getItemLink={(item) => `/cocktails/${item.slug}`}
-          />
+          <FilterSidebar sections={filterSections} />
+          <Box sx={{ 
+            flex: 1, 
+            overflow: 'auto',
+            p: 2,
+            '&::-webkit-scrollbar': {
+              display: 'none'
+            },
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            overflowY: 'auto',
+            overflowX: 'hidden'
+          }}>
+            <AlphabeticalList
+              items={filteredCocktails}
+              getItemId={(item) => item.slug}
+              getItemName={(item) => capitalizeWords(item.name)}
+              getItemLink={(item) => `/cocktails/${item.slug}`}
+            />
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </>
   );
 }; 

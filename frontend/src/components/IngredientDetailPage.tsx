@@ -16,6 +16,7 @@ import { Cocktail } from '../services/cocktail.service'; // Import Cocktail type
 import { fetchIngredientBySlug } from '../services/ingredient.service';
 import { fetchCocktailsByIngredient } from '../services/cocktail.service';
 import { DocumentTitle } from './DocumentTitle';
+import { SEO } from './SEO';
 
 const StyledLink = styled(Box)({
   position: 'relative',
@@ -114,6 +115,11 @@ export const IngredientDetailPage: React.FC = () => {
 
   return (
     <>
+      <SEO 
+        title={`${ingredient?.name || 'Ingredient'} Guide - The Online.Bar`}
+        description={`Learn about ${ingredient?.name} in cocktails. Discover its characteristics, common uses, and cocktail recipes that feature this ingredient.`}
+        image={ingredient?.imageUrl || undefined}
+      />
       <DocumentTitle title={capitalizeWords(ingredient.name)} />
       <Box sx={{ 
         p: { xs: 2, sm: 3 }, 

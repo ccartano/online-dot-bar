@@ -11,6 +11,7 @@ import {
 import { Cocktail, MeasurementUnit } from '../services/cocktail.service';
 import { fetchCocktailBySlug } from '../services/cocktail.service';
 import { DocumentTitle } from './DocumentTitle';
+import { SEO } from './SEO';
 
 const titleize = (text: string): string => {
   return text
@@ -171,6 +172,11 @@ export const CocktailDetailPage: React.FC = () => {
 
   return (
     <>
+      <SEO 
+        title={`${cocktail.name || 'Cocktail'} Recipe - The Online.Bar`}
+        description={`Learn how to make the perfect ${cocktail.name}. Get ingredients, measurements, and step-by-step instructions for this ${cocktail.category || 'cocktail'}.`}
+        image={cocktail.imageUrl || undefined}
+      />
       <DocumentTitle title={titleize(cocktail.name)} />
       <Box sx={{ 
         p: 3, 

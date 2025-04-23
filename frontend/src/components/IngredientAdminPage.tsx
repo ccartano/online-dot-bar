@@ -3,6 +3,7 @@ import { Box, CircularProgress, Alert, Snackbar, useMediaQuery, useTheme } from 
 import { Ingredient } from '../types/ingredient.types';
 import { fetchIngredients } from '../services/ingredient.service';
 import { IngredientAdminTable } from './IngredientAdminTable';
+import { SEO } from './SEO';
 
 interface IngredientAdminPageProps {
   searchTerm: string;
@@ -59,29 +60,36 @@ export const IngredientAdminPage: React.FC<IngredientAdminPageProps> = ({ search
   }
 
   return (
-    <Box sx={{ 
-      p: isMobile ? 1 : 3,
-      width: '100%',
-      overflowX: 'auto'
-    }}>
-      <IngredientAdminTable 
-        ingredients={ingredients} 
-        onIngredientUpdate={handleIngredientUpdate}
-        searchTerm={searchTerm}
-        onSearchChange={onSearchChange}
+    <>
+      <SEO 
+        title="Ingredient Management - The Online.Bar"
+        description="Administrative interface for managing ingredients"
+        noindex={true}
       />
-      {snackbar && (
-        <Snackbar
-          open={snackbar.open}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      )}
-    </Box>
+      <Box sx={{ 
+        p: isMobile ? 1 : 3,
+        width: '100%',
+        overflowX: 'auto'
+      }}>
+        <IngredientAdminTable 
+          ingredients={ingredients} 
+          onIngredientUpdate={handleIngredientUpdate}
+          searchTerm={searchTerm}
+          onSearchChange={onSearchChange}
+        />
+        {snackbar && (
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={6000}
+            onClose={handleCloseSnackbar}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          >
+            <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
+        )}
+      </Box>
+    </>
   );
 }; 

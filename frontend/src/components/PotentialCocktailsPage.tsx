@@ -7,6 +7,7 @@ import { getApiUrl } from '../config/api.config';
 import { CocktailParserService } from '../services/cocktail-parser.service';
 import { GlassType } from '../types/glass.types';
 import { detectGlassTypeFromInstructions } from '../utils/glassTypeDetector';
+import { SEO } from './SEO';
 
 export const PotentialCocktailsPage: React.FC = () => {
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
@@ -243,45 +244,51 @@ export const PotentialCocktailsPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        Potential Cocktails
-      </Typography>
-      <CocktailTable
-        cocktails={filteredCocktails}
-        onCocktailUpdate={handleCocktailUpdate}
-        glassTypes={glassTypes}
-        showDelete={false}
-        searchTerm={searchTerm}
-        onSearchChange={handleSearchChange}
+    <>
+      <SEO 
+        title="What Can I Make? - The Online.Bar"
+        description="Discover cocktails you can make with ingredients you have. Find recipes based on your available ingredients and explore new drink possibilities."
       />
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-        {hasMore && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Button
-              variant="contained"
-              onClick={handleLoadMore}
-              disabled={isLoadingMore}
-              sx={{ minWidth: 200 }}
-            >
-              {isLoadingMore ? 'Loading...' : 'Load More'}
-            </Button>
-          </Box>
-        )}
-      </Box>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h4" sx={{ mb: 3 }}>
+          Potential Cocktails
+        </Typography>
+        <CocktailTable
+          cocktails={filteredCocktails}
+          onCocktailUpdate={handleCocktailUpdate}
+          glassTypes={glassTypes}
+          showDelete={false}
+          searchTerm={searchTerm}
+          onSearchChange={handleSearchChange}
+        />
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {hasMore && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+              <Button
+                variant="contained"
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                sx={{ minWidth: 200 }}
+              >
+                {isLoadingMore ? 'Loading...' : 'Load More'}
+              </Button>
+            </Box>
+          )}
+        </Box>
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Alert
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </>
   );
 }; 
