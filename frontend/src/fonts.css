@@ -1,7 +1,10 @@
+/* Fonts are now loaded from Google Fonts */
+
 @font-face {
   font-family: 'Corinthia';
   font-style: normal;
   font-weight: 400;
+  font-display: swap;
   src: url('/fonts/Corinthia-Regular.ttf') format('truetype');
 }
 
@@ -9,13 +12,16 @@
   font-family: 'Corinthia';
   font-style: normal;
   font-weight: 700;
-  src: url('/fonts/Corinthia-Bold.ttf') format('truetype');
+  font-display: swap;
+  src: url('/fonts/Corinthia-Bold.woff2') format('woff2'),
+       url('/fonts/Corinthia-Bold.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'Old Standard TT';
   font-style: normal;
   font-weight: 400;
+  font-display: swap;
   src: url('/fonts/OldStandardTT-Regular.ttf') format('truetype');
 }
 
@@ -23,12 +29,16 @@
   font-family: 'Old Standard TT';
   font-style: normal;
   font-weight: 700;
-  src: url('/fonts/OldStandardTT-Bold.ttf') format('truetype');
+  font-display: swap;
+  src: url('/fonts/OldStandardTT-Bold.woff2') format('woff2'),
+       url('/fonts/OldStandardTT-Bold.ttf') format('truetype');
 }
 
 @font-face {
   font-family: 'Old Standard TT';
   font-style: italic;
   font-weight: 400;
-  src: url('/fonts/OldStandardTT-Italic.ttf') format('truetype');
+  font-display: swap;
+  src: url('/fonts/OldStandardTT-Italic.woff2') format('woff2'),
+       url('/fonts/OldStandardTT-Italic.ttf') format('truetype');
 } 

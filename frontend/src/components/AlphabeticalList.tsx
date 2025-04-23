@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 import { Box, Typography, styled } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -46,17 +46,40 @@ export const AlphabeticalList = <T,>({
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Memoize the grouped and sorted items
+  const { itemsByLetter, sortedLetters } = useMemo(() => {
+    // Group items by first letter
+    const grouped = items.reduce((acc, item) => {
+      const firstLetter = getItemName(item).charAt(0).toUpperCase();
+      if (!acc[firstLetter]) {
+        acc[firstLetter] = [];
+      }
+      acc[firstLetter].push(item);
+      return acc;
+    }, {} as Record<string, T[]>);
+
+    // Sort letters alphabetically
+    const letters = Object.keys(grouped).sort();
+
+    return { itemsByLetter: grouped, sortedLetters: letters };
+  }, [items, getItemName]);
+
+  // Memoize the click handler
+  const handleClick = useCallback((itemId: string | number) => {
+    window.history.replaceState(
+      { ...window.history.state, clickedItemId: itemId },
+      ''
+    );
+  }, []);
+
   // Handle scroll restoration when navigating back
   useEffect(() => {
     if (location.state?.clickedItemId) {
       const itemRef = itemRefs.current[location.state.clickedItemId];
       if (itemRef && containerRef.current) {
-        // Calculate the offset from the top of the container
         const containerRect = containerRef.current.getBoundingClientRect();
         const itemRect = itemRef.getBoundingClientRect();
         const offset = itemRect.top - containerRect.top;
-
-        // Scroll the container to the item
         containerRef.current.scrollTo({
           top: containerRef.current.scrollTop + offset,
           behavior: 'smooth'
@@ -65,39 +88,15 @@ export const AlphabeticalList = <T,>({
     }
   }, [location]);
 
-  // Group items by first letter
-  const itemsByLetter = items.reduce((acc, item) => {
-    const firstLetter = getItemName(item).charAt(0).toUpperCase();
-    if (!acc[firstLetter]) {
-      acc[firstLetter] = [];
-    }
-    acc[firstLetter].push(item);
-    return acc;
-  }, {} as Record<string, T[]>);
-
-  // Sort letters alphabetically
-  const sortedLetters = Object.keys(itemsByLetter).sort();
-
-  const handleClick = (itemId: string | number) => {
-    // Store the clicked item ID in history state
-    window.history.replaceState(
-      { ...window.history.state, clickedItemId: itemId },
-      ''
-    );
-  };
-
   return (
     <Box 
       ref={containerRef}
       sx={{ 
         flex: 1,
-        height: 'fit-content',
-        pr: 2,
+        height: '100%',
         position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100%',
-        overflow: 'auto',
+        overflowY: 'auto',
+        pr: 2,
         '&::-webkit-scrollbar': {
           display: 'none'
         },
@@ -110,12 +109,19 @@ export const AlphabeticalList = <T,>({
         if (letterItems.length === 0) return null;
 
         return (
-          <Box key={letter} sx={{ mb: 6 }}>
+          <Box 
+            key={letter} 
+            sx={{ 
+              mb: 6,
+              '&:last-child': {
+                mb: 2
+              }
+            }}
+          >
             <Typography
               variant="decorativeLarge"
               sx={{
-                mb: 1.5,
-                m: 0,
+                mb: 2,
                 fontFamily: 'Corinthia, cursive',
                 fontSize: '2.5rem',
                 fontWeight: 'bold'
@@ -124,10 +130,14 @@ export const AlphabeticalList = <T,>({
               {letter}
             </Typography>
             <Box sx={{ 
-              display: 'flex', 
-              flexWrap: 'wrap', 
-              gap: 4,
-              justifyContent: 'flex-start'
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+                lg: 'repeat(4, 1fr)'
+              },
+              gap: 3
             }}>
               {letterItems.map((item) => {
                 const itemId = getItemId(item);
@@ -137,13 +147,6 @@ export const AlphabeticalList = <T,>({
                     key={itemId}
                     ref={(el: HTMLDivElement | null) => {
                       itemRefs.current[itemId] = el;
-                    }}
-                    sx={{ 
-                      width: { xs: '100%', sm: 'calc(50% - 16px)', md: 'calc(33.33% - 16px)', lg: 'calc(25% - 16px)' },
-                      minWidth: { xs: 'auto', sm: '250px' },
-                      flexShrink: 0,
-                      display: 'flex',
-                      justifyContent: 'flex-start'
                     }}
                   >
                     {renderItem ? (

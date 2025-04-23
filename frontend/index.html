@@ -2,7 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png">
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/favicon/site.webmanifest">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="The Online.Bar - Your comprehensive cocktail and mixology resource. Search and discover cocktail recipes, ingredients, and bartending techniques." />
     <meta name="keywords" content="cocktails, mixology, bartending, drinks, recipes, ingredients, spirits, alcohol" />
@@ -23,7 +33,46 @@
     <meta property="twitter:description" content="Your comprehensive cocktail and mixology resource. Search and discover cocktail recipes, ingredients, and bartending techniques." />
     <meta property="twitter:image" content="https://theonline.bar/og-image.jpg" />
     
-    <link rel="stylesheet" href="/src/fonts.css">
+    <!-- Preload critical fonts -->
+    <link rel="preload" href="/fonts/Corinthia-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/fonts/OldStandardTT-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    
+    <!-- Critical CSS -->
+    <style>
+      /* Inline critical font declarations */
+      @font-face {
+        font-family: 'Corinthia';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('/fonts/Corinthia-Regular.woff2') format('woff2'),
+             url('/fonts/Corinthia-Regular.ttf') format('truetype');
+      }
+      
+      @font-face {
+        font-family: 'Old Standard TT';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('/fonts/OldStandardTT-Regular.woff2') format('woff2'),
+             url('/fonts/OldStandardTT-Regular.ttf') format('truetype');
+      }
+      
+      body {
+        margin: 0;
+        font-family: 'Old Standard TT', serif;
+      }
+      #root {
+        min-height: 100vh;
+      }
+    </style>
+    
+    <!-- Non-critical CSS -->
+    <link rel="stylesheet" href="/src/fonts.css" media="print" onload="this.media='all'">
+    <noscript>
+      <link rel="stylesheet" href="/src/fonts.css">
+    </noscript>
+    
     <link rel="canonical" href="https://theonline.bar" />
     <title>The Online.Bar</title>
   </head>

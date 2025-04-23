@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { Ingredient, IngredientType } from '../types/ingredient.types';
@@ -6,7 +6,7 @@ import { FilterSidebar } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
 import { getIngredientTypeLabel } from '../utils/ingredientUtils';
 
-// Helper function to capitalize words
+// Move this outside the component to prevent recreation
 const capitalizeWords = (str: string): string => {
   return str
     .split(' ')
@@ -20,21 +20,23 @@ export const IngredientsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
 
-  useEffect(() => {
-    const fetchIngredients = async () => {
-      try {
-        const response = await fetch('/api/ingredients');
-        const data = await response.json();
-        setIngredients(data);
-      } catch (error) {
-        console.error('Error fetching ingredients:', error);
-      }
-    };
-
-    fetchIngredients();
+  // Memoize the fetch function
+  const fetchIngredients = useCallback(async () => {
+    try {
+      const response = await fetch('/api/ingredients');
+      const data = await response.json();
+      setIngredients(data);
+    } catch (error) {
+      console.error('Error fetching ingredients:', error);
+    }
   }, []);
 
-  const handleTypeChange = (type: IngredientType) => {
+  useEffect(() => {
+    fetchIngredients();
+  }, [fetchIngredients]);
+
+  // Memoize the type change handler
+  const handleTypeChange = useCallback((type: IngredientType) => {
     setSelectedTypes(prev => {
       if (prev.includes(type)) {
         return prev.filter(t => t !== type);
@@ -42,9 +44,10 @@ export const IngredientsPage: React.FC = () => {
         return [...prev, type];
       }
     });
-  };
+  }, []);
 
-  const filterSections = [
+  // Memoize filter sections to prevent unnecessary recalculations
+  const filterSections = useMemo(() => [
     {
       title: 'Ingredient Type',
       options: Object.values(IngredientType).map(type => ({
@@ -54,21 +57,31 @@ export const IngredientsPage: React.FC = () => {
         onChange: () => handleTypeChange(type)
       }))
     }
-  ];
+  ], [selectedTypes, handleTypeChange]);
 
-  const filteredIngredients = ingredients.filter(ingredient => {
-    // Apply search filter
-    if (searchQuery && !ingredient.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
+  // Memoize filtered ingredients
+  const filteredIngredients = useMemo(() => {
+    return ingredients.filter(ingredient => {
+      // Apply search filter
+      if (searchQuery && !ingredient.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+        return false;
+      }
 
-    // Apply type filter
-    if (selectedTypes.length > 0 && !selectedTypes.includes(ingredient.type)) {
-      return false;
-    }
+      // Apply type filter
+      if (selectedTypes.length > 0 && !selectedTypes.includes(ingredient.type)) {
+        return false;
+      }
 
-    return true;
-  });
+      return true;
+    });
+  }, [ingredients, searchQuery, selectedTypes]);
+
+  // Memoize item handlers to prevent recreation on each render
+  const itemHandlers = useMemo(() => ({
+    getItemId: (item: Ingredient) => item.slug,
+    getItemName: (item: Ingredient) => capitalizeWords(item.name),
+    getItemLink: (item: Ingredient) => `/ingredients/${item.slug}`
+  }), []);
 
   return (
     <Box sx={{ 
@@ -96,9 +109,7 @@ export const IngredientsPage: React.FC = () => {
         }}>
           <AlphabeticalList
             items={filteredIngredients}
-            getItemId={(item) => item.slug}
-            getItemName={(item) => capitalizeWords(item.name)}
-            getItemLink={(item) => `/ingredients/${item.slug}`}
+            {...itemHandlers}
           />
         </Box>
       </Box>
