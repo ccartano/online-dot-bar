@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { Ingredient } from '../entities/ingredient.entity';
 import { CocktailIngredient } from '../entities/cocktail-ingredient.entity';
 
@@ -12,29 +14,67 @@ export class IngredientsService {
     @InjectRepository(CocktailIngredient)
     private cocktailIngredientsRepository: Repository<CocktailIngredient>,
     private dataSource: DataSource,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   async findAll(): Promise<Ingredient[]> {
-    return this.ingredientsRepository.find();
+    // Try to get from cache first
+    const cachedData = await this.cacheManager.get<Ingredient[]>('ingredients:all');
+    if (cachedData) {
+      return cachedData;
+    }
+
+    // If not in cache, get from database
+    const ingredients = await this.ingredientsRepository.find();
+    
+    // Store in cache and track the key
+    await this.cacheManager.set('ingredients:all', ingredients, 60 * 60 * 24); // 24 hours TTL
+    await this.addCacheKey('ingredients:all');
+    
+    return ingredients;
   }
 
   async findOne(id: number): Promise<Ingredient> {
+    // Try to get from cache first
+    const cacheKey = `ingredient:${id}`;
+    const cachedData = await this.cacheManager.get<Ingredient>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+
     const ingredient = await this.ingredientsRepository.findOne({
       where: { id },
     });
     if (!ingredient) {
       throw new NotFoundException(`Ingredient with ID ${id} not found`);
     }
+
+    // Store in cache and track the key
+    await this.cacheManager.set(cacheKey, ingredient, 60 * 60 * 24); // 24 hours TTL
+    await this.addCacheKey(cacheKey);
+
     return ingredient;
   }
 
   async findBySlug(slug: string): Promise<Ingredient> {
+    // Try to get from cache first
+    const cacheKey = `ingredient:slug:${slug}`;
+    const cachedData = await this.cacheManager.get<Ingredient>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+
     const ingredient = await this.ingredientsRepository.findOne({
       where: { slug },
     });
     if (!ingredient) {
       throw new NotFoundException(`Ingredient with slug ${slug} not found`);
     }
+
+    // Store in cache and track the key
+    await this.cacheManager.set(cacheKey, ingredient, 60 * 60 * 24); // 24 hours TTL
+    await this.addCacheKey(cacheKey);
+
     return ingredient;
   }
 
@@ -48,7 +88,12 @@ export class IngredientsService {
     }
 
     const newIngredient = this.ingredientsRepository.create(ingredient);
-    return this.ingredientsRepository.save(newIngredient);
+    const result = await this.ingredientsRepository.save(newIngredient);
+    
+    // Invalidate cache
+    await this.invalidateCache();
+    
+    return result;
   }
 
   async update(
@@ -97,6 +142,31 @@ export class IngredientsService {
   }
 
   async remove(id: number): Promise<void> {
-    await this.ingredientsRepository.delete(id);
+    const result = await this.ingredientsRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Ingredient with ID ${id} not found`);
+    }
+    
+    // Invalidate cache
+    await this.invalidateCache();
+  }
+
+  private async invalidateCache(): Promise<void> {
+    // Since we can't list all keys, we'll maintain a set of cache keys
+    const cacheKeys = await this.cacheManager.get<string[]>('ingredients:cache-keys') || [];
+    
+    // Delete all known cache keys
+    await Promise.all(cacheKeys.map(key => this.cacheManager.del(key)));
+    
+    // Reset the cache keys
+    await this.cacheManager.set('ingredients:cache-keys', [], 60 * 60 * 24);
+  }
+
+  private async addCacheKey(key: string): Promise<void> {
+    const cacheKeys = await this.cacheManager.get<string[]>('ingredients:cache-keys') || [];
+    if (!cacheKeys.includes(key)) {
+      cacheKeys.push(key);
+      await this.cacheManager.set('ingredients:cache-keys', cacheKeys, 60 * 60 * 24);
+    }
   }
 }

@@ -4,9 +4,13 @@ import { Ingredient } from '../entities/ingredient.entity';
 import { CocktailIngredient } from '../entities/cocktail-ingredient.entity';
 import { IngredientsService } from './ingredients.service';
 import { IngredientsController } from './ingredients.controller';
+import { CacheModule } from '../cache/cache.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Ingredient, CocktailIngredient])],
+  imports: [
+    TypeOrmModule.forFeature([Ingredient, CocktailIngredient]),
+    CacheModule,
+  ],
   controllers: [IngredientsController],
   providers: [IngredientsService],
   exports: [IngredientsService],

@@ -3,9 +3,12 @@ import {
   NotFoundException,
   InternalServerErrorException,
   // ConflictException, // Keep commented out for now
+  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Brackets, Not } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { Cocktail } from '../entities/cocktail.entity';
 import {
   CocktailIngredientDto, // Corrected import name
@@ -36,7 +39,13 @@ export class CocktailsService {
     @InjectRepository(CocktailIngredient)
     private cocktailIngredientsRepository: Repository<CocktailIngredient>,
     private dataSource: DataSource,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
+
+  private getCacheKey(filterDto?: FilterCocktailDto): string {
+    if (!filterDto) return 'cocktails:all';
+    return `cocktails:filtered:${JSON.stringify(filterDto)}`;
+  }
 
   // Helper function to calculate ingredient signatures
   private _calculateSignatures(ingredients: CocktailIngredientDto[]): {
@@ -72,6 +81,15 @@ export class CocktailsService {
   }
 
   async findAll(filterDto?: FilterCocktailDto): Promise<Cocktail[]> {
+    const cacheKey = this.getCacheKey(filterDto);
+    
+    // Try to get from cache first
+    const cachedData = await this.cacheManager.get<Cocktail[]>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+
+    // If not in cache, get from database
     const queryBuilder = this.cocktailsRepository
       .createQueryBuilder('cocktail')
       .leftJoinAndSelect('cocktail.category', 'category')
@@ -106,7 +124,6 @@ export class CocktailsService {
       }
 
       if (glassTypeNames && glassTypeNames.length > 0) {
-        // Since we're not joining glassType, we need to use the ID
         const glassTypeIds = await this.glassTypesRepository
           .createQueryBuilder('glassType')
           .select('glassType.id')
@@ -123,7 +140,11 @@ export class CocktailsService {
     }
 
     const cocktails = await queryBuilder.getMany();
-
+    
+    // Store in cache and track the key
+    await this.cacheManager.set(cacheKey, cocktails, 60 * 60 * 24); // 24 hours TTL
+    await this.addCacheKey(cacheKey);
+    
     return cocktails;
   }
 
@@ -346,6 +367,7 @@ export class CocktailsService {
 
       // Refetch with relations and handle the new return type
       const result = await this.findOne(savedCocktail.id);
+      await this.invalidateCache();
       return result.cocktail;
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -492,6 +514,7 @@ export class CocktailsService {
 
       // Refetch the updated cocktail with relations and handle the new return type
       const result = await this.findOne(id);
+      await this.invalidateCache();
       return result.cocktail;
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -511,6 +534,29 @@ export class CocktailsService {
     const result = await this.cocktailsRepository.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Cocktail with ID ${id} not found`);
+    }
+    await this.invalidateCache();
+  }
+
+  private async invalidateCache(): Promise<void> {
+    // Delete the main cache
+    await this.cacheManager.del('cocktails:all');
+    
+    // Since we can't list all keys, we'll maintain a set of cache keys
+    const cacheKeys = await this.cacheManager.get<string[]>('cocktails:cache-keys') || [];
+    
+    // Delete all known cache keys
+    await Promise.all(cacheKeys.map(key => this.cacheManager.del(key)));
+    
+    // Reset the cache keys
+    await this.cacheManager.set('cocktails:cache-keys', [], 60 * 60 * 24);
+  }
+
+  private async addCacheKey(key: string): Promise<void> {
+    const cacheKeys = await this.cacheManager.get<string[]>('cocktails:cache-keys') || [];
+    if (!cacheKeys.includes(key)) {
+      cacheKeys.push(key);
+      await this.cacheManager.set('cocktails:cache-keys', cacheKeys, 60 * 60 * 24);
     }
   }
 }

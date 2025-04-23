@@ -8,6 +8,7 @@ Before you begin, ensure you have the following installed:
 - Node.js (v20 or higher)
 - npm (comes with Node.js)
 - PostgreSQL (v14 or higher)
+- Redis (v7 or higher)
 - Git
 
 To check your Node.js version:
@@ -24,6 +25,46 @@ source ~/.bashrc  # or ~/.zshrc
 # Install and use latest LTS version
 nvm install --lts
 nvm use --lts
+```
+
+### Installing Redis on Ubuntu
+
+1. Update package list and install Redis:
+```bash
+sudo apt update
+sudo apt install redis-server
+```
+
+2. Configure Redis to start on boot:
+```bash
+sudo systemctl enable redis-server
+```
+
+3. Start Redis service:
+```bash
+sudo systemctl start redis-server
+```
+
+4. Verify Redis is running:
+```bash
+redis-cli ping
+```
+The command should return "PONG" if Redis is running correctly.
+
+5. (Optional) Configure Redis password:
+   - This step is only necessary if you need password protection for Redis
+   - For local development, you can skip this step
+   - If you do need a password, follow these steps:
+```bash
+# Open Redis configuration
+sudo nano /etc/redis/redis.conf
+
+# Find the line with '#requirepass foobared'
+# Uncomment and replace 'foobared' with your password
+# Save and exit
+
+# Restart Redis
+sudo systemctl restart redis-server
 ```
 
 ## Environment Setup

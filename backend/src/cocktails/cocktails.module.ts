@@ -7,6 +7,7 @@ import { Ingredient } from '../entities/ingredient.entity';
 import { CocktailIngredient } from '../entities/cocktail-ingredient.entity';
 import { CocktailsService } from './cocktails.service';
 import { CocktailsController } from './cocktails.controller';
+import { CacheModule } from '../cache/cache.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { CocktailsController } from './cocktails.controller';
       Ingredient,
       CocktailIngredient,
     ]),
+    CacheModule,
   ],
   controllers: [CocktailsController],
   providers: [CocktailsService],

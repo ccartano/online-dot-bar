@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import type { OutgoingHttpHeaders } from 'http'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -13,7 +14,18 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         secure: false,
       }
-    }
+    },
+    headers: {
+      // Add caching headers for fonts
+      '*.woff2': [
+        ['Cache-Control', 'public, max-age=31536000'],
+        ['Vary', 'Accept-Encoding']
+      ],
+      '*.ttf': [
+        ['Cache-Control', 'public, max-age=31536000'],
+        ['Vary', 'Accept-Encoding']
+      ]
+    } as OutgoingHttpHeaders
   },
   preview: {
     host: '0.0.0.0',
