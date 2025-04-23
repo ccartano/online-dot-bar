@@ -5,7 +5,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/Corinthia-Regular.ttf') format('truetype');
+  src: url('/fonts/Corinthia-Regular.woff2') format('woff2'),
+       url('/fonts/Corinthia-Regular.ttf') format('truetype');
 }
 
 @font-face {
@@ -22,7 +23,8 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('/fonts/OldStandardTT-Regular.ttf') format('truetype');
+  src: url('/fonts/OldStandardTT-Regular.woff2') format('woff2'),
+       url('/fonts/OldStandardTT-Regular.ttf') format('truetype');
 }
 
 @font-face {

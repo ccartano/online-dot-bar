@@ -32,8 +32,12 @@ export default defineConfig(({ mode }) => ({
           mui: ['@mui/material', '@mui/icons-material'],
         },
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name.endsWith('.css')) {
+          if (assetInfo.name?.endsWith('.css')) {
             return 'assets/css/[name]-[hash][extname]';
+          }
+          // Handle font files
+          if (assetInfo.name?.match(/\.(woff2?|ttf|eot)$/)) {
+            return 'fonts/[name][extname]';
           }
           return 'assets/[name]-[hash][extname]';
         },
@@ -53,5 +57,12 @@ export default defineConfig(({ mode }) => ({
       }
     },
     devSourcemap: true,
+  },
+  // Add proper handling of public assets
+  publicDir: 'public',
+  resolve: {
+    alias: {
+      '@fonts': '/fonts'
+    }
   }
 }))

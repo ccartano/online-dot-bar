@@ -25,13 +25,44 @@ export default defineConfig(function (_a) {
             assetsDir: 'assets',
             sourcemap: mode === 'development',
             minify: mode === 'production' ? 'terser' : false,
+            cssCodeSplit: true,
             rollupOptions: {
                 output: {
                     manualChunks: {
                         vendor: ['react', 'react-dom', 'react-router-dom'],
                         mui: ['@mui/material', '@mui/icons-material'],
-                    }
+                    },
+                    assetFileNames: function (assetInfo) {
+                        var _a, _b;
+                        if ((_a = assetInfo.name) === null || _a === void 0 ? void 0 : _a.endsWith('.css')) {
+                            return 'assets/css/[name]-[hash][extname]';
+                        }
+                        // Handle font files
+                        if ((_b = assetInfo.name) === null || _b === void 0 ? void 0 : _b.match(/\.(woff2?|ttf|eot)$/)) {
+                            return 'fonts/[name][extname]';
+                        }
+                        return 'assets/[name]-[hash][extname]';
+                    },
                 }
+            },
+            cssMinify: true,
+        },
+        css: {
+            modules: {
+                localsConvention: 'camelCase',
+            },
+            preprocessorOptions: {
+                scss: {
+                    additionalData: "\n          @import \"./src/styles/variables.scss\";\n        "
+                }
+            },
+            devSourcemap: true,
+        },
+        // Add proper handling of public assets
+        publicDir: 'public',
+        resolve: {
+            alias: {
+                '@fonts': '/fonts'
             }
         }
     });
