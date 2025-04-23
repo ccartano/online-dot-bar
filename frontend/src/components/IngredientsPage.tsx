@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import { Ingredient, IngredientType } from '../types/ingredient.types';
 import { FilterSidebar } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
+import { getIngredientTypeLabel } from '../utils/ingredientUtils';
 
 // Helper function to capitalize words
 const capitalizeWords = (str: string): string => {
@@ -48,7 +49,7 @@ export const IngredientsPage: React.FC = () => {
       title: 'Ingredient Type',
       options: Object.values(IngredientType).map(type => ({
         id: type,
-        label: capitalizeWords(type),
+        label: getIngredientTypeLabel(type),
         checked: selectedTypes.includes(type),
         onChange: () => handleTypeChange(type)
       }))

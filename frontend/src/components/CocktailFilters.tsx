@@ -29,9 +29,9 @@ export const CocktailFilters: React.FC<CocktailFiltersProps> = ({
         Filters
       </Typography>
       <Divider sx={{ mb: 2 }} />
-      <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
+      <Typography variant="h2" component="h2" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
         Spirit
-      </h3>
+      </Typography>
       <FormGroup sx={{ pl: 2, mb: 4 }}>
         {(['Gin', 'Whiskey', 'Vodka', 'Rum', 'Tequila', 'Brandy', 'Other'] as BaseSpirit[]).map((spirit) => (
           <FormControlLabel
@@ -47,9 +47,9 @@ export const CocktailFilters: React.FC<CocktailFiltersProps> = ({
           />
         ))}
       </FormGroup>
-      <h3 style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
+      <Typography variant="h2" component="h2" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
         Glass Type
-      </h3>
+      </Typography>
       <FormGroup sx={{ pl: 2 }}>
         {Object.values(glassTypeMap).map((glassName) => (
           <FormControlLabel

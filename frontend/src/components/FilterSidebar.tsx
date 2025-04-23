@@ -37,7 +37,8 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ sections }) => {
       {sections.map((section, index) => (
         <React.Fragment key={section.title}>
           <Typography
-            variant="h3"
+            variant="h2"
+            component="h2"
             sx={{
               fontWeight: 'bold',
               marginBottom: '0.5rem',

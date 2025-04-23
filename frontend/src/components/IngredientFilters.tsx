@@ -1,15 +1,11 @@
 import { Box, Checkbox, FormControlLabel, FormGroup, Divider, Typography } from '@mui/material';
-import { IngredientType } from '../types/ingredient.types'; // Assuming you have this enum
+import { IngredientType } from '../types/ingredient.types';
+import { getIngredientTypeLabel } from '../utils/ingredientUtils';
 
 interface IngredientFiltersProps {
   selectedTypes: IngredientType[];
   onTypeChange: (type: IngredientType) => void;
 }
-
-// Helper function to capitalize enum values for display
-const formatTypeName = (type: string): string => {
-  return type.charAt(0).toUpperCase() + type.slice(1);
-};
 
 export const IngredientFilters: React.FC<IngredientFiltersProps> = ({
   selectedTypes,
@@ -46,10 +42,10 @@ export const IngredientFilters: React.FC<IngredientFiltersProps> = ({
               <Checkbox
                 checked={selectedTypes.includes(type)}
                 onChange={() => onTypeChange(type)}
-                size="small" // Smaller checkboxes might fit better
+                size="small"
               />
             }
-            label={formatTypeName(type)}
+            label={getIngredientTypeLabel(type)}
             sx={{ mb: 0, '& .MuiFormControlLabel-label': { fontFamily: 'Old Standard TT, serif', fontSize: '0.9rem' } }}
           />
         ))}

@@ -182,7 +182,8 @@ export const CocktailDetailPage: React.FC = () => {
       }}>
         <Box sx={{ mb: 4 }}>
           <Typography
-            variant="h3"
+            variant="h1"
+            component="h1"
             sx={{
               fontFamily: 'Corinthia, cursive',
               fontSize: { xs: '2.5rem', sm: '3rem' },
@@ -194,7 +195,7 @@ export const CocktailDetailPage: React.FC = () => {
         </Box>
 
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
+          <Typography variant="h2" component="h2" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
             Ingredients
           </Typography>
           <List>
@@ -332,7 +333,7 @@ export const CocktailDetailPage: React.FC = () => {
         </Box>
 
         <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
+          <Typography variant="h2" component="h2" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
             Instructions
           </Typography>
           <Typography 
@@ -347,7 +348,7 @@ export const CocktailDetailPage: React.FC = () => {
 
         {potentialAkas && potentialAkas.length > 0 && (
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
+            <Typography variant="h2" component="h2" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
               Also Known As
             </Typography>
             <List dense>
@@ -364,7 +365,7 @@ export const CocktailDetailPage: React.FC = () => {
 
         {potentialVariations && potentialVariations.length > 0 && (
           <Box sx={{ mb: 4 }}>
-            <Typography variant="h4" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
+            <Typography variant="h2" component="h2" gutterBottom sx={{ fontFamily: 'Corinthia, cursive', fontSize: '2rem' }}>
               Variations
             </Typography>
             <List dense>

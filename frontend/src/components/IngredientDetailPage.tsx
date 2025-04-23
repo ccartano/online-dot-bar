@@ -125,7 +125,7 @@ export const IngredientDetailPage: React.FC = () => {
       }}>
         <Box sx={{ mb: 4 }}>
           <Typography
-            variant="h3"
+            variant="h1"
             component="h1"
             gutterBottom
             sx={{
@@ -177,7 +177,7 @@ export const IngredientDetailPage: React.FC = () => {
         {ingredient.description && (
             <Box sx={{ mt: 3 }}>
               <Typography
-                variant="h4"
+                variant="h2"
                 component="h2"
                 gutterBottom
                 sx={{
@@ -195,7 +195,7 @@ export const IngredientDetailPage: React.FC = () => {
 
         <Box sx={{ pt: 3 }}>
           <Typography
-            variant="h4"
+            variant="h2"
             component="h2"
             gutterBottom
             sx={{
