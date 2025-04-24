@@ -6,9 +6,11 @@ import {
   Put,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { Category } from '../entities/category.entity';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('categories')
 export class CategoriesController {
@@ -25,11 +27,13 @@ export class CategoriesController {
   }
 
   @Post()
+  @UseGuards(AdminGuard)
   create(@Body() category: Partial<Category>): Promise<Category> {
     return this.categoriesService.create(category);
   }
 
   @Put(':id')
+  @UseGuards(AdminGuard)
   update(
     @Param('id') id: string,
     @Body() category: Partial<Category>,
@@ -38,6 +42,7 @@ export class CategoriesController {
   }
 
   @Delete(':id')
+  @UseGuards(AdminGuard)
   remove(@Param('id') id: string): Promise<void> {
     return this.categoriesService.remove(+id);
   }

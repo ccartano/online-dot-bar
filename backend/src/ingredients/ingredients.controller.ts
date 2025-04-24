@@ -6,9 +6,11 @@ import {
   Put,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { IngredientsService } from './ingredients.service';
 import { Ingredient } from '../entities/ingredient.entity';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('ingredients')
 export class IngredientsController {
@@ -30,11 +32,13 @@ export class IngredientsController {
   }
 
   @Post()
+  @UseGuards(AdminGuard)
   create(@Body() ingredient: Partial<Ingredient>): Promise<Ingredient> {
     return this.ingredientsService.create(ingredient);
   }
 
   @Put(':id')
+  @UseGuards(AdminGuard)
   update(
     @Param('id') id: string,
     @Body() ingredient: Partial<Ingredient>,
@@ -43,6 +47,7 @@ export class IngredientsController {
   }
 
   @Delete(':id')
+  @UseGuards(AdminGuard)
   remove(@Param('id') id: string): Promise<void> {
     return this.ingredientsService.remove(+id);
   }

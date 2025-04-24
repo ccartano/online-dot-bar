@@ -6,9 +6,11 @@ import {
   Put,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { GlassTypesService } from './glass-types.service';
 import { GlassType } from '../entities/glass-type.entity';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('glass-types')
 export class GlassTypesController {
@@ -25,11 +27,13 @@ export class GlassTypesController {
   }
 
   @Post()
+  @UseGuards(AdminGuard)
   create(@Body() glassType: Partial<GlassType>): Promise<GlassType> {
     return this.glassTypesService.create(glassType);
   }
 
   @Put(':id')
+  @UseGuards(AdminGuard)
   update(
     @Param('id') id: string,
     @Body() glassType: Partial<GlassType>,
@@ -38,6 +42,7 @@ export class GlassTypesController {
   }
 
   @Delete(':id')
+  @UseGuards(AdminGuard)
   remove(@Param('id') id: string): Promise<void> {
     return this.glassTypesService.remove(+id);
   }

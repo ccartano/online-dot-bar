@@ -9,6 +9,7 @@ import {
   Query,
   Headers,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { CocktailsService } from './cocktails.service';
 import { GlassTypesService } from '../glass-types/glass-types.service';
@@ -17,6 +18,7 @@ import { CreateCocktailDto } from './dto/create-cocktail.dto';
 import { UpdateCocktailDto } from './dto/update-cocktail.dto';
 import { FilterCocktailDto } from './dto/filter-cocktail.dto';
 import { GlassType } from '../entities/glass-type.entity';
+import { AdminGuard } from '../auth/admin.guard';
 
 @Controller('cocktails')
 export class CocktailsController {
@@ -69,11 +71,13 @@ export class CocktailsController {
   }
 
   @Post()
+  @UseGuards(AdminGuard)
   create(@Body() createCocktailDto: CreateCocktailDto): Promise<Cocktail> {
     return this.cocktailsService.create(createCocktailDto);
   }
 
   @Put(':id')
+  @UseGuards(AdminGuard)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCocktailDto: UpdateCocktailDto,
@@ -82,6 +86,7 @@ export class CocktailsController {
   }
 
   @Delete(':id')
+  @UseGuards(AdminGuard)
   remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.cocktailsService.remove(id);
   }

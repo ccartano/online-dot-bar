@@ -10,6 +10,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { GlassTypesModule } from './glass-types/glass-types.module';
 import { SearchModule } from './search/search.module';
 import { ProductsModule } from './products/products.module';
+import { AuthModule } from './auth/auth.module';
 import { Cocktail } from './entities/cocktail.entity';
 import { PaperlessService } from './services/paperless.service';
 import { PaperlessController } from './controllers/paperless.controller';
@@ -28,6 +29,7 @@ import { CocktailsController } from './cocktails/cocktails.controller';
     GlassTypesModule,
     SearchModule,
     ProductsModule,
+    AuthModule,
   ],
   controllers: [AppController, PaperlessController, CocktailsController],
   providers: [

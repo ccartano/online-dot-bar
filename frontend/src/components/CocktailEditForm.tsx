@@ -355,7 +355,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                           </MenuItem>
                           {Object.values(MeasurementUnit).map((unit) => (
                             <MenuItem key={unit} value={unit}>
-                              {unit.toLowerCase()}
+                              {unit}
                             </MenuItem>
                           ))}
                         </Select>
@@ -402,7 +402,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                             </MenuItem>
                             {Object.values(MeasurementUnit).map((unit) => (
                               <MenuItem key={unit} value={unit}>
-                                {unit.toLowerCase()}
+                                {unit}
                               </MenuItem>
                             ))}
                           </Select>
@@ -467,7 +467,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                     </MenuItem>
                     {Object.values(MeasurementUnit).map((unit) => (
                       <MenuItem key={unit} value={unit}>
-                        {unit.toLowerCase()}
+                        {unit}
                       </MenuItem>
                     ))}
                   </Select>
@@ -506,7 +506,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                   </MenuItem>
                   {Object.values(MeasurementUnit).map((unit) => (
                     <MenuItem key={unit} value={unit}>
-                      {unit.toLowerCase()}
+                      {unit}
                     </MenuItem>
                   ))}
                 </Select>

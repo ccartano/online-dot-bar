@@ -72,9 +72,10 @@ export const AdminPage: React.FC = () => {
         throw new Error('Admin token not found. Please log in.');
       }
       
+      const headers = await AdminService.getAdminHeaders();
       const [cocktailResponse, glassTypeResponse] = await Promise.all([
-        fetch(getApiUrl('/cocktails'), { headers: { 'x-admin-token': adminToken } }),
-        fetch(getApiUrl('/glass-types'), { headers: { 'x-admin-token': adminToken } })
+        fetch(getApiUrl('/cocktails'), { headers }),
+        fetch(getApiUrl('/glass-types'), { headers })
       ]);
 
       if (!cocktailResponse.ok) throw new Error(`Failed to fetch cocktails (Status: ${cocktailResponse.status})`);
@@ -129,13 +130,12 @@ export const AdminPage: React.FC = () => {
         }),
       };
 
-      console.log(`[AdminPage] Sending update data for cocktail ${updatedCocktail.id}:`, JSON.stringify(updateData, null, 2));
-
+      const headers = await AdminService.getAdminHeaders();
       const response = await fetch(getApiUrl(`/cocktails/${updatedCocktail.id}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-token': adminToken,
+          ...headers,
         },
         body: JSON.stringify(updateData),
       });
@@ -205,11 +205,10 @@ export const AdminPage: React.FC = () => {
         throw new Error('Admin access required (token not found)');
       }
 
+      const headers = await AdminService.getAdminHeaders();
       const response = await fetch(getApiUrl(`/cocktails/${cocktailToDelete}`), {
         method: 'DELETE',
-        headers: {
-          'x-admin-token': adminToken,
-        },
+        headers,
       });
 
       if (!response.ok) {
