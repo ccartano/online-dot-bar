@@ -173,8 +173,11 @@ export const CocktailDetailPage: React.FC = () => {
   return (
     <>
       <SEO 
-        title={`${cocktail.name || 'Cocktail'} Recipe - The Online.Bar`}
-        description={`Learn how to make the perfect ${cocktail.name}. Get ingredients, measurements, and step-by-step instructions for this ${cocktail.category || 'cocktail'}.`}
+        title={`${cocktail ? titleize(cocktail.name) : 'Cocktail'} Recipe - The Online.Bar`}
+        description={cocktail?.description ? 
+          `${titleize(cocktail.name)}: ${cocktail.description}` : 
+          `Learn how to make the perfect ${cocktail.name}. Get ingredients, measurements, and step-by-step instructions for this ${cocktail.category || 'cocktail'}.`
+        }
         image={cocktail.imageUrl || undefined}
       />
       <DocumentTitle title={titleize(cocktail.name)} />

@@ -111,8 +111,11 @@ export const IngredientDetailPage: React.FC = () => {
   return (
     <>
       <SEO 
-        title={`${ingredient?.name || 'Ingredient'} Guide - The Online.Bar`}
-        description={`Learn about ${ingredient?.name} in cocktails. Discover its characteristics, common uses, and cocktail recipes that feature this ingredient.`}
+        title={`${ingredient ? capitalizeWords(ingredient.name) : 'Ingredient'} - The Online.Bar`}
+        description={ingredient?.description ? 
+          `${ingredient.name}: ${ingredient.description}` : 
+          `Learn about ${ingredient?.name} in cocktails. Discover its characteristics, common uses, and cocktail recipes that feature this ingredient.`
+        }
         image={ingredient?.imageUrl || undefined}
       />
       <DocumentTitle title={capitalizeWords(ingredient.name)} />
