@@ -5,8 +5,10 @@ import './index.css'
 import App from './App.tsx'
 import { initializeGTM } from './utils/gtm'
 
-// Initialize GTM
-initializeGTM()
+// Initialize GTM only for non-admin routes
+if (!window.location.pathname.startsWith('/admin')) {
+  initializeGTM()
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

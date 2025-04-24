@@ -29,7 +29,6 @@ export class AdminService {
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    console.log(`[AdminService] Hashing "${str}" to: ${hash}`);
     return hash;
   }
 
@@ -37,11 +36,9 @@ export class AdminService {
   static async getAdminHeaders(): Promise<Record<string, string>> {
     const token = this.getAdminToken();
     if (!token) {
-      console.log('[AdminService] No token found');
       return {};
     }
     const hashedToken = await this.hashString(token);
-    console.log(`[AdminService] Generated headers with hash: ${hashedToken}`);
     return {
       'x-admin-token': hashedToken
     };

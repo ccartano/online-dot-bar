@@ -1,14 +1,30 @@
 import { getApiUrl } from '../config/api.config';
-import { GlassType } from '../types/glass.types';
-import { Category } from '../types/category.types';
+import { AdminService } from './admin.service';
 
-// Match the backend MeasurementUnit enum
+export interface GlassType {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface Ingredient {
+  id: number;
+  name: string;
+  description?: string;
+  type?: string;
+}
+
 export enum MeasurementUnit {
   OZ = 'oz',
   ML = 'ml',
   DASH = 'dash',
   DROP = 'drop',
-  BARSPOON = 'barspoon',
   PINCH = 'pinch',
   TWIST = 'twist',
   WEDGE = 'wedge',
@@ -16,31 +32,16 @@ export enum MeasurementUnit {
   SPRIG = 'sprig',
   LEAF = 'leaf',
   CUBE = 'cube',
-  PIECE = 'piece',
-  WHOLE = 'whole',
   PART = 'part',
-  TO_TASTE = 'to_taste',
-  TSP = 'tsp',
-  TBSP = 'tbsp',
-  OTHER = 'other',
 }
 
 export interface CocktailIngredient {
   id?: number;
-  amount?: number | null;
+  ingredient: Ingredient;
+  amount?: number;
   unit?: MeasurementUnit;
-  notes?: string | null;
+  notes?: string;
   order: number;
-  createdAt?: string;
-  updatedAt?: string;
-  ingredient: {
-    id?: number;
-    name: string;
-    slug: string;
-    description?: string | null;
-    type?: string;
-    imageUrl?: string | null;
-  };
 }
 
 export interface Cocktail {
@@ -66,10 +67,66 @@ export interface Cocktail {
   tags?: string[];
 }
 
-export class CocktailService {
-  // Core service functionality can be added here if needed
-  // For example: API calls, data transformations, etc.
-}
+export const cocktailService = {
+  async getAllCocktails(): Promise<Cocktail[]> {
+    const response = await fetch(getApiUrl('/cocktails'));
+    if (!response.ok) {
+      throw new Error('Failed to fetch cocktails');
+    }
+    return response.json();
+  },
+
+  async getCocktailById(id: number): Promise<Cocktail> {
+    const response = await fetch(getApiUrl(`/cocktails/${id}`));
+    if (!response.ok) {
+      throw new Error('Failed to fetch cocktail');
+    }
+    return response.json();
+  },
+
+  async createCocktail(cocktail: Omit<Cocktail, 'id' | 'createdAt' | 'updatedAt'>): Promise<Cocktail> {
+    const headers = await AdminService.getAdminHeaders();
+    const response = await fetch(getApiUrl('/cocktails'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+      body: JSON.stringify(cocktail),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to create cocktail');
+    }
+    return response.json();
+  },
+
+  async updateCocktail(id: number, cocktail: Partial<Cocktail>): Promise<Cocktail> {
+    const headers = await AdminService.getAdminHeaders();
+    const response = await fetch(getApiUrl(`/cocktails/${id}`), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+      body: JSON.stringify(cocktail),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to update cocktail');
+    }
+    return response.json();
+  },
+
+  async deleteCocktail(id: number): Promise<void> {
+    const headers = await AdminService.getAdminHeaders();
+    const response = await fetch(getApiUrl(`/cocktails/${id}`), {
+      method: 'DELETE',
+      headers,
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete cocktail');
+    }
+  },
+};
 
 // Fetch all cocktails
 export const fetchCocktails = async (): Promise<Cocktail[]> => {
