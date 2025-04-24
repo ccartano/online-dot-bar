@@ -8,6 +8,7 @@ import { getApiUrl } from '../config/api.config';
 import { GlassType } from '../types/glass.types';
 import { PotentialCocktailsPage } from './PotentialCocktailsPage';
 import { IngredientAdminPage } from './IngredientAdminPage';
+import AdminProducts from '../pages/AdminProducts';
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography } from '@mui/material';
 import { SEO } from './SEO';
@@ -59,7 +60,7 @@ export const AdminPage: React.FC = () => {
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [cocktailToDelete, setCocktailToDelete] = useState<number | null>(null);
-  const [view, setView] = useState<'current' | 'potential' | 'ingredients'>('current');
+  const [view, setView] = useState<'current' | 'potential' | 'ingredients' | 'products'>('current');
   const updateInProgress = useRef(false);
 
   const fetchCocktailsAndGlassTypes = useCallback(async () => {
@@ -240,7 +241,7 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  const handleViewChange = (_event: React.SyntheticEvent, newValue: 'current' | 'potential' | 'ingredients') => {
+  const handleViewChange = (_event: React.SyntheticEvent, newValue: 'current' | 'potential' | 'ingredients' | 'products') => {
     setView(newValue);
   };
 
@@ -309,6 +310,7 @@ export const AdminPage: React.FC = () => {
           <Tab label="Current Cocktails" value="current" />
           <Tab label="Potential Cocktails" value="potential" />
           <Tab label="Ingredients" value="ingredients" />
+          <Tab label="Products" value="products" />
         </Tabs>
 
         {loading ? (
@@ -338,6 +340,7 @@ export const AdminPage: React.FC = () => {
                 onSearchChange={handleIngredientSearchChange}
               />
             )}
+            {view === 'products' && <AdminProducts />}
           </Box>
         )}
 

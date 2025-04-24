@@ -6,6 +6,7 @@ import {
   CocktailIngredient,
   GlassType,
   Category,
+  Product,
 } from '../entities';
 import * as dotenv from 'dotenv';
 
@@ -48,7 +49,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [Ingredient, Cocktail, CocktailIngredient, GlassType, Category],
+  entities: [Ingredient, Cocktail, CocktailIngredient, GlassType, Category, Product],
   synchronize: process.env.NODE_ENV !== 'production', // Set to false in production
   logging: process.env.NODE_ENV !== 'production',
 };

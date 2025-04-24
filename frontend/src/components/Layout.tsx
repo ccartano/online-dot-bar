@@ -113,7 +113,7 @@ const NavItemsContainer = styled(Box)`
 const navItems: NavItem[] = [
   { text: 'Cocktails', path: '/cocktails' },
   { text: 'Ingredients', path: '/ingredients' },
-  { text: 'Categories', path: '/categories' }
+  { text: 'Products', path: '/products' }
 ];
 
 // Memoized NavItem component

@@ -1,17 +1,13 @@
 export class AdminService {
   private static ADMIN_TOKEN_KEY = 'admin_token';
-  private static ENV_ADMIN_TOKEN = import.meta.env.VITE_ADMIN_TOKEN;
 
   static isAdmin(): boolean {
-    return !!localStorage.getItem(this.ADMIN_TOKEN_KEY);
+    return !!this.getAdminToken();
   }
 
   static login(token: string): void {
-    if (token === this.ENV_ADMIN_TOKEN) {
-      localStorage.setItem(this.ADMIN_TOKEN_KEY, token);
-    } else {
-      throw new Error('Invalid admin token');
-    }
+    // Store the token - validation will happen on the server side
+    localStorage.setItem(this.ADMIN_TOKEN_KEY, token);
   }
 
   static logout(): void {
@@ -19,10 +15,10 @@ export class AdminService {
   }
 
   static getAdminToken(): string | null {
-    const token = localStorage.getItem(this.ADMIN_TOKEN_KEY);
-    if (!token) {
-      return null;
-    }
-    return token;
+    return localStorage.getItem(this.ADMIN_TOKEN_KEY);
+  }
+
+  static getEnvAdminToken(): string | undefined {
+    return import.meta.env.VITE_ADMIN_TOKEN;
   }
 } 

@@ -8,6 +8,7 @@ import { CocktailDetailPage } from './components/CocktailDetailPage';
 import { AdminPage } from './components/AdminPage';
 import { IngredientsPage } from './components/IngredientsPage';
 import { IngredientDetailPage } from './components/IngredientDetailPage';
+import ProductsPage from './pages/ProductsPage';
 import './App.css';
 
 const App = () => {
@@ -25,6 +26,7 @@ const App = () => {
                 <Route path="/cocktails/:slug" element={<CocktailDetailPage />} />
                 <Route path="/ingredients" element={<IngredientsPage />} />
                 <Route path="/ingredients/:slug" element={<IngredientDetailPage />} />
+                <Route path="/products" element={<ProductsPage />} />
               </Routes>
             </Layout>
           } />
