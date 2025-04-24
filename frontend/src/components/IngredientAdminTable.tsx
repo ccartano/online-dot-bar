@@ -30,7 +30,7 @@ import { Ingredient, IngredientType } from '../types/ingredient.types';
 import { IngredientEditForm } from './IngredientEditForm'; // Import the edit form
 import { updateIngredient } from '../services/ingredient.service'; // Import update service
 import SearchIcon from '@mui/icons-material/Search';
-import { getIngredientTypeLabel } from '../utils/ingredientUtils';
+import { getIngredientTypeLabel, formatIngredientType } from '../utils/ingredientUtils';
 
 // --- Sorting Types & Header --- (Similar to IngredientTable, but simplified for admin)
 type Order = 'asc' | 'desc';
@@ -334,7 +334,7 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
                     </TableCell>
                     <TableCell width={isMobile ? "30%" : "35%"}>
                       <Chip
-                        label={ingredient.type.toUpperCase()}
+                        label={formatIngredientType(ingredient.type)}
                         color={getTypeColor(ingredient.type)}
                         size={isMobile ? "small" : "medium"}
                         sx={{ 

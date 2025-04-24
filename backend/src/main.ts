@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { Logger } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import * as compression from 'compression';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -18,6 +19,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
+
+  // Enable compression
+  app.use(compression());
 
   // Set global prefix for all routes
   app.setGlobalPrefix('api');

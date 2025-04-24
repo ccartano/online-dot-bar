@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Box, 
@@ -252,8 +252,21 @@ const MobileMenu = memo(({
 
 export const Layout: React.FC<{ children: React.ReactNode }> = memo(({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [fontLoaded, setFontLoaded] = useState(false);
   const location = useLocation();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  useEffect(() => {
+    // Check if fonts are loaded
+    if (document.fonts) {
+      document.fonts.ready.then(() => {
+        setFontLoaded(true);
+      });
+    } else {
+      // Fallback for browsers that don't support document.fonts
+      setFontLoaded(true);
+    }
+  }, []);
 
   const handleDrawerToggle = useCallback(() => {
     setMobileOpen(prev => !prev);
@@ -283,14 +296,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = memo(({ children 
               >
                 <MenuIcon />
               </IconButton>
-              <StyledHomeLink to="/">
+              <StyledHomeLink to="/" className={fontLoaded ? 'font-loaded' : ''}>
                 The Online.Bar
               </StyledHomeLink>
               <Box sx={{ width: 48 }} /> {/* Spacer to center the title */}
             </>
           ) : (
             <>
-              <StyledHomeLink to="/">
+              <StyledHomeLink to="/" className={fontLoaded ? 'font-loaded' : ''}>
                 The Online.Bar
               </StyledHomeLink>
               <NavItemsContainer>
@@ -314,7 +327,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = memo(({ children 
           isActive={isActive}
         />
         
-        <Box component="main" sx={{ flex: 1 }}>
+        <Box component="main" sx={{ flexGrow: 1 }}>
           {children}
         </Box>
       </Box>

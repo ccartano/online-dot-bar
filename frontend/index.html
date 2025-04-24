@@ -70,6 +70,15 @@
       #root {
         min-height: 100vh;
       }
+      
+      /* Add fallback font for title */
+      .site-title {
+        font-family: 'Corinthia', cursive, serif;
+        visibility: hidden;
+      }
+      .site-title.font-loaded {
+        visibility: visible;
+      }
     </style>
     
     <!-- Non-critical CSS -->

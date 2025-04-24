@@ -17,6 +17,7 @@ import { fetchIngredientBySlug } from '../services/ingredient.service';
 import { fetchCocktailsByIngredient } from '../services/cocktail.service';
 import { DocumentTitle } from './DocumentTitle';
 import { SEO } from './SEO';
+import { formatIngredientType } from '../utils/ingredientUtils';
 
 const StyledLink = styled(Box)({
   position: 'relative',
@@ -42,12 +43,6 @@ const StyledLink = styled(Box)({
     transformOrigin: 'center'
   }
 });
-
-// Helper function to capitalize enum values for display
-const formatTypeName = (type: string): string => {
-  if (!type) return '';
-  return type.charAt(0).toUpperCase() + type.slice(1);
-};
 
 // Helper function to capitalize words
 const capitalizeWords = (str: string): string => {
@@ -145,7 +140,6 @@ export const IngredientDetailPage: React.FC = () => {
         
         <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2, width: 'fit-content' }}>
           <Typography
-            // variant="decorative"
             sx={{
               fontSize: { xs: '1.5rem', sm: '1.8rem' },
               lineHeight: 1,
@@ -175,7 +169,7 @@ export const IngredientDetailPage: React.FC = () => {
               minWidth: '100px',
             }}
           >
-            {formatTypeName(ingredient.type)}
+            {formatIngredientType(ingredient.type)}
           </Typography>
         </Box>
 
