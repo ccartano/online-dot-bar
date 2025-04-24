@@ -14,34 +14,35 @@ interface AdminLoginProps {
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
-  const [token, setToken] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setLoading(true);
 
-    if (!token) {
-      setError('Please enter an admin token');
+    if (!password) {
+      setError('Please enter a password');
+      setLoading(false);
       return;
     }
 
     const envToken = AdminService.getEnvAdminToken();
     if (!envToken) {
       setError('Admin authentication is not properly configured');
-      return;
-    }
-
-    if (token !== envToken) {
-      setError('Invalid admin token');
+      setLoading(false);
       return;
     }
 
     try {
-      AdminService.login(token);
+      await AdminService.login(password);
       onLogin();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid admin token');
+      setError(err instanceof Error ? err.message : 'Invalid password');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,10 +75,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
         <form onSubmit={handleSubmit}>
           <TextField
             fullWidth
-            label="Admin Token"
+            label="Password"
             type="password"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             margin="normal"
           />
           <Button
@@ -85,8 +86,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             variant="contained"
             fullWidth
             sx={{ mt: 2 }}
+            disabled={loading}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </Button>
         </form>
       </Paper>

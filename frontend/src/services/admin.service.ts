@@ -5,9 +5,26 @@ export class AdminService {
     return !!this.getAdminToken();
   }
 
-  static login(token: string): void {
-    // Store the token - validation will happen on the server side
-    localStorage.setItem(this.ADMIN_TOKEN_KEY, token);
+  static async login(password: string): Promise<void> {
+    // Hash the password
+    const hashedPassword = await this.hashString(password);
+    
+    // Get the expected hash from environment
+    const envToken = this.getEnvAdminToken();
+    if (!envToken) {
+      throw new Error('Admin authentication is not properly configured');
+    }
+
+    // Hash the environment token to compare
+    const expectedHash = await this.hashString(envToken);
+
+    // Validate the password hash
+    if (hashedPassword !== expectedHash) {
+      throw new Error('Invalid password');
+    }
+
+    // Only store the hash if validation passes
+    localStorage.setItem(this.ADMIN_TOKEN_KEY, hashedPassword);
   }
 
   static logout(): void {
@@ -38,9 +55,8 @@ export class AdminService {
     if (!token) {
       return {};
     }
-    const hashedToken = await this.hashString(token);
     return {
-      'x-admin-token': hashedToken
+      'x-admin-token': token
     };
   }
 } 
