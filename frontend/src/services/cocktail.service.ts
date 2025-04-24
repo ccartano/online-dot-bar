@@ -4,6 +4,7 @@ import { AdminService } from './admin.service';
 export interface GlassType {
   id: number;
   name: string;
+  icon: string;
   description?: string;
 }
 
@@ -13,26 +14,29 @@ export interface Category {
   description?: string;
 }
 
-export interface Ingredient {
-  id: number;
-  name: string;
-  description?: string;
-  type?: string;
-}
-
 export enum MeasurementUnit {
   OZ = 'oz',
   ML = 'ml',
   DASH = 'dash',
   DROP = 'drop',
+  PIECE = 'piece',
+  TSP = 'tsp',
+  TBSP = 'tbsp',
   PINCH = 'pinch',
   TWIST = 'twist',
   WEDGE = 'wedge',
-  SLICE = 'slice',
   SPRIG = 'sprig',
-  LEAF = 'leaf',
-  CUBE = 'cube',
-  PART = 'part',
+  SLICE = 'slice',
+  OTHER = 'other'
+}
+
+export interface Ingredient {
+  id: number;
+  name: string;
+  slug?: string;
+  type?: string;
+  description?: string;
+  imageUrl?: string;
 }
 
 export interface CocktailIngredient {
@@ -155,9 +159,7 @@ export const fetchCocktailsByIngredient = async (
   const url = getApiUrl(`/cocktails/by-ingredient/${ingredientId}?limit=${limit}&random=${random}`);
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`Failed to fetch cocktails for ingredient ${ingredientId}`);
+    throw new Error(`Failed to fetch cocktails by ingredient`);
   }
   return response.json();
 };
-
-// Add update/create/delete service functions if needed 

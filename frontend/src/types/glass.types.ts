@@ -1,6 +1,6 @@
 export interface GlassType {
   id: number;
   name: string;
-  icon?: string;
+  icon: string;
   description?: string;
 } 

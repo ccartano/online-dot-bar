@@ -156,19 +156,20 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
 
   const handleAddIngredient = () => {
     if (newIngredient.ingredient.name.trim() && editingCocktail) {
-      const ingredientToAdd: CocktailIngredient = {
+      const newCocktailIngredient: CocktailIngredient = {
         amount: newIngredient.amount,
         unit: newIngredient.unit,
         notes: newIngredient.notes,
         order: editingCocktail.ingredients.length + 1,
         ingredient: {
+          id: -1, // Temporary ID for new ingredients
           name: newIngredient.ingredient.name.trim(),
           slug: generateSlug(newIngredient.ingredient.name.trim())
         },
       };
       setEditingCocktail(prev => ({
         ...prev!,
-        ingredients: [...prev!.ingredients, ingredientToAdd],
+        ingredients: [...prev!.ingredients, newCocktailIngredient],
       }));
       setNewIngredient({ 
         order: 0, 

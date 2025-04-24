@@ -8,7 +8,6 @@ const AdminCocktails: React.FC = () => {
   const [cocktails, setCocktails] = useState<Cocktail[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentCocktail, setCurrentCocktail] = useState<Partial<Cocktail> | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [glassTypes, setGlassTypes] = useState<GlassType[]>([]);
 
   useEffect(() => {
@@ -52,7 +51,6 @@ const AdminCocktails: React.FC = () => {
   };
 
   const handleSubmit = async (updatedCocktail: Cocktail) => {
-    setIsLoading(true);
     try {
       if (updatedCocktail.id) {
         await cocktailService.updateCocktail(updatedCocktail.id, updatedCocktail);
@@ -63,8 +61,6 @@ const AdminCocktails: React.FC = () => {
       handleCloseModal();
     } catch (error) {
       console.error('Error saving cocktail:', error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
