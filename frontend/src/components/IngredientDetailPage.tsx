@@ -201,10 +201,12 @@ export const IngredientDetailPage: React.FC = () => {
 
         <Box sx={{ pt: 3 }}>
           <Typography
-            variant="h2"
-            component="h2"
-            gutterBottom
+            variant="h1"
+            component="h1"
             sx={{
+              fontFamily: 'Corinthia, cursive',
+              fontSize: { xs: '2.5rem', sm: '3rem' },
+              color: '#1a1a1a',
               mb: 2
             }}
           >

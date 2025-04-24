@@ -8,6 +8,7 @@ import { CocktailIngredient } from '../entities/cocktail-ingredient.entity';
 import { CocktailsService } from './cocktails.service';
 import { CocktailsController } from './cocktails.controller';
 import { CacheModule } from '../cache/cache.module';
+import { GlassTypesModule } from '../glass-types/glass-types.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CacheModule } from '../cache/cache.module';
       CocktailIngredient,
     ]),
     CacheModule,
+    GlassTypesModule,
   ],
   controllers: [CocktailsController],
   providers: [CocktailsService],

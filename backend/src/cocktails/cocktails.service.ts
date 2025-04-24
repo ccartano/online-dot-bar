@@ -153,53 +153,74 @@ export class CocktailsService {
     potentialAkas: { id: number; name: string }[];
     potentialVariations: { id: number; name: string }[];
   }> {
-    const cocktail = await this.cocktailsRepository.findOne({
-      where: { id },
-      relations: [
-        'glassType',
-        'category',
-        'ingredients',
-        'ingredients.ingredient',
-      ],
-    });
-    if (!cocktail) {
+    // Try to get from cache first
+    const cacheKey = `cocktail:${id}`;
+    const cachedData = await this.cacheManager.get<{
+      cocktail: Cocktail;
+      potentialAkas: { id: number; name: string }[];
+      potentialVariations: { id: number; name: string }[];
+    }>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+
+    // Use a single query with proper joins
+    const result = await this.cocktailsRepository
+      .createQueryBuilder('cocktail')
+      .leftJoinAndSelect('cocktail.glassType', 'glassType')
+      .leftJoinAndSelect('cocktail.category', 'category')
+      .leftJoinAndSelect('cocktail.ingredients', 'cocktailIngredients')
+      .leftJoinAndSelect('cocktailIngredients.ingredient', 'ingredient')
+      .where('cocktail.id = :id', { id })
+      .getOne();
+
+    if (!result) {
       throw new NotFoundException(`Cocktail with ID ${id} not found`);
     }
 
-    let potentialAkas: { id: number; name: string }[] = [];
-    let potentialVariations: { id: number; name: string }[] = [];
+    // Fetch potential AKAs and variations in a single query
+    const [potentialAkas, potentialVariations] = await Promise.all([
+      result.akaSignature
+        ? this.cocktailsRepository
+            .createQueryBuilder('cocktail')
+            .select(['cocktail.id', 'cocktail.name'])
+            .where('cocktail.akaSignature = :akaSignature', {
+              akaSignature: result.akaSignature,
+            })
+            .andWhere('cocktail.id != :id', { id })
+            .getMany()
+        : [],
+      result.variationSignature
+        ? this.cocktailsRepository
+            .createQueryBuilder('cocktail')
+            .select(['cocktail.id', 'cocktail.name'])
+            .where('cocktail.variationSignature = :variationSignature', {
+              variationSignature: result.variationSignature,
+            })
+            .andWhere('cocktail.id != :id', { id })
+            .andWhere(
+              result.akaSignature
+                ? 'cocktail.akaSignature != :akaSignature'
+                : '1=1',
+              result.akaSignature
+                ? { akaSignature: result.akaSignature }
+                : {},
+            )
+            .getMany()
+        : [],
+    ]);
 
-    // Fetch Potential AKAs (same akaSignature, different id)
-    if (cocktail.akaSignature) {
-      potentialAkas = await this.cocktailsRepository.find({
-        select: ['id', 'name'], // Select only needed fields
-        where: {
-          akaSignature: cocktail.akaSignature,
-          id: Not(cocktail.id), // Exclude the cocktail itself
-        },
-      });
-    }
-
-    // Fetch Potential Variations (same variationSignature, different id, different akaSignature)
-    if (cocktail.variationSignature) {
-      potentialVariations = await this.cocktailsRepository.find({
-        select: ['id', 'name'], // Select only needed fields
-        where: {
-          variationSignature: cocktail.variationSignature,
-          id: Not(cocktail.id), // Exclude the cocktail itself
-          // Exclude cocktails that are already identified as AKAs
-          ...(cocktail.akaSignature && {
-            akaSignature: Not(cocktail.akaSignature),
-          }),
-        },
-      });
-    }
-
-    return {
-      cocktail,
+    const response = {
+      cocktail: result,
       potentialAkas,
       potentialVariations,
     };
+
+    // Store in cache
+    await this.cacheManager.set(cacheKey, response, 60 * 60 * 24); // 24 hours TTL
+    await this.addCacheKey(cacheKey);
+
+    return response;
   }
 
   async findByPaperlessId(paperlessId: number): Promise<Cocktail | null> {

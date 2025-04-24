@@ -11,18 +11,35 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { CocktailsService } from './cocktails.service';
+import { GlassTypesService } from '../glass-types/glass-types.service';
 import { Cocktail } from '../entities/cocktail.entity';
 import { CreateCocktailDto } from './dto/create-cocktail.dto';
 import { UpdateCocktailDto } from './dto/update-cocktail.dto';
 import { FilterCocktailDto } from './dto/filter-cocktail.dto';
+import { GlassType } from '../entities/glass-type.entity';
 
 @Controller('cocktails')
 export class CocktailsController {
-  constructor(private readonly cocktailsService: CocktailsService) {}
+  constructor(
+    private readonly cocktailsService: CocktailsService,
+    private readonly glassTypesService: GlassTypesService,
+  ) {}
 
   @Get()
   findAll(@Query() filterDto: FilterCocktailDto): Promise<Cocktail[]> {
     return this.cocktailsService.findAll(filterDto);
+  }
+
+  @Get('with-glass-types')
+  async findAllWithGlassTypes(@Query() filterDto: FilterCocktailDto): Promise<{
+    cocktails: Cocktail[];
+    glassTypes: GlassType[];
+  }> {
+    const [cocktails, glassTypes] = await Promise.all([
+      this.cocktailsService.findAll(filterDto),
+      this.glassTypesService.findAll(),
+    ]);
+    return { cocktails, glassTypes };
   }
 
   @Get('by-ingredient/:ingredientId')

@@ -276,6 +276,26 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
           </FormControl>
         </Box>
 
+        {/* Description */}
+        <Box>
+          <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium', color: 'text.primary' }}>
+            Description
+          </Typography>
+          <TextField
+            multiline
+            rows={isMobileView ? 4 : 3}
+            fullWidth
+            size={isMobileView ? "small" : "medium"}
+            value={editingCocktail.description || ''}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'background.paper'
+              }
+            }}
+          />
+        </Box>
+
         {/* Ingredients Section */}
         <Box>
           <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium', color: 'text.primary' }}>

@@ -29,35 +29,22 @@ export const CocktailsPage: React.FC = () => {
   useEffect(() => {
     const fetchCocktails = async () => {
       try {
-        const response = await fetch('/api/cocktails');
-        const data = await response.json();
-        setCocktails(data);
+        const response = await fetch('/api/cocktails/with-glass-types');
+        const { cocktails, glassTypes } = await response.json();
+        setCocktails(cocktails);
         
-       
+        // Create glass type map
+        const glassTypeMap = glassTypes.reduce((acc: Record<number, string>, type: GlassType) => {
+          acc[type.id] = type.name;
+          return acc;
+        }, {});
+        setGlassTypeMap(glassTypeMap);
       } catch (error) {
         console.error('Error fetching cocktails:', error);
       }
     };
 
     fetchCocktails();
-  }, []);
-
-  useEffect(() => {
-    const fetchGlassTypes = async () => {
-      try {
-        const response = await fetch('/api/glass-types');
-        const data = await response.json();
-        const glassTypeMap = data.reduce((acc: Record<number, string>, type: GlassType) => {
-          acc[type.id] = type.name;
-          return acc;
-        }, {});
-        setGlassTypeMap(glassTypeMap);
-      } catch (error) {
-        console.error('Error fetching glass types:', error);
-      }
-    };
-
-    fetchGlassTypes();
   }, []);
 
   const handleGlassTypeChange = (glassType: string) => {

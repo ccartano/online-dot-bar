@@ -24,8 +24,13 @@ export class IngredientsService {
       return cachedData;
     }
 
-    // If not in cache, get from database
-    const ingredients = await this.ingredientsRepository.find();
+    // If not in cache, get from database with proper indexing
+    const ingredients = await this.ingredientsRepository
+      .createQueryBuilder('ingredient')
+      .leftJoinAndSelect('ingredient.cocktailIngredients', 'cocktailIngredients')
+      .leftJoinAndSelect('cocktailIngredients.cocktail', 'cocktail')
+      .orderBy('ingredient.name', 'ASC')
+      .getMany();
     
     // Store in cache and track the key
     await this.cacheManager.set('ingredients:all', ingredients, 60 * 60 * 24); // 24 hours TTL
@@ -42,9 +47,13 @@ export class IngredientsService {
       return cachedData;
     }
 
-    const ingredient = await this.ingredientsRepository.findOne({
-      where: { id },
-    });
+    const ingredient = await this.ingredientsRepository
+      .createQueryBuilder('ingredient')
+      .leftJoinAndSelect('ingredient.cocktailIngredients', 'cocktailIngredients')
+      .leftJoinAndSelect('cocktailIngredients.cocktail', 'cocktail')
+      .where('ingredient.id = :id', { id })
+      .getOne();
+
     if (!ingredient) {
       throw new NotFoundException(`Ingredient with ID ${id} not found`);
     }
