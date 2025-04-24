@@ -151,13 +151,30 @@ export class IngredientsService {
   }
 
   async remove(id: number): Promise<void> {
-    const result = await this.ingredientsRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Ingredient with ID ${id} not found`);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // First delete all associated cocktail ingredients
+      await queryRunner.manager.delete(CocktailIngredient, { ingredient: { id } });
+      
+      // Then delete the ingredient
+      const result = await queryRunner.manager.delete(Ingredient, { id });
+      if (result.affected === 0) {
+        throw new NotFoundException(`Ingredient with ID ${id} not found`);
+      }
+      
+      await queryRunner.commitTransaction();
+      
+      // Invalidate cache
+      await this.invalidateCache();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-    
-    // Invalidate cache
-    await this.invalidateCache();
   }
 
   private async invalidateCache(): Promise<void> {

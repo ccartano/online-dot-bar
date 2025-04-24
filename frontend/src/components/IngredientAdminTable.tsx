@@ -24,70 +24,37 @@ import {
   MenuItem,
   TextField,
   InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  CircularProgress,
 } from '@mui/material';
-import { Edit } from '@mui/icons-material'; // Remove unused Delete icon
+import { Edit, Delete } from '@mui/icons-material';
 import { Ingredient, IngredientType } from '../types/ingredient.types';
-import { IngredientEditForm } from './IngredientEditForm'; // Import the edit form
-import { updateIngredient } from '../services/ingredient.service'; // Import update service
+import { IngredientEditForm } from './IngredientEditForm';
+import { updateIngredient, deleteIngredient } from '../services/ingredient.service';
 import SearchIcon from '@mui/icons-material/Search';
 import { getIngredientTypeLabel, formatIngredientType } from '../utils/ingredientUtils';
 
-// --- Sorting Types & Header --- (Similar to IngredientTable, but simplified for admin)
 type Order = 'asc' | 'desc';
 
 interface HeadCell {
   id: keyof Ingredient | string;
   label: string;
   sortable: boolean;
-  width?: string;
+  width: string;
+  hideOnMobile?: boolean;
 }
-
-interface IngredientAdminTableHeaderProps {
-  order: Order;
-  orderBy: keyof Ingredient | string;
-  onRequestSort: (property: keyof Ingredient) => void;
-  headCells: HeadCell[];
-}
-
-const IngredientAdminTableHeader: React.FC<IngredientAdminTableHeaderProps> = (props) => {
-  const { order, orderBy, onRequestSort, headCells } = props;
-  const createSortHandler = (property: keyof Ingredient) => () => {
-    onRequestSort(property);
-  };
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align="left"
-            padding="normal"
-            sortDirection={orderBy === headCell.id ? order : false}
-            sx={{ width: headCell.width, fontWeight: 'bold' }}
-          >
-            {headCell.sortable ? (
-              <TableSortLabel
-                active={orderBy === headCell.id}
-                direction={orderBy === headCell.id ? order : 'asc'}
-                onClick={createSortHandler(headCell.id as keyof Ingredient)}
-              >
-                {headCell.label}
-              </TableSortLabel>
-            ) : (
-              headCell.label
-            )}
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-};
 
 // --- Main Table Component --- 
 
 interface IngredientAdminTableProps {
   ingredients: Ingredient[];
   onIngredientUpdate: (updatedIngredient: Ingredient) => void;
+  onIngredientDelete: (deletedIngredient: Ingredient) => void;
   searchTerm: string;
   onSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -95,6 +62,7 @@ interface IngredientAdminTableProps {
 export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({ 
   ingredients, 
   onIngredientUpdate,
+  onIngredientDelete,
   searchTerm,
   onSearchChange
 }) => {
@@ -109,11 +77,16 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' } | null>(null);
   const [typeFilter, setTypeFilter] = useState<IngredientType | 'all'>('all');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ingredientToDelete, setIngredientToDelete] = useState<Ingredient | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const headCells: HeadCell[] = [
-    { id: 'name', label: 'Name', sortable: true, width: isMobile ? '50%' : '45%' },
-    { id: 'type', label: 'Type', sortable: true, width: isMobile ? '30%' : '35%' },
-    { id: 'actions', label: 'Actions', sortable: false, width: isMobile ? '20%' : '20%' }, 
+    { id: 'name', label: 'Name', sortable: true, width: isMobile ? '40%' : '25%' },
+    { id: 'type', label: 'Type', sortable: true, width: isMobile ? '30%' : '15%' },
+    { id: 'description', label: 'Description', sortable: false, width: isMobile ? '0%' : '35%', hideOnMobile: true },
+    { id: 'imageUrl', label: 'Image URL', sortable: false, width: isMobile ? '0%' : '25%', hideOnMobile: true },
+    { id: 'actions', label: 'Actions', sortable: false, width: isMobile ? '30%' : '20%' }, 
   ];
 
   const handleRequestSort = (property: keyof Ingredient) => {
@@ -172,6 +145,40 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
       setSaveError(error instanceof Error ? error.message : "An unknown error occurred while saving.");
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteClick = (ingredient: Ingredient) => {
+    setIngredientToDelete(ingredient);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setIngredientToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!ingredientToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteIngredient(ingredientToDelete.id);
+      onIngredientDelete(ingredientToDelete); // Notify parent to refresh list
+      setSnackbar({
+        open: true,
+        message: `Ingredient '${ingredientToDelete.name}' deleted successfully!`,
+        severity: 'success'
+      });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: error instanceof Error ? error.message : 'Failed to delete ingredient',
+        severity: 'error'
+      });
+    } finally {
+      setIsDeleting(false);
+      handleCloseDeleteDialog();
     }
   };
 
@@ -239,7 +246,7 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
 
   return (
     <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
+      <Box sx={{ mb: 2, display: 'flex', gap: 2, flexDirection: isMobile ? 'column' : 'row' }}>
         <TextField
           fullWidth
           variant="outlined"
@@ -254,7 +261,7 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
             ),
           }}
         />
-        <FormControl size="small" sx={{ minWidth: 120 }}>
+        <FormControl size="small" sx={{ minWidth: isMobile ? '100%' : 120 }}>
           <InputLabel id="type-filter-label">Filter by Type</InputLabel>
           <Select
             labelId="type-filter-label"
@@ -277,48 +284,59 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
       <TableContainer 
         component={Paper} 
         sx={{ 
-          flexGrow: 1,
+          width: '100%',
+          overflowX: 'auto',
           '& .MuiTableCell-root': {
-            padding: isMobile ? '12px 8px' : '16px',
-            fontSize: isMobile ? '0.9rem' : '1rem',
-            borderBottom: '1px solid rgba(224, 224, 224, 0.5)',
-            whiteSpace: 'normal',
-            wordWrap: 'break-word',
-            minWidth: isMobile ? '80px' : '120px'
-          },
-          '& .MuiTableRow-root': {
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.02)',
-            },
-            '&:nth-of-type(odd)': {
-              backgroundColor: 'rgba(0, 0, 0, 0.01)',
-            }
+            padding: isMobile ? '8px' : '16px',
+            fontSize: isMobile ? '0.875rem' : '1rem',
           }
         }}
       >
-        <Table 
-          stickyHeader 
-          aria-label="ingredients admin table" 
-          size={isMobile ? "small" : "medium"}
-          sx={{
-            tableLayout: 'fixed',
-            minWidth: isMobile ? '100%' : '500px'  // Reduced minimum width since we have fewer columns
-          }}
-        >
-          <IngredientAdminTableHeader
-            order={order}
-            orderBy={orderBy}
-            onRequestSort={handleRequestSort}
-            headCells={headCells}
-          />
+        <Table size={isMobile ? "small" : "medium"}>
+          <TableHead>
+            <TableRow>
+              {headCells.map((headCell) => (
+                <TableCell
+                  key={headCell.id}
+                  align="left"
+                  padding="normal"
+                  sortDirection={orderBy === headCell.id ? order : false}
+                  sx={{ 
+                    width: headCell.width,
+                    fontWeight: 'bold',
+                    display: isMobile && headCell.hideOnMobile ? 'none' : 'table-cell'
+                  }}
+                >
+                  {headCell.sortable ? (
+                    <TableSortLabel
+                      active={orderBy === headCell.id}
+                      direction={orderBy === headCell.id ? order : 'asc'}
+                      onClick={() => handleRequestSort(headCell.id as keyof Ingredient)}
+                    >
+                      {headCell.label}
+                    </TableSortLabel>
+                  ) : (
+                    headCell.label
+                  )}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
           <TableBody>
             {paginatedIngredients.map((ingredient) => {
               const isEditing = editingIngredientId === ingredient.id;
               return (
                 <React.Fragment key={ingredient.id}>
-                  {/* Display Row - Only shown when NOT editing */}
                   <TableRow hover style={{ display: isEditing ? 'none' : undefined }}>
-                    <TableCell width={isMobile ? "50%" : "45%"}>
+                    <TableCell 
+                      width={isMobile ? "40%" : "25%"}
+                      sx={{ 
+                        display: isMobile ? 'table-cell' : 'table-cell',
+                        '& .MuiTypography-root': {
+                          fontSize: isMobile ? '0.875rem' : '1rem'
+                        }
+                      }}
+                    >
                       <Typography 
                         variant={isMobile ? "body2" : "subtitle1"} 
                         fontWeight="medium"
@@ -326,13 +344,23 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
                           color: 'text.primary',
                           mb: 0.5,
                           overflow: 'hidden',
-                          textOverflow: 'ellipsis'
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
                         }}
                       >
                         {ingredient.name}
                       </Typography>
                     </TableCell>
-                    <TableCell width={isMobile ? "30%" : "35%"}>
+                    <TableCell 
+                      width={isMobile ? "30%" : "15%"}
+                      sx={{ 
+                        display: isMobile ? 'table-cell' : 'table-cell',
+                        '& .MuiChip-root': {
+                          fontSize: isMobile ? '0.75rem' : '0.875rem',
+                          height: isMobile ? '24px' : '32px'
+                        }
+                      }}
+                    >
                       <Chip
                         label={formatIngredientType(ingredient.type)}
                         color={getTypeColor(ingredient.type)}
@@ -345,21 +373,82 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
                         }}
                       />
                     </TableCell>
-                    <TableCell width={isMobile ? "20%" : "20%"}>
-                      <IconButton 
-                        onClick={() => handleEditClick(ingredient.id)} 
-                        size={isMobile ? "small" : "medium"} 
-                        color="primary" 
-                        disabled={isSaving}
-                        sx={{
-                          backgroundColor: 'rgba(25, 118, 210, 0.04)',
-                          '&:hover': {
-                            backgroundColor: 'rgba(25, 118, 210, 0.08)',
-                          }
+                    <TableCell 
+                      width={isMobile ? "0%" : "35%"}
+                      sx={{ display: isMobile ? 'none' : 'table-cell' }}
+                    >
+                      <Typography 
+                        variant={isMobile ? "body2" : "subtitle1"} 
+                        sx={{ 
+                          color: 'text.secondary',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
                         }}
                       >
-                        <Edit />
-                      </IconButton>
+                        {ingredient.description || '-'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell 
+                      width={isMobile ? "0%" : "25%"}
+                      sx={{ display: isMobile ? 'none' : 'table-cell' }}
+                    >
+                      <Typography 
+                        variant={isMobile ? "body2" : "subtitle1"} 
+                        sx={{ 
+                          color: 'text.secondary',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {ingredient.imageUrl || '-'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell 
+                      width={isMobile ? "30%" : "20%"} 
+                      sx={{ 
+                        minWidth: isMobile ? '80px' : '120px',
+                        '& .MuiIconButton-root': {
+                          padding: isMobile ? '4px' : '8px'
+                        }
+                      }}
+                    >
+                      <Box sx={{ 
+                        display: 'flex', 
+                        gap: 0.5,
+                        justifyContent: 'flex-start',
+                        alignItems: 'center'
+                      }}>
+                        <IconButton 
+                          onClick={() => handleEditClick(ingredient.id)} 
+                          size={isMobile ? "small" : "medium"} 
+                          color="primary" 
+                          disabled={isSaving}
+                          sx={{
+                            backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(25, 118, 210, 0.08)',
+                            }
+                          }}
+                        >
+                          <Edit fontSize={isMobile ? "small" : "medium"} />
+                        </IconButton>
+                        <IconButton 
+                          onClick={() => handleDeleteClick(ingredient)} 
+                          size={isMobile ? "small" : "medium"} 
+                          color="error"
+                          disabled={isDeleting}
+                          sx={{
+                            backgroundColor: 'rgba(244, 67, 54, 0.04)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(244, 67, 54, 0.08)',
+                            }
+                          }}
+                        >
+                          <Delete fontSize={isMobile ? "small" : "medium"} />
+                        </IconButton>
+                      </Box>
                     </TableCell>
                   </TableRow>
                   
@@ -401,6 +490,31 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
           }
         }}
       />
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+      >
+        <DialogTitle>Delete Ingredient</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete the ingredient "{ingredientToDelete?.name}"? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} disabled={isDeleting}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleConfirmDelete} 
+            color="error" 
+            disabled={isDeleting}
+            startIcon={isDeleting ? <CircularProgress size={14} color="inherit" /> : null}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
       {snackbar && (
         <Snackbar
           open={snackbar.open}

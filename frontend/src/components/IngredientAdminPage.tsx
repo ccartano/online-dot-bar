@@ -35,14 +35,46 @@ export const IngredientAdminPage: React.FC<IngredientAdminPageProps> = ({ search
     loadIngredients();
   }, [loadIngredients]);
 
-  const handleIngredientUpdate = (updatedIngredient: Ingredient) => {
-    setIngredients(prev => 
-      prev.map(ing => ing.id === updatedIngredient.id ? updatedIngredient : ing)
-    );
-    setSnackbar({ open: true, message: `Ingredient '${updatedIngredient.name}' updated successfully!`, severity: 'success' });
+  const handleIngredientUpdate = async (updatedIngredient: Ingredient) => {
+    try {
+      // Update the specific ingredient in the state
+      setIngredients(prevIngredients => 
+        prevIngredients.map(ingredient => 
+          ingredient.id === updatedIngredient.id ? updatedIngredient : ingredient
+        )
+      );
+      setSnackbar({ 
+        open: true, 
+        message: `Ingredient '${updatedIngredient.name}' updated successfully!`, 
+        severity: 'success' 
+      });
+    } catch (err) {
+      setSnackbar({ 
+        open: true, 
+        message: err instanceof Error ? err.message : 'Failed to update ingredient', 
+        severity: 'error' 
+      });
+    }
   };
 
-  // Add handleIngredientDelete later if needed
+  const handleIngredientDelete = async (deletedIngredient: Ingredient) => {
+    try {
+      // Refresh the ingredients list
+      const data = await fetchIngredients();
+      setIngredients(data);
+      setSnackbar({ 
+        open: true, 
+        message: `Ingredient '${deletedIngredient.name}' deleted successfully!`, 
+        severity: 'success' 
+      });
+    } catch (err) {
+      setSnackbar({ 
+        open: true, 
+        message: err instanceof Error ? err.message : 'Failed to delete ingredient', 
+        severity: 'error' 
+      });
+    }
+  };
 
   const handleCloseSnackbar = (_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
@@ -74,6 +106,7 @@ export const IngredientAdminPage: React.FC<IngredientAdminPageProps> = ({ search
         <IngredientAdminTable 
           ingredients={ingredients} 
           onIngredientUpdate={handleIngredientUpdate}
+          onIngredientDelete={handleIngredientDelete}
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
         />

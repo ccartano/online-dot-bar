@@ -1,5 +1,6 @@
 import { getApiUrl } from '../config/api.config';
 import { Ingredient } from '../types/ingredient.types';
+import { AdminService } from '../services/admin.service';
 
 // Fetch all ingredients
 export const fetchIngredients = async (): Promise<Ingredient[]> => {
@@ -30,11 +31,12 @@ export const fetchIngredientBySlug = async (slug: string): Promise<Ingredient> =
 
 // Update an existing ingredient
 export const updateIngredient = async (id: number, ingredientData: Partial<Omit<Ingredient, 'id'>>): Promise<Ingredient> => {
+  const headers = await AdminService.getAdminHeaders();
   const response = await fetch(getApiUrl(`/ingredients/${id}`), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      // Add auth headers if needed for admin actions
+      ...headers,
     },
     body: JSON.stringify(ingredientData),
   });
@@ -46,6 +48,24 @@ export const updateIngredient = async (id: number, ingredientData: Partial<Omit<
     throw new Error(`Failed to update ingredient ${id}. Status: ${response.status}`);
   }
   return response.json();
+};
+
+// Delete an ingredient
+export const deleteIngredient = async (id: number): Promise<void> => {
+  const headers = await AdminService.getAdminHeaders();
+  const response = await fetch(getApiUrl(`/ingredients/${id}`), {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      ...headers,
+    },
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error("Delete ingredient error body:", errorBody);
+    throw new Error(`Failed to delete ingredient ${id}. Status: ${response.status}`);
+  }
 };
 
 // Consider adding a deleteIngredient function later if needed 
