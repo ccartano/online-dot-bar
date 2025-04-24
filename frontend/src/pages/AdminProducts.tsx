@@ -96,13 +96,13 @@ const AdminProducts: React.FC = () => {
           <tbody>
             {products.map((product) => (
               <tr key={product.id}>
-                <td>
+                <td data-label="Image">
                   <img src={product.imageUrl} alt={product.name} className="admin-product-image" />
                 </td>
-                <td>{product.name}</td>
-                <td>{product.shortDescription}</td>
-                <td>${Number(product.price).toFixed(2)}</td>
-                <td>
+                <td data-label="Name">{product.name}</td>
+                <td data-label="Description">{product.shortDescription}</td>
+                <td data-label="Price">${Number(product.price).toFixed(2)}</td>
+                <td data-label="Actions">
                   <div className="product-actions">
                     <button onClick={() => handleOpenModal(product)}>Edit</button>
                     <button onClick={() => handleDelete(product.id)} className="delete-btn">
