@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import { theme } from './theme/theme';
 import { Layout } from './components/Layout';
@@ -9,13 +9,27 @@ import { AdminPage } from './components/AdminPage';
 import { IngredientsPage } from './components/IngredientsPage';
 import { IngredientDetailPage } from './components/IngredientDetailPage';
 import ProductsPage from './pages/ProductsPage';
+import { trackPageView } from './utils/gtm';
+import { useEffect } from 'react';
 import './App.css';
+
+// Component to track route changes
+const RouteChangeTracker = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location]);
+
+  return null;
+};
 
 const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
+        <RouteChangeTracker />
         <Routes>
           <Route path="/admin/*" element={<AdminPage />} />
           <Route path="/*" element={

@@ -26,6 +26,17 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
       return;
     }
 
+    const envToken = AdminService.getEnvAdminToken();
+    if (!envToken) {
+      setError('Admin authentication is not properly configured');
+      return;
+    }
+
+    if (token !== envToken) {
+      setError('Invalid admin token');
+      return;
+    }
+
     try {
       AdminService.login(token);
       onLogin();
