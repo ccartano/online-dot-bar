@@ -19,7 +19,7 @@ const fetchCocktails = async (): Promise<Cocktail[]> => {
   if (!response.ok) {
     throw new Error('Failed to fetch cocktails');
   }
-  return response.json();
+  return response.json() as Promise<Cocktail[]>;
 };
 
 const fetchIngredients = async (): Promise<Ingredient[]> => {
@@ -27,7 +27,7 @@ const fetchIngredients = async (): Promise<Ingredient[]> => {
   if (!response.ok) {
     throw new Error('Failed to fetch ingredients');
   }
-  return response.json();
+  return response.json() as Promise<Ingredient[]>;
 };
 
 const generateSitemap = async () => {
