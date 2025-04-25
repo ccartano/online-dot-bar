@@ -12,8 +12,10 @@ interface Ingredient {
   slug: string;
 }
 
+const API_URL = process.env.API_URL || 'https://api.theonline.bar';
+
 const fetchCocktails = async (): Promise<Cocktail[]> => {
-  const response = await fetch('http://localhost:3000/api/cocktails');
+  const response = await fetch(`${API_URL}/api/cocktails`);
   if (!response.ok) {
     throw new Error('Failed to fetch cocktails');
   }
@@ -21,7 +23,7 @@ const fetchCocktails = async (): Promise<Cocktail[]> => {
 };
 
 const fetchIngredients = async (): Promise<Ingredient[]> => {
-  const response = await fetch('http://localhost:3000/api/ingredients');
+  const response = await fetch(`${API_URL}/api/ingredients`);
   if (!response.ok) {
     throw new Error('Failed to fetch ingredients');
   }
