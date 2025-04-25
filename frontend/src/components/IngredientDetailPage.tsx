@@ -52,6 +52,12 @@ const capitalizeWords = (str: string): string => {
     .join(' ');
 };
 
+// Helper function to sentence capitalize
+const sentenceCapitalize = (str: string): string => {
+  if (!str) return '';
+  return str.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+};
+
 export const IngredientDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [ingredient, setIngredient] = useState<Ingredient | null>(null);
@@ -180,17 +186,18 @@ export const IngredientDetailPage: React.FC = () => {
         {ingredient.description && (
             <Box sx={{ mt: 3 }}>
               <Typography
-                variant="h2"
-                component="h2"
+                variant="h3"
+                component="h3"
                 gutterBottom
                 sx={{
+                  fontSize: { xs: '1.8rem', sm: '2.2rem' },
                   mb: 1
                 }}
               >
                 Description:
               </Typography>
-              <Typography variant="body1" color="text.secondary">
-                {ingredient.description}
+              <Typography variant="body1" color="text.secondary" sx={{ fontFamily: 'inherit' }}>
+                {ingredient.description ? sentenceCapitalize(ingredient.description) : ''}
               </Typography>
             </Box>
           )}
@@ -198,11 +205,11 @@ export const IngredientDetailPage: React.FC = () => {
 
         <Box sx={{ pt: 3 }}>
           <Typography
-            variant="h1"
-            component="h1"
+            variant="h3"
+            component="h3"
             sx={{
               fontFamily: 'Corinthia, cursive',
-              fontSize: { xs: '2.5rem', sm: '3rem' },
+              fontSize: { xs: '1.8rem', sm: '2.2rem' },
               color: '#1a1a1a',
               mb: 2
             }}
