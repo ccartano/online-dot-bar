@@ -70,11 +70,11 @@ export const CocktailCard: React.FC<CocktailCardProps> = ({ cocktail, onEdit }) 
               color="#1a1a1a"
             />
           )}
-          <Typography
-            variant="serifMedium"
+          <Typography 
+            variant="h6"
             sx={{
-              margin: 0,
-              padding: 0
+              fontFamily: 'serif',
+              fontWeight: 500
             }}
           >
             {capitalizeWords(cocktail.name)}

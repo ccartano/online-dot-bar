@@ -3,44 +3,61 @@ import { createTheme } from '@mui/material/styles';
 // Extend the theme to include custom variants
 declare module '@mui/material/styles' {
   interface TypographyVariants {
-    decorative: React.CSSProperties;
-    decorativeLarge: React.CSSProperties;
-    decorativeSmall: React.CSSProperties;
-    serif: React.CSSProperties;
-    serifMedium: React.CSSProperties;
+    h1Corinthia: React.CSSProperties;
+    h2Corinthia: React.CSSProperties;
+    h3Corinthia: React.CSSProperties;
+    h4Corinthia: React.CSSProperties;
+    h5Corinthia: React.CSSProperties;
+    h6Corinthia: React.CSSProperties;
+    body1Corinthia: React.CSSProperties;
+    body2Corinthia: React.CSSProperties;
+    subtitle1Corinthia: React.CSSProperties;
+    subtitle2Corinthia: React.CSSProperties;
+    buttonCorinthia: React.CSSProperties;
+    captionCorinthia: React.CSSProperties;
+    overlineCorinthia: React.CSSProperties;
   }
 
   interface TypographyVariantsOptions {
-    decorative?: React.CSSProperties;
-    decorativeLarge?: React.CSSProperties;
-    decorativeSmall?: React.CSSProperties;
-    serif?: React.CSSProperties;
-    serifMedium?: React.CSSProperties;
-  }
-}
-
-// Update the Button variants
-declare module '@mui/material/Button' {
-  interface ButtonPropsVariantOverrides {
-    decorative: true;
+    h1Corinthia?: React.CSSProperties;
+    h2Corinthia?: React.CSSProperties;
+    h3Corinthia?: React.CSSProperties;
+    h4Corinthia?: React.CSSProperties;
+    h5Corinthia?: React.CSSProperties;
+    h6Corinthia?: React.CSSProperties;
+    body1Corinthia?: React.CSSProperties;
+    body2Corinthia?: React.CSSProperties;
+    subtitle1Corinthia?: React.CSSProperties;
+    subtitle2Corinthia?: React.CSSProperties;
+    buttonCorinthia?: React.CSSProperties;
+    captionCorinthia?: React.CSSProperties;
+    overlineCorinthia?: React.CSSProperties;
   }
 }
 
 // Update the Typography variants
 declare module '@mui/material/Typography' {
   interface TypographyPropsVariantOverrides {
-    decorative: true;
-    decorativeLarge: true;
-    decorativeSmall: true;
-    serif: true;
-    serifMedium: true;
+    h1Corinthia: true;
+    h2Corinthia: true;
+    h3Corinthia: true;
+    h4Corinthia: true;
+    h5Corinthia: true;
+    h6Corinthia: true;
+    body1Corinthia: true;
+    body2Corinthia: true;
+    subtitle1Corinthia: true;
+    subtitle2Corinthia: true;
+    buttonCorinthia: true;
+    captionCorinthia: true;
+    overlineCorinthia: true;
   }
 }
 
 // Define common styles that use Corinthia font
 const corinthiaStyles = {
-  fontFamily: 'Corinthia, cursive',
-  fontWeight: 700,
+  fontFamily: "'Corinthia', cursive",
+  fontWeight: 400,
   color: '#1A1A1A',
 };
 
@@ -84,77 +101,170 @@ export const theme = createTheme({
   },
   typography: {
     fontFamily: "'Old Standard TT', serif",
+    // Old Standard variants
     h1: {
-      ...corinthiaStyles,
-      fontSize: '5rem',
+      ...serifStyles,
+      fontSize: '3.5rem',
+      fontWeight: 400,
+      lineHeight: 1.2,
     },
     h2: {
-      ...corinthiaStyles,
-      fontSize: '4rem',
+      ...serifStyles,
+      fontSize: '3rem',
+      fontWeight: 400,
+      lineHeight: 1.2,
     },
     h3: {
-      ...corinthiaStyles,
-      fontSize: '3rem',
+      ...serifStyles,
+      fontSize: '2.5rem',
+      fontWeight: 400,
+      lineHeight: 1.2,
     },
     h4: {
-      ...corinthiaStyles,
+      ...serifStyles,
       fontSize: '2rem',
+      fontWeight: 400,
+      lineHeight: 1.2,
     },
     h5: {
-      ...corinthiaStyles,
-      fontSize: '1.8rem',
+      ...serifStyles,
+      fontSize: '1.5rem',
+      fontWeight: 400,
+      lineHeight: 1.2,
     },
     h6: {
+      ...serifStyles,
+      fontSize: '1.25rem',
+      fontWeight: 400,
+      lineHeight: 1.2,
+    },
+    body1: {
+      ...serifStyles,
+      fontSize: '1rem',
+      lineHeight: 1.5,
+    },
+    body2: {
+      ...serifStyles,
+      fontSize: '0.875rem',
+      lineHeight: 1.5,
+    },
+    subtitle1: {
+      ...serifStyles,
+      fontSize: '1rem',
+      fontWeight: 500,
+      lineHeight: 1.5,
+    },
+    subtitle2: {
+      ...serifStyles,
+      fontSize: '0.875rem',
+      fontWeight: 500,
+      lineHeight: 1.5,
+    },
+    button: {
+      ...serifStyles,
+      fontSize: '0.875rem',
+      fontWeight: 500,
+      textTransform: 'none',
+    },
+    caption: {
+      ...serifStyles,
+      fontSize: '0.75rem',
+      lineHeight: 1.5,
+    },
+    overline: {
+      ...serifStyles,
+      fontSize: '0.75rem',
+      fontWeight: 500,
+      textTransform: 'uppercase',
+      lineHeight: 1.5,
+    },
+    // Corinthia variants
+    h1Corinthia: {
+      ...corinthiaStyles,
+      fontSize: '4.5rem',
+      lineHeight: 1.2,
+    },
+    h2Corinthia: {
+      ...corinthiaStyles,
+      fontSize: '3.75rem',
+      lineHeight: 1.2,
+    },
+    h3Corinthia: {
+      ...corinthiaStyles,
+      fontSize: '3rem',
+      lineHeight: 1.2,
+    },
+    h4Corinthia: {
+      ...corinthiaStyles,
+      fontSize: '2.25rem',
+      lineHeight: 1.2,
+    },
+    h5Corinthia: {
+      ...corinthiaStyles,
+      fontSize: '1.75rem',
+      lineHeight: 1.2,
+    },
+    h6Corinthia: {
       ...corinthiaStyles,
       fontSize: '1.5rem',
+      lineHeight: 1.2,
+    },
+    body1Corinthia: {
+      ...corinthiaStyles,
+      fontSize: '1.25rem',
+      lineHeight: 1.5,
+    },
+    body2Corinthia: {
+      ...corinthiaStyles,
+      fontSize: '1rem',
+      lineHeight: 1.5,
+    },
+    subtitle1Corinthia: {
+      ...corinthiaStyles,
+      fontSize: '1.25rem',
+      lineHeight: 1.5,
+    },
+    subtitle2Corinthia: {
+      ...corinthiaStyles,
+      fontSize: '1rem',
+      lineHeight: 1.5,
+    },
+    buttonCorinthia: {
+      ...corinthiaStyles,
+      fontSize: '1.25rem',
+      textTransform: 'none',
+    },
+    captionCorinthia: {
+      ...corinthiaStyles,
+      fontSize: '0.875rem',
+      lineHeight: 1.5,
+    },
+    overlineCorinthia: {
+      ...corinthiaStyles,
+      fontSize: '0.875rem',
+      textTransform: 'uppercase',
+      lineHeight: 1.5,
     },
   },
   components: {
     MuiTypography: {
       defaultProps: {
         variantMapping: {
-          serif: 'p',
-          serifMedium: 'p',
+          h1: 'h1',
+          h2: 'h2',
+          h3: 'h3',
+          h4: 'h4',
+          h5: 'h5',
+          h6: 'h6',
+          body1: 'p',
+          body2: 'p',
+          subtitle1: 'p',
+          subtitle2: 'p',
+          button: 'span',
+          caption: 'span',
+          overline: 'span',
         }
-      },
-      variants: [
-        {
-          props: { variant: 'decorative' },
-          style: {
-            ...corinthiaStyles,
-            fontSize: '2rem',
-          },
-        },
-        {
-          props: { variant: 'decorativeLarge' },
-          style: {
-            ...corinthiaStyles,
-            fontSize: '2.5rem',
-          },
-        },
-        {
-          props: { variant: 'decorativeSmall' },
-          style: {
-            ...corinthiaStyles,
-            fontSize: '1.5rem',
-          },
-        },
-        {
-          props: { variant: 'serif' },
-          style: {
-            ...serifStyles,
-            fontSize: '1rem',
-          },
-        },
-        {
-          props: { variant: 'serifMedium' },
-          style: {
-            ...serifStyles,
-            fontSize: '1.1rem',
-            fontWeight: 500,
-          },
-        },
-      ],
+      }
     },
     MuiButton: {
       styleOverrides: {
@@ -178,15 +288,6 @@ export const theme = createTheme({
           },
         },
       },
-      variants: [
-        {
-          props: { variant: 'decorative' },
-          style: {
-            ...corinthiaStyles,
-            fontSize: '1.5rem',
-          },
-        },
-      ],
     },
     MuiPaper: {
       styleOverrides: {

@@ -22,16 +22,23 @@ export const IngredientFilters: React.FC<IngredientFiltersProps> = ({
       overflowY: 'auto',
       height: '100%'
     }}>
-      <Typography variant="decorative" sx={{ mb: 1 }}>
+      <Typography 
+        variant="h5Corinthia"
+        sx={{ 
+          mb: 1,
+          fontSize: '1.5rem'
+        }}
+      >
         Filters
       </Typography>
       <Divider sx={{ mb: 2 }} />
-      <Typography variant="h6" sx={{ 
-        fontFamily: 'Old Standard TT, serif',
-        fontSize: '1rem',
-        fontWeight: 'bold',
-        mb: 0.5
-      }}>
+      <Typography 
+        variant="h6Corinthia"
+        sx={{ 
+          mb: 1,
+          fontSize: '1.5rem'
+        }}
+      >
         Ingredient Type
       </Typography>
       <FormGroup sx={{ pl: 1, mb: 4 }}>

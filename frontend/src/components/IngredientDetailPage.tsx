@@ -1,23 +1,17 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import {
-  Box,
-  Typography,
-  CircularProgress,
-  Alert,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  styled
-} from '@mui/material';
+import { useParams } from 'react-router-dom';
+import { Box, List, ListItem, styled } from '@mui/material';
 import { Ingredient } from '../types/ingredient.types';
-import { Cocktail } from '../services/cocktail.service'; // Import Cocktail type
+import { Cocktail } from '../services/cocktail.service';
 import { fetchIngredientBySlug } from '../services/ingredient.service';
 import { fetchCocktailsByIngredient } from '../services/cocktail.service';
 import { DocumentTitle } from './DocumentTitle';
 import { SEO } from './SEO';
-import { formatIngredientType } from '../utils/ingredientUtils';
+import { titleize } from '../utils/formatting';
+import { LoadingState } from './LoadingState';
+import { TitleSection } from './TitleSection';
+import { DescriptionSection } from './DescriptionSection';
+import { IngredientList } from './IngredientList';
 
 const StyledLink = styled(Box)({
   position: 'relative',
@@ -44,20 +38,6 @@ const StyledLink = styled(Box)({
   }
 });
 
-// Helper function to capitalize words
-const capitalizeWords = (str: string): string => {
-  if (!str) return '';
-  return str.split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-};
-
-// Helper function to sentence capitalize
-const sentenceCapitalize = (str: string): string => {
-  if (!str) return '';
-  return str.toLowerCase().replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
-};
-
 export const IngredientDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [ingredient, setIngredient] = useState<Ingredient | null>(null);
@@ -75,8 +55,7 @@ export const IngredientDetailPage: React.FC = () => {
       try {
         setLoading(true);
         const ingredientData = await fetchIngredientBySlug(slug);
-        const cocktailData = await fetchCocktailsByIngredient(ingredientData.id, 10, true); // Fetch 10 random cocktails
-
+        const cocktailData = await fetchCocktailsByIngredient(ingredientData.id, 10, true);
         setIngredient(ingredientData);
         setCocktails(cocktailData);
         setError(null);
@@ -90,167 +69,111 @@ export const IngredientDetailPage: React.FC = () => {
     loadData();
   }, [slug]);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box sx={{ p: 3, maxWidth: '600px', margin: 'auto' }}>
-        <Alert severity="error">{error}</Alert>
-      </Box>
-    );
-  }
-
-  if (!ingredient) {
-    return (
-      <Box sx={{ p: 3, maxWidth: '600px', margin: 'auto' }}>
-        <Alert severity="warning">Ingredient not found.</Alert>
-      </Box>
-    );
-  }
-
   return (
-    <>
-      <SEO 
-        title={`${ingredient ? capitalizeWords(ingredient.name) : 'Ingredient'} - The Online.Bar`}
-        description={ingredient?.description ? 
-          `${ingredient.name}: ${ingredient.description}` : 
-          `Learn about ${ingredient?.name} in cocktails. Discover its characteristics, common uses, and cocktail recipes that feature this ingredient.`
-        }
-        image={ingredient?.imageUrl || undefined}
-      />
-      <DocumentTitle title={capitalizeWords(ingredient.name)} />
-      <Box sx={{ 
-        p: { xs: 2, sm: 3 }, 
-        maxWidth: '600px', 
-        margin: 'auto',
-        minHeight: 'calc(100vh - 64px)',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h1"
-            component="h1"
-            gutterBottom
-            sx={{
-              fontSize: { xs: '2.5rem', sm: '3rem' },
-              mb: 1
-            }}
-          >
-            {capitalizeWords(ingredient.name)}
-          </Typography>
-        </Box>
-        
-        <Box sx={{ display: 'flex', alignItems: 'baseline', mb: 2, width: 'fit-content' }}>
-          <Typography
-            sx={{
-              fontSize: { xs: '1.5rem', sm: '1.8rem' },
-              lineHeight: 1,
-              width: 'fit-content',
-              mr: 1,
-            }}
-          >
-            Categorization:
-          </Typography>
-          <Box
-            sx={{
-              color: '#ccc',
-              textAlign: 'left',
-              flex: '1 1 auto',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-              lineHeight: 1,
-              mr: 1,
-            }}
-          >
-            .....................................
-          </Box>
-          <Typography
-            variant="serifMedium"
-            sx={{
-              lineHeight: 1,
-              minWidth: '100px',
-            }}
-          >
-            {formatIngredientType(ingredient.type)}
-          </Typography>
-        </Box>
-
-        <Box sx={{ pt:3 }}>
-        {ingredient.description && (
-            <Box sx={{ mt: 3 }}>
-              <Typography
-                variant="h3"
-                component="h3"
-                gutterBottom
-                sx={{
-                  fontSize: { xs: '1.8rem', sm: '2.2rem' },
-                  mb: 1
-                }}
-              >
-                Description:
-              </Typography>
-              <Typography variant="body1" color="text.secondary" sx={{ fontFamily: 'inherit' }}>
-                {ingredient.description ? sentenceCapitalize(ingredient.description) : ''}
-              </Typography>
+    <LoadingState loading={loading} error={error}>
+      {ingredient && (
+        <>
+          <SEO 
+            title={`${titleize(ingredient.name)} - The Online.Bar`}
+            description={ingredient.description ? 
+              `${ingredient.name}: ${ingredient.description}` : 
+              `Learn about ${ingredient.name} in cocktails. Discover its characteristics, common uses, and cocktail recipes that feature this ingredient.`
+            }
+            image={ingredient.imageUrl || undefined}
+          />
+          <DocumentTitle title={titleize(ingredient.name)} />
+          <Box sx={{ 
+            p: { xs: 2, sm: 3 }, 
+            maxWidth: '600px', 
+            margin: 'auto',
+            minHeight: 'calc(100vh - 64px)',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <TitleSection 
+              title={titleize(ingredient.name)}
+              variant="h1"
+              sx={{
+                fontSize: { xs: '2.5rem', sm: '3rem' },
+                mb: 1
+              }}
+            />
+            
+            <Box sx={{ mb: 1 }}>
+              <IngredientList 
+                ingredients={[{
+                  ingredient: {
+                    id: ingredient.id,
+                    slug: ingredient.slug,
+                    name: ingredient.type,
+                    type: ingredient.type
+                  },
+                  order: 0
+                }]}
+                customLabel="Categorization"
+              />
             </Box>
-          )}
-        </Box>
 
-        <Box sx={{ pt: 3 }}>
-          <Typography
-            variant="h3"
-            component="h3"
-            sx={{
-              fontFamily: 'Corinthia, cursive',
-              fontSize: { xs: '1.8rem', sm: '2.2rem' },
-              color: '#1a1a1a',
-              mb: 2
-            }}
-          >
-            Try cocktails featuring {capitalizeWords(ingredient.name)}
-          </Typography>
-          <Divider sx={{ mb: 2 }}/>
-          {cocktails.length > 0 ? (
-            <List>
-              {cocktails.map((cocktail) => (
-                <ListItem
-                  key={cocktail.id}
-                  component={Link}
-                  to={`/cocktails/${cocktail.slug}`}
-                  sx={{
-                    mb: 1,
-                    borderRadius: 1,
-                    display: 'block',
-                    p: 1,
-                    textDecoration: 'none',
-                    '&:hover': {
-                      textDecoration: 'none'
-                    }
-                  }}
-                >
-                  <StyledLink>
-                    <ListItemText
-                      primary={capitalizeWords(cocktail.name)}
-                      primaryTypographyProps={{ 
-                        variant: 'serifMedium'
+            {ingredient.description && (
+              <DescriptionSection 
+                title="Description"
+                content={ingredient.description}
+                variant="h5"
+                sx={{mb: 1}}
+              />
+            )}
+
+            <Box sx={{ pt: 3 }}>
+              <DescriptionSection 
+                title={`Try cocktails featuring ${titleize(ingredient.name)}`}
+                content={""}
+                variant="h5"
+                sx={{
+                  fontFamily: 'Corinthia, cursive',
+                  fontWeight: 700,
+                  color: '#1a1a1a',
+                  mb: 2
+                }}
+              />
+              {cocktails.length > 0 ? (
+                <List>
+                  {cocktails.map((cocktail) => (
+                    <ListItem
+                      key={cocktail.id}
+                      component="a"
+                      href={`/cocktails/${cocktail.slug}`}
+                      sx={{
+                        mb: 1,
+                        borderRadius: 1,
+                        display: 'block',
+                        p: 1,
+                        textDecoration: 'none',
+                        '&:hover': {
+                          textDecoration: 'none'
+                        }
                       }}
-                    />
-                  </StyledLink>
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography>No cocktails found featuring this ingredient in the current selection.</Typography>
-          )}
-        </Box>
-      </Box>
-    </>
+                    >
+                      <StyledLink>
+                        <Box sx={{ 
+                          fontFamily: 'serif',
+                          fontSize: '1.1rem',
+                          lineHeight: 1.5
+                        }}>
+                          {titleize(cocktail.name)}
+                        </Box>
+                      </StyledLink>
+                    </ListItem>
+                  ))}
+                </List>
+              ) : (
+                <Box sx={{ color: 'text.secondary' }}>
+                  No cocktails found featuring this ingredient in the current selection.
+                </Box>
+              )}
+            </Box>
+          </Box>
+        </>
+      )}
+    </LoadingState>
   );
 }; 

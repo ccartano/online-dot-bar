@@ -29,21 +29,19 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({ sections }) => {
 
   const drawer = (
     <Box sx={{ p: 0 }}>
-      <Typography variant="decorative" sx={{ mb: 1 }}>
-        Filters
+      <Typography variant="h4Corinthia" component="h4" sx={{ mb: 1 }}>
+        Filters 
       </Typography>
       <Divider sx={{ mb: 2 }} />
       
       {sections.map((section, index) => (
         <React.Fragment key={section.title}>
           <Typography
-            variant="h2"
-            component="h2"
+            variant="body1"
+            component="p"
             sx={{
-              fontWeight: 'bold',
               marginBottom: '0.5rem',
-              fontFamily: 'Corinthia, cursive',
-              fontSize: '1.5rem'
+              fontSize: '1.25rem'
             }}
           >
             {section.title}

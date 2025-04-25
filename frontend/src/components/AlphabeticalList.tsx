@@ -119,14 +119,11 @@ export const AlphabeticalList = <T,>({
             }}
           >
             <Typography
-              variant="decorativeLarge"
-              sx={{
-                mb: 2,
-                fontFamily: 'Corinthia, cursive',
-                fontSize: '2.5rem',
-                fontWeight: 'bold'
-              }}
-            >
+              component="h3"
+              variant="h3Corinthia"
+              color="primary.main"
+              fontWeight="bold"
+              sx={{ mb: 2 }}>
               {letter}
             </Typography>
             <Box sx={{ 
@@ -158,13 +155,9 @@ export const AlphabeticalList = <T,>({
                         onClick={() => handleClick(itemId)}
                       >
                         <StyledLink>
-                          <Typography
-                            variant="serifMedium"
-                            sx={{
-                              color: 'inherit',
-                              fontSize: '1.2rem'
-                            }}
-                          >
+                          <Typography 
+                            component="p"
+                            variant="body1">
                             {getItemName(item)}
                           </Typography>
                         </StyledLink>

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo, useEffect } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Box, 
@@ -6,58 +6,20 @@ import {
   Drawer, 
   List, 
   ListItem, 
-  ListItemText, 
   Typography, 
   useMediaQuery,
   styled,
   ThemeProvider,
-  createTheme,
   Theme
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { theme } from '../theme/theme';
 import '../App.css';
 
 interface NavItem {
   text: string;
   path: string;
 }
-
-// Create a custom theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#9CB4A3',
-    },
-    secondary: {
-      main: '#1a1a1a',
-    },
-  },
-  typography: {
-    fontFamily: [
-      'Corinthia',
-      'cursive',
-      '-apple-system',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      'Roboto',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-    ].join(','),
-  },
-  components: {
-    MuiDrawer: {
-      styleOverrides: {
-        paper: {
-          width: '80%',
-          maxWidth: '400px',
-          borderTopLeftRadius: 0,
-          borderBottomLeftRadius: 0,
-        },
-      },
-    },
-  },
-});
 
 // Styled components
 const StyledNav = styled('nav')`
@@ -67,14 +29,14 @@ const StyledNav = styled('nav')`
   z-index: 1000;
   background-color: white;
   border-bottom: 1px solid #eee;
-  height: 56px;
+  height: 64px;
   display: flex;
   align-items: center;
   padding: 0 16px;
   justify-content: space-between;
 
   @media (min-width: 600px) {
-    height: 64px;
+    height: 72px;
     padding: 0 24px;
   }
 `;
@@ -86,20 +48,6 @@ const StyledLink = styled(Link)(({ theme }: { theme: Theme }) => ({
   '&:hover': {
     color: theme.palette.primary.main,
   },
-}));
-
-const StyledHomeLink = styled(Link)(({ theme }: { theme: Theme }) => ({
-  textDecoration: 'none',
-  color: theme.palette.secondary.main,
-  transition: 'color 0.2s ease',
-  '&:hover': {
-    color: theme.palette.primary.main,
-  },
-  fontSize: '1.5rem',
-  fontFamily: 'Corinthia, cursive',
-  '@media (min-width: 600px)': {
-    fontSize: '2rem',
-  }
 }));
 
 const NavItemsContainer = styled(Box)`
@@ -158,12 +106,11 @@ const NavItem = memo(({ item, isActive, onClick }: {
       aria-current={isActive ? 'page' : undefined}
     >
       <Typography 
-        variant="decorative"
+        variant="h3Corinthia"
         sx={{
           color: isActive ? 'secondary.main' : '#666',
           transition: 'color 0.2s ease',
           fontSize: { sm: '1.875rem', md: '2rem' },
-          fontFamily: 'Corinthia, cursive',
           '&:hover': {
             color: 'primary.main'
           }
@@ -197,6 +144,11 @@ const MobileMenu = memo(({
     }}
     sx={{
       display: { xs: 'block', sm: 'none' },
+      '& .MuiDrawer-paper': {
+        width: '85%',
+        maxWidth: '400px',
+        p: 3
+      }
     }}
   >
     <Box sx={{ 
@@ -206,16 +158,29 @@ const MobileMenu = memo(({
       alignItems: 'center',
       justifyContent: 'center'
     }}>
-      <StyledHomeLink to="/" onClick={onClose}>
-        The Online.Bar
-      </StyledHomeLink>
+      <Link to="/" onClick={onClose} style={{ textDecoration: 'none' }}>
+        <Typography
+          variant="h3Corinthia"
+          sx={{
+            color: 'secondary.main',
+            transition: 'color 0.2s ease',
+            fontSize: { xs: '2rem', sm: '2.5rem' },
+            '&:hover': {
+              color: 'primary.main'
+            }
+          }}
+        >
+          The Online.Bar
+        </Typography>
+      </Link>
     </Box>
     <List sx={{ 
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'center',
       flex: 1,
-      gap: 2
+      gap: 3,
+      p: 2
     }}>
       {navItems.map((item) => (
         <ListItem 
@@ -228,22 +193,20 @@ const MobileMenu = memo(({
             py: 2,
           }}
         >
-          <ListItemText 
-            primary={item.text} 
-            sx={{ 
-              textAlign: 'center',
-              '& .MuiTypography-root': {
-                variant: 'decorative',
-                color: isActive(item.path) ? 'secondary.main' : '#666',
-                transition: 'color 0.2s ease',
-                fontSize: '3rem',
-                fontFamily: 'Corinthia, cursive',
-                '&:hover': {
-                  color: 'primary.main'
-                }
+          <Typography 
+            variant="body1Corinthia"
+            component="p"
+            sx={{
+              color: isActive(item.path) ? 'secondary.main' : '#666',
+              transition: 'color 0.2s ease',
+              fontSize: { xs: '2.5rem', sm: '3rem' },
+              '&:hover': {
+                color: 'primary.main'
               }
-            }} 
-          />
+            }}
+          >
+            {item.text}
+          </Typography>
         </ListItem>
       ))}
     </List>
@@ -252,21 +215,8 @@ const MobileMenu = memo(({
 
 export const Layout: React.FC<{ children: React.ReactNode }> = memo(({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [fontLoaded, setFontLoaded] = useState(false);
   const location = useLocation();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
-  useEffect(() => {
-    // Check if fonts are loaded
-    if (document.fonts) {
-      document.fonts.ready.then(() => {
-        setFontLoaded(true);
-      });
-    } else {
-      // Fallback for browsers that don't support document.fonts
-      setFontLoaded(true);
-    }
-  }, []);
 
   const handleDrawerToggle = useCallback(() => {
     setMobileOpen(prev => !prev);
@@ -291,21 +241,48 @@ export const Layout: React.FC<{ children: React.ReactNode }> = memo(({ children 
                   color: 'secondary.main',
                   '&:hover': {
                     color: 'primary.main'
+                  },
+                  '& .MuiSvgIcon-root': {
+                    fontSize: { xs: '1.5rem', sm: '1.5rem' }
                   }
                 }}
               >
                 <MenuIcon />
               </IconButton>
-              <StyledHomeLink to="/" className={fontLoaded ? 'font-loaded' : ''}>
-                The Online.Bar
-              </StyledHomeLink>
+              <Link to="/" onClick={handleDrawerToggle} style={{ textDecoration: 'none' }}>
+                <Typography
+                  variant="h3Corinthia"
+                  sx={{
+                    color: 'secondary.main',
+                    transition: 'color 0.2s ease',
+                    fontSize: { xs: '2rem', sm: '2.5rem' },
+                    '&:hover': {
+                      color: 'primary.main'
+                    }
+                  }}
+                >
+                  The Online.Bar
+                </Typography>
+              </Link>
               <Box sx={{ width: 48 }} /> {/* Spacer to center the title */}
             </>
           ) : (
             <>
-              <StyledHomeLink to="/" className={fontLoaded ? 'font-loaded' : ''}>
-                The Online.Bar
-              </StyledHomeLink>
+              <Link to="/" onClick={handleDrawerToggle} style={{ textDecoration: 'none' }}>
+                <Typography
+                  variant="h3Corinthia"
+                  sx={{
+                    color: 'secondary.main',
+                    transition: 'color 0.2s ease',
+                    fontSize: { xs: '1.5rem', sm: '2rem' },
+                    '&:hover': {
+                      color: 'primary.main'
+                    }
+                  }}
+                >
+                  The Online.Bar
+                </Typography>
+              </Link>
               <NavItemsContainer>
                 {navItems.map((item) => (
                   <NavItem 

@@ -34,7 +34,8 @@ export const LandingPage: React.FC = () => {
             }}
           >
             <Typography
-              variant="h1"
+              variant="h1Corinthia"
+              component="h1"
               sx={{
                 textAlign: 'center',
                 lineHeight: 1,
@@ -43,9 +44,7 @@ export const LandingPage: React.FC = () => {
                   xs: '3rem',    // For extra-small devices
                   sm: '4rem',    // For small devices
                   md: '6rem',    // For medium devices and up
-                },
-                fontFamily: 'Corinthia, cursive',
-                fontWeight: 400,
+                }
               }}
             >
               The Online.Bar
