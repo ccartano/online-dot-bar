@@ -1,3 +1,6 @@
 # Block access to the admin section for all crawlers
 User-agent: *
-Disallow: /admin/ 
+Allow: /
+Disallow: /admin/
+
+Sitemap: https://theonline.bar/sitemap.xml 
