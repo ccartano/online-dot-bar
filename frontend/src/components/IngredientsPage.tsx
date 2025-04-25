@@ -4,6 +4,7 @@ import { Box } from '@mui/material';
 import { Ingredient, IngredientType } from '../types/ingredient.types';
 import { FilterSidebar } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
+import { LoadingState } from './LoadingState';
 import { getIngredientTypeLabel } from '../utils/ingredientUtils';
 
 // Move this outside the component to prevent recreation
@@ -17,17 +18,24 @@ const capitalizeWords = (str: string): string => {
 export const IngredientsPage: React.FC = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<IngredientType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
 
   // Memoize the fetch function
   const fetchIngredients = useCallback(async () => {
     try {
+      setLoading(true);
       const response = await fetch('/api/ingredients');
       const data = await response.json();
       setIngredients(data);
+      setError(null);
     } catch (error) {
       console.error('Error fetching ingredients:', error);
+      setError('Failed to load ingredients. Please try again later.');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -84,35 +92,37 @@ export const IngredientsPage: React.FC = () => {
   }), []);
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      minHeight: 'calc(100vh - 64px)',
-      position: 'relative'
-    }}>
+    <LoadingState loading={loading} error={error}>
       <Box sx={{ 
         display: 'flex', 
-        gap: { xs: 0, sm: 4 }, 
-        flex: 1,
+        flexDirection: 'column', 
+        minHeight: 'calc(100vh - 64px)',
         position: 'relative'
       }}>
-        <FilterSidebar sections={filterSections} />
         <Box sx={{ 
-          flex: 1, 
-          overflow: 'auto',
-          p: 2,
-          '&::-webkit-scrollbar': {
-            display: 'none'
-          },
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none'
+          display: 'flex', 
+          gap: { xs: 0, sm: 4 }, 
+          flex: 1,
+          position: 'relative'
         }}>
-          <AlphabeticalList
-            items={filteredIngredients}
-            {...itemHandlers}
-          />
+          <FilterSidebar sections={filterSections} />
+          <Box sx={{ 
+            flex: 1, 
+            overflow: 'auto',
+            p: 2,
+            '&::-webkit-scrollbar': {
+              display: 'none'
+            },
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}>
+            <AlphabeticalList
+              items={filteredIngredients}
+              {...itemHandlers}
+            />
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </LoadingState>
   );
 }; 

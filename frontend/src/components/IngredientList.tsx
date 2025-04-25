@@ -7,9 +7,10 @@ interface IngredientListProps {
   ingredients: Cocktail['ingredients'];
   glassType?: Cocktail['glassType'];
   customLabel?: string;
+  noLink?: boolean;
 }
 
-export const IngredientList: React.FC<IngredientListProps> = ({ ingredients, glassType, customLabel }) => {
+export const IngredientList: React.FC<IngredientListProps> = ({ ingredients, glassType, customLabel, noLink }) => {
   return (
     <List>
       {[...ingredients]
@@ -37,7 +38,8 @@ export const IngredientList: React.FC<IngredientListProps> = ({ ingredients, gla
                 width: { xs: '100px', sm: '250px' },
                 alignItems: 'center',
                 gap: 1,
-                flexShrink: 0
+                flexShrink: 0,
+                minHeight: '40px'
               }}>
                 {customLabel ? (
                   <Typography 
@@ -51,7 +53,7 @@ export const IngredientList: React.FC<IngredientListProps> = ({ ingredients, gla
                     }}>
                     {customLabel}
                   </Typography>
-                ) : formattedAmount && (
+                ) : (
                   <Typography 
                     variant="body1"
                     component="p"
@@ -61,7 +63,7 @@ export const IngredientList: React.FC<IngredientListProps> = ({ ingredients, gla
                       alignItems: 'center',
                       fontSize: '1.25rem'
                     }}>
-                      {formattedAmount.amount} {formattedAmount.unit}
+                      {formattedAmount ? `${formattedAmount.amount} ${formattedAmount.unit}` : ''}
                     </Typography>
                 )}
                 {(customLabel || formattedAmount) && (
@@ -92,7 +94,7 @@ export const IngredientList: React.FC<IngredientListProps> = ({ ingredients, gla
                 minWidth: 0,
                 textOverflow: 'ellipsis'
               }}>
-                {ingredient.ingredient.id ? (
+                {!noLink && ingredient.ingredient.id ? (
                   <Link 
                     to={`/ingredients/${ingredient.ingredient.slug}`} 
                     style={{ 

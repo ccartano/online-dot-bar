@@ -9,8 +9,15 @@ interface LoadingStateProps {
 export const LoadingState: React.FC<LoadingStateProps> = ({ loading, error, children }) => {
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <CircularProgress />
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: 'calc(100vh - 64px)',
+        width: '100%',
+        position: 'relative'
+      }}>
+        <CircularProgress size={60} />
       </Box>
     );
   }

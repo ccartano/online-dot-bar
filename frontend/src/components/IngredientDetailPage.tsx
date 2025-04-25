@@ -105,12 +105,13 @@ export const IngredientDetailPage: React.FC = () => {
                   ingredient: {
                     id: ingredient.id,
                     slug: ingredient.slug,
-                    name: ingredient.type,
+                    name: ingredient.type.replace(/_/g, ' '),
                     type: ingredient.type
                   },
                   order: 0
                 }]}
                 customLabel="Categorization"
+                noLink={true}
               />
             </Box>
 

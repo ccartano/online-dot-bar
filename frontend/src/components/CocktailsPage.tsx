@@ -5,6 +5,7 @@ import { Cocktail } from '../services/cocktail.service';
 import { GlassType } from '../types/glass.types';
 import { FilterSidebar } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
+import { LoadingState } from './LoadingState';
 import { SEO } from './SEO';
 
 // Helper function to capitalize words
@@ -23,13 +24,19 @@ export const CocktailsPage: React.FC = () => {
   const [glassTypeMap, setGlassTypeMap] = useState<Record<number, string>>({});
   const [selectedGlassTypes, setSelectedGlassTypes] = useState<string[]>([]);
   const [selectedSpirits, setSelectedSpirits] = useState<BaseSpirit[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('search') || '';
 
   useEffect(() => {
     const fetchCocktails = async () => {
       try {
+        setLoading(true);
         const response = await fetch('/api/cocktails/with-glass-types');
+        if (!response.ok) {
+          throw new Error('Failed to fetch cocktails');
+        }
         const { cocktails, glassTypes } = await response.json();
         setCocktails(cocktails);
         
@@ -39,8 +46,12 @@ export const CocktailsPage: React.FC = () => {
           return acc;
         }, {});
         setGlassTypeMap(glassTypeMap);
+        setError(null);
       } catch (error) {
         console.error('Error fetching cocktails:', error);
+        setError('Failed to load cocktails. Please try again later.');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -137,42 +148,44 @@ export const CocktailsPage: React.FC = () => {
         title="Cocktail Recipes - The Online.Bar"
         description="Browse our extensive collection of cocktail recipes. Find classic drinks, modern mixology creations, and detailed instructions for making the perfect cocktail."
       />
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        height: 'calc(100vh - 64px)',
-        overflow: 'hidden',
-        position: 'relative'
-      }}>
+      <LoadingState loading={loading} error={error}>
         <Box sx={{ 
           display: 'flex', 
-          gap: { xs: 0, sm: 4 }, 
-          height: '100%',
+          flexDirection: 'column', 
+          height: 'calc(100vh - 64px)',
           overflow: 'hidden',
           position: 'relative'
         }}>
-          <FilterSidebar sections={filterSections} />
           <Box sx={{ 
-            flex: 1, 
-            overflow: 'auto',
-            p: 2,
-            '&::-webkit-scrollbar': {
-              display: 'none'
-            },
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            overflowY: 'auto',
-            overflowX: 'hidden'
+            display: 'flex', 
+            gap: { xs: 0, sm: 4 }, 
+            height: '100%',
+            overflow: 'hidden',
+            position: 'relative'
           }}>
-            <AlphabeticalList
-              items={filteredCocktails}
-              getItemId={(item) => item.slug}
-              getItemName={(item) => capitalizeWords(item.name)}
-              getItemLink={(item) => `/cocktails/${item.slug}`}
-            />
+            <FilterSidebar sections={filterSections} />
+            <Box sx={{ 
+              flex: 1, 
+              overflow: 'auto',
+              p: 2,
+              '&::-webkit-scrollbar': {
+                display: 'none'
+              },
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              overflowY: 'auto',
+              overflowX: 'hidden'
+            }}>
+              <AlphabeticalList
+                items={filteredCocktails}
+                getItemId={(item) => item.slug}
+                getItemName={(item) => capitalizeWords(item.name)}
+                getItemLink={(item) => `/cocktails/${item.slug}`}
+              />
+            </Box>
           </Box>
         </Box>
-      </Box>
+      </LoadingState>
     </>
   );
 }; 
