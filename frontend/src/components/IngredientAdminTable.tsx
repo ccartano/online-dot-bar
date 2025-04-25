@@ -375,15 +375,27 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
                     </TableCell>
                     <TableCell 
                       width={isMobile ? "0%" : "35%"}
-                      sx={{ display: isMobile ? 'none' : 'table-cell' }}
+                      sx={{ 
+                        display: isMobile ? 'none' : 'table-cell',
+                        maxWidth: '35%',
+                        minWidth: '200px',
+                        wordBreak: 'break-word',
+                        overflow: 'hidden',
+                        padding: isMobile ? '8px' : '16px'
+                      }}
                     >
                       <Typography 
                         variant={isMobile ? "body2" : "subtitle1"} 
                         sx={{ 
                           color: 'text.secondary',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                          maxHeight: '3em',
+                          lineHeight: '1.5em',
+                          whiteSpace: 'normal'
                         }}
                       >
                         {ingredient.description || '-'}
