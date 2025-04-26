@@ -6,6 +6,8 @@ import { FilterSidebar } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
 import { LoadingState } from './LoadingState';
 import { getIngredientTypeLabel } from '../utils/ingredientUtils';
+import { SEO } from './SEO';
+import { DocumentTitle } from './DocumentTitle';
 
 // Move this outside the component to prevent recreation
 const capitalizeWords = (str: string): string => {
@@ -92,37 +94,44 @@ export const IngredientsPage: React.FC = () => {
   }), []);
 
   return (
-    <LoadingState loading={loading} error={error}>
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        minHeight: 'calc(100vh - 64px)',
-        position: 'relative'
-      }}>
+    <>
+      <SEO 
+        title="Cocktail Ingredients A-Z - The Online.Bar"
+        description="Browse our comprehensive A-Z list of cocktail ingredients. Find spirits, liqueurs, mixers, garnishes, and more with detailed information about each ingredient."
+      />
+      <DocumentTitle title="Cocktail Ingredients" />
+      <LoadingState loading={loading} error={error}>
         <Box sx={{ 
           display: 'flex', 
-          gap: { xs: 0, sm: 4 }, 
-          flex: 1,
+          flexDirection: 'column', 
+          minHeight: 'calc(100vh - 64px)',
           position: 'relative'
         }}>
-          <FilterSidebar sections={filterSections} />
           <Box sx={{ 
-            flex: 1, 
-            overflow: 'auto',
-            p: 2,
-            '&::-webkit-scrollbar': {
-              display: 'none'
-            },
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
+            display: 'flex', 
+            gap: { xs: 0, sm: 4 }, 
+            flex: 1,
+            position: 'relative'
           }}>
-            <AlphabeticalList
-              items={filteredIngredients}
-              {...itemHandlers}
-            />
+            <FilterSidebar sections={filterSections} />
+            <Box sx={{ 
+              flex: 1, 
+              overflow: 'auto',
+              p: 2,
+              '&::-webkit-scrollbar': {
+                display: 'none'
+              },
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
+            }}>
+              <AlphabeticalList
+                items={filteredIngredients}
+                {...itemHandlers}
+              />
+            </Box>
           </Box>
         </Box>
-      </Box>
-    </LoadingState>
+      </LoadingState>
+    </>
   );
 }; 

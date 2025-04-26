@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
+import { HelmetProvider } from 'react-helmet-async';
 import { theme } from './theme/theme';
 import { Layout } from './components/Layout';
 import LandingPage from './components/LandingPage';
@@ -26,27 +27,29 @@ const RouteChangeTracker = () => {
 
 const App = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <RouteChangeTracker />
-        <Routes>
-          <Route path="/admin/*" element={<AdminPage />} />
-          <Route path="/*" element={
-            <Layout>
-              <Routes>
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/cocktails" element={<CocktailsPage />} />
-                <Route path="/cocktails/:slug" element={<CocktailDetailPage />} />
-                <Route path="/ingredients" element={<IngredientsPage />} />
-                <Route path="/ingredients/:slug" element={<IngredientDetailPage />} />
-                <Route path="/products" element={<ProductsPage />} />
-              </Routes>
-            </Layout>
-          } />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+    <HelmetProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Router>
+          <RouteChangeTracker />
+          <Routes>
+            <Route path="/admin/*" element={<AdminPage />} />
+            <Route path="/*" element={
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/cocktails" element={<CocktailsPage />} />
+                  <Route path="/cocktails/:slug" element={<CocktailDetailPage />} />
+                  <Route path="/ingredients" element={<IngredientsPage />} />
+                  <Route path="/ingredients/:slug" element={<IngredientDetailPage />} />
+                  <Route path="/products" element={<ProductsPage />} />
+                </Routes>
+              </Layout>
+            } />
+          </Routes>
+        </Router>
+      </ThemeProvider>
+    </HelmetProvider>
   );
 };
 

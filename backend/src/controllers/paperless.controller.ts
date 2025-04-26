@@ -8,8 +8,14 @@ export class PaperlessController {
   constructor(private readonly paperlessService: PaperlessService) {}
 
   @Get('documents')
-  async getAllDocuments(@Query('page') page: number = 1): Promise<{ documents: PaperlessDocument[]; hasMore: boolean }> {
-    return this.paperlessService.getAllDocuments(page);
+  async getAllDocuments(
+    @Query('page') page: number = 1,
+    @Query('page_size') pageSize: number = 50,
+    @Query('ordering') ordering: string = '-created',
+    @Query('truncate_content') truncateContent: string = 'true',
+    @Query('tags__id__all') tagId: string
+  ): Promise<{ documents: PaperlessDocument[]; hasMore: boolean }> {
+    return this.paperlessService.getAllDocuments(page, pageSize, ordering, truncateContent, tagId);
   }
 
   @Get(':id')

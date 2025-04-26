@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Product, productService } from '../services/productService';
+import { SEO } from '../components/SEO';
+import { DocumentTitle } from '../components/DocumentTitle';
 import './ProductsPage.css';
 
 const ProductsPage: React.FC = () => {
@@ -62,59 +64,66 @@ const ProductsPage: React.FC = () => {
   }
 
   return (
-    <div className="products-page">
-      <h1>Tools & Equipment</h1>
-      <div className="products-grid">
-        {products.map((product) => (
-          <div 
-            key={product.id} 
-            className="product-card"
-            onClick={() => handleProductClick(product)}
-          >
-            <div className="product-image-container">
-              <img src={product.imageUrl} alt={product.name} className="product-image" />
-            </div>
-            <div className="product-info">
-              <h3>{product.name}</h3>
-              <p className="short-description">{product.shortDescription}</p>
-              <div className="product-footer">
-                <span className="price">${Number(product.price).toFixed(2)}</span>
+    <>
+      <SEO 
+        title="Bar Tools & Equipment - The Online.Bar"
+        description="Shop essential bar tools and equipment for your home bar. Find cocktail shakers, jiggers, strainers, muddlers, and more quality bartending equipment."
+      />
+      <DocumentTitle title="Bar Tools & Equipment" />
+      <div className="products-page">
+        <h1>Tools & Equipment</h1>
+        <div className="products-grid">
+          {products.map((product) => (
+            <div 
+              key={product.id} 
+              className="product-card"
+              onClick={() => handleProductClick(product)}
+            >
+              <div className="product-image-container">
+                <img src={product.imageUrl} alt={product.name} className="product-image" />
+              </div>
+              <div className="product-info">
+                <h3>{product.name}</h3>
+                <p className="short-description">{product.shortDescription}</p>
+                <div className="product-footer">
+                  <span className="price">${Number(product.price).toFixed(2)}</span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {selectedProduct && (
-        <div className="modal" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{selectedProduct.name}</h2>
-              <button className="close-button" onClick={handleCloseModal}>×</button>
-            </div>
-            <div className="modal-body">
-              <div className="modal-image-container">
-                <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="modal-image" />
-              </div>
-              <div className="modal-description">
-                <p>{selectedProduct.description}</p>
-              </div>
-              <div className="modal-footer">
-                <span className="modal-price">${Number(selectedProduct.price).toFixed(2)}</span>
-                <a 
-                  href={selectedProduct.link} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="modal-link"
-                >
-                  View on Amazon
-                </a>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
-      )}
-    </div>
+
+        {selectedProduct && (
+          <div className="modal" onClick={handleCloseModal}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>{selectedProduct.name}</h2>
+                <button className="close-button" onClick={handleCloseModal}>×</button>
+              </div>
+              <div className="modal-body">
+                <div className="modal-image-container">
+                  <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="modal-image" />
+                </div>
+                <div className="modal-description">
+                  <p>{selectedProduct.description}</p>
+                </div>
+                <div className="modal-footer">
+                  <span className="modal-price">${Number(selectedProduct.price).toFixed(2)}</span>
+                  <a 
+                    href={selectedProduct.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="modal-link"
+                  >
+                    View on Amazon
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 

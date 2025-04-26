@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Container, Typography } from '@mui/material';
 import SearchBar from './SearchBar';
 import { SEO } from './SEO';
+import { DocumentTitle } from './DocumentTitle';
 
 export const LandingPage: React.FC = () => {
   return (
@@ -10,6 +11,7 @@ export const LandingPage: React.FC = () => {
         title="The Online.Bar - Cocktail Recipes & Mixology Guide"
         description="Your comprehensive cocktail and mixology resource. Search and discover cocktail recipes, ingredients, and bartending techniques."
       />
+      <DocumentTitle title="The Online.Bar" />
       <Box
         sx={{
           height: '100%',

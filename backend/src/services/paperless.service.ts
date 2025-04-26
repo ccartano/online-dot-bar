@@ -102,15 +102,30 @@ export class PaperlessService implements OnModuleInit {
     }
   }
 
-  async getAllDocuments(page: number = 1): Promise<{ documents: PaperlessDocument[]; hasMore: boolean }> {
+  async getAllDocuments(
+    page: number = 1,
+    pageSize: number = 200,
+    ordering: string = '-created',
+    truncateContent: string = 'true',
+    tagId?: string
+  ): Promise<{ documents: PaperlessDocument[]; hasMore: boolean }> {
     try {
+      const params: Record<string, any> = {
+        page,
+        page_size: pageSize,
+        ordering,
+        truncate_content: truncateContent
+      };
+
+      if (tagId) {
+        params.tags__id__all = tagId;
+      }
+
       const response = await axios.get<PaperlessApiResponse>(
         `${this.apiUrl}/documents/`,
         {
           headers: this.getAuthHeaders(),
-          params: {
-            page: page,
-          },
+          params
         },
       );
 
