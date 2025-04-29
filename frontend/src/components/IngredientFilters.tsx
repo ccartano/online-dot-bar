@@ -1,6 +1,5 @@
 import { Box, Checkbox, FormControlLabel, FormGroup, Divider, Typography } from '@mui/material';
-import { IngredientType } from '../types/ingredient.types';
-import { getIngredientTypeLabel } from '../utils/ingredientUtils';
+import { IngredientType, INGREDIENT_TYPE_LABELS } from '../utils/constants';
 
 interface IngredientFiltersProps {
   selectedTypes: IngredientType[];
@@ -44,7 +43,7 @@ export const IngredientFilters: React.FC<IngredientFiltersProps> = ({
       <FormGroup sx={{ pl: 1, mb: 4 }}>
         {allTypes.map((type) => (
           <FormControlLabel
-            key={type}
+            key={type.toString()}
             control={
               <Checkbox
                 checked={selectedTypes.includes(type)}
@@ -52,7 +51,7 @@ export const IngredientFilters: React.FC<IngredientFiltersProps> = ({
                 size="small"
               />
             }
-            label={getIngredientTypeLabel(type)}
+            label={INGREDIENT_TYPE_LABELS[type]}
             sx={{ mb: 0, '& .MuiFormControlLabel-label': { fontFamily: 'Old Standard TT, serif', fontSize: '0.9rem' } }}
           />
         ))}

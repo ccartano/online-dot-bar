@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Box } from '@mui/material';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
 import { GlassType } from '../types/glass.types';
-import { FilterSidebar } from './FilterSidebar';
+import { FilterSidebar, FilterSection } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
 import { LoadingState } from './LoadingState';
 import { SEO } from './SEO';
 import { DocumentTitle } from './DocumentTitle';
+import { Ingredient } from '../types/ingredient.types';
+import { IngredientType } from '../utils/constants';
 
 // Helper function to capitalize words
 const capitalizeWords = (str: string): string => {
@@ -77,7 +79,7 @@ export const CocktailsPage: React.FC = () => {
     });
   };
 
-  const filterSections = [
+  const filterSections: FilterSection[] = [
     {
       title: 'Base Spirit',
       options: baseSpirits.map(spirit => ({
@@ -116,21 +118,27 @@ export const CocktailsPage: React.FC = () => {
       // Apply spirit filter
       if (selectedSpirits.length > 0) {
         const spiritIngredients = cocktail.ingredients
-          .filter(i => i.ingredient?.type?.toLowerCase() === 'spirit')
-          .map(i => ({
-            name: i.ingredient.name,
-            type: i.ingredient.type,
-            category: (() => {
-              const name = i.ingredient.name.toLowerCase();
-              if (name.includes('gin')) return 'Gin';
-              if (name.includes('whiskey') || name.includes('whisky') || name.includes('bourbon') || name.includes('scotch') || name.includes('rye')) return 'Whiskey';
-              if (name.includes('vodka')) return 'Vodka';
-              if (name.includes('rum') || name.includes('rhum')) return 'Rum';
-              if (name.includes('tequila') || name.includes('mezcal')) return 'Tequila';
-              if (name.includes('brandy') || name.includes('cognac') || name.includes('armagnac')) return 'Brandy';
-              return 'Other';
-            })()
-          }));
+          .filter((i: Cocktail['ingredients'][0]) => {
+            const ingredient = i.ingredient as Ingredient;
+            return ingredient.type === IngredientType.SPIRIT;
+          })
+          .map((i: Cocktail['ingredients'][0]) => {
+            const ingredient = i.ingredient as Ingredient;
+            const name = ingredient.name.toLowerCase();
+            return {
+              name: ingredient.name,
+              type: ingredient.type,
+              category: (() => {
+                if (name.includes('gin')) return 'Gin';
+                if (name.includes('whiskey') || name.includes('whisky') || name.includes('bourbon') || name.includes('scotch') || name.includes('rye')) return 'Whiskey';
+                if (name.includes('vodka')) return 'Vodka';
+                if (name.includes('rum') || name.includes('rhum')) return 'Rum';
+                if (name.includes('tequila') || name.includes('mezcal')) return 'Tequila';
+                if (name.includes('brandy') || name.includes('cognac') || name.includes('armagnac')) return 'Brandy';
+                return 'Other';
+              })()
+            };
+          });
 
         const cocktailSpirits = spiritIngredients.map(i => i.category);
         

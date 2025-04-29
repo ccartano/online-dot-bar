@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 import { Box, Typography, styled } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const StyledLink = styled(Box)({
   position: 'relative',
@@ -43,8 +43,16 @@ export const AlphabeticalList = <T,>({
   renderItem 
 }: AlphabeticalListProps<T>) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Clear storage on initial mount if there's no navigation state
+  useEffect(() => {
+    if (!location.state?.clickedItemId) {
+      sessionStorage.removeItem('lastClickedItem');
+    }
+  }, []);
 
   // Memoize the grouped and sorted items
   const { itemsByLetter, sortedLetters } = useMemo(() => {
@@ -65,28 +73,43 @@ export const AlphabeticalList = <T,>({
   }, [items, getItemName]);
 
   // Memoize the click handler
-  const handleClick = useCallback((itemId: string | number) => {
-    window.history.replaceState(
-      { ...window.history.state, clickedItemId: itemId },
-      ''
-    );
-  }, []);
+  const handleClick = useCallback((itemId: string | number, link: string) => {
+    sessionStorage.setItem('lastClickedItem', String(itemId));
+    navigate(link, { 
+      state: { clickedItemId: itemId },
+      replace: false
+    });
+  }, [navigate]);
 
   // Handle scroll restoration when navigating back
   useEffect(() => {
-    if (location.state?.clickedItemId) {
-      const itemRef = itemRefs.current[location.state.clickedItemId];
-      if (itemRef && containerRef.current) {
-        const containerRect = containerRef.current.getBoundingClientRect();
-        const itemRect = itemRef.getBoundingClientRect();
-        const offset = itemRect.top - containerRect.top;
-        containerRef.current.scrollTo({
-          top: containerRef.current.scrollTop + offset,
-          behavior: 'smooth'
-        });
-      }
+    const storedItemId = sessionStorage.getItem('lastClickedItem');
+    const itemId = location.state?.clickedItemId || storedItemId;
+    
+    if (itemId) {
+      const timer = setTimeout(() => {
+        const itemRef = itemRefs.current[itemId];
+        
+        if (itemRef && containerRef.current) {
+          requestAnimationFrame(() => {
+            const containerRect = containerRef.current!.getBoundingClientRect();
+            const itemRect = itemRef.getBoundingClientRect();
+            const offset = itemRect.top - containerRect.top;
+            
+            const buffer = 20;
+            const scrollPosition = containerRef.current!.scrollTop + offset - buffer;
+            
+            containerRef.current!.scrollTo({
+              top: scrollPosition,
+              behavior: 'smooth'
+            });
+          });
+        }
+      }, 300);
+
+      return () => clearTimeout(timer);
     }
-  }, [location]);
+  }, [location.state?.clickedItemId]);
 
   return (
     <Box 
@@ -152,7 +175,10 @@ export const AlphabeticalList = <T,>({
                       <Link
                         to={link}
                         style={{ textDecoration: 'none' }}
-                        onClick={() => handleClick(itemId)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleClick(itemId, link);
+                        }}
                       >
                         <StyledLink>
                           <Typography 

@@ -11,7 +11,7 @@ import {
   InputAdornment,
   Box,
 } from '@mui/material';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
 import { GlassType } from '../types/glass.types';
 import { getDocumentThumbnail } from '../services/paperless.service';
 import { CocktailTableHeader } from './CocktailTableHeader';
@@ -40,7 +40,7 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [expandedRow, setExpandedRow] = useState<number | null>(null);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedCocktail, setSelectedCocktail] = useState<Cocktail | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -69,8 +69,12 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
     }
   };
 
-  const handleToggleExpand = (cocktailId: number) => {
-    setExpandedRow(prev => (prev === cocktailId ? null : cocktailId));
+  const handleToggleExpand = (cocktail: Cocktail) => {
+    // Create a unique identifier using paperlessId for pending cocktails or id for active ones
+    const uniqueId = cocktail.paperlessId 
+      ? `paperless-${cocktail.paperlessId}-${cocktail.name.replace(/\s+/g, '-')}`
+      : `active-${cocktail.id}`;
+    setExpandedRow(prev => (prev === uniqueId ? null : uniqueId));
   };
 
   const handleSaveCocktail = (updatedCocktail: Cocktail) => {
@@ -156,19 +160,25 @@ export const CocktailTable: React.FC<CocktailTableProps> = ({
         >
           <CocktailTableHeader isMobile={isMobile} />
           <TableBody>
-            {displayCocktails.map((cocktail) => (
-              <CocktailTableRow
-                key={cocktail.id}
-                cocktail={cocktail}
-                isExpanded={expandedRow === cocktail.id}
-                onToggleExpand={() => handleToggleExpand(cocktail.id)}
-                onSave={handleSaveCocktail}
-                onViewThumbnail={handleViewThumbnail}
-                glassTypes={glassTypes}
-                onDeleteRequest={onDeleteRequest}
-                showDelete={showDelete}
-              />
-            ))}
+            {displayCocktails.map((cocktail) => {
+              // Create a unique key that combines paperlessId and cocktail name
+              const uniqueId = cocktail.paperlessId 
+                ? `paperless-${cocktail.paperlessId}-${cocktail.name.replace(/\s+/g, '-')}`
+                : `active-${cocktail.id}`;
+              return (
+                <CocktailTableRow
+                  key={uniqueId}
+                  cocktail={cocktail}
+                  isExpanded={expandedRow === uniqueId}
+                  onToggleExpand={() => handleToggleExpand(cocktail)}
+                  onSave={handleSaveCocktail}
+                  onViewThumbnail={handleViewThumbnail}
+                  glassTypes={glassTypes}
+                  onDeleteRequest={onDeleteRequest}
+                  showDelete={showDelete}
+                />
+              );
+            })}
           </TableBody>
         </Table>
         {!isPotentialCocktails && (

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { CocktailTable } from './CocktailTable';
 import { PaperlessDocument } from '../types/paperless.types';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
 import { Alert, Snackbar, Box, Button, Typography, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 import { getApiUrl } from '../config/api.config';
-import { CocktailParserService } from '../services/cocktail-parser.service';
+import { CocktailParserService } from '../services/cocktail-parsing';
 import { GlassType } from '../types/glass.types';
 import { detectGlassTypeFromInstructions } from '../utils/glassTypeDetector';
 import { SEO } from './SEO';
+import { AdminService } from '../services/admin.service';
 
 // Tag ID to name mapping
 const TAG_MAP: Record<string, string> = {
@@ -67,17 +68,17 @@ export const PotentialCocktailsPage: React.FC = () => {
       const { documents, hasMore: morePages } = await response.json();
       console.log('Received response with', documents.length, 'documents');
       
-      // Fetch Glass Types first
-      const glassResponse = await fetch(getApiUrl('/glass-types'));
-      if (!glassResponse.ok) throw new Error('Failed to fetch glass types');
-      const glassData = await glassResponse.json();
-      setGlassTypes(glassData);
+      // Fetch cocktails and glass types in one call
+      const cocktailsResponse = await fetch(getApiUrl('/cocktails/with-glass-types'));
+      if (!cocktailsResponse.ok) throw new Error('Failed to fetch cocktails and glass types');
+      const { glassTypes } = await cocktailsResponse.json();
+      setGlassTypes(glassTypes);
       
       // Parse cocktails using the appropriate service based on document tags
       const parsedCocktails = CocktailParserService.parseCocktailsFromDocuments(documents)
         .map(cocktail => {
           // Detect glass type from instructions
-          const detectedGlassType = detectGlassTypeFromInstructions(cocktail.instructions || '', glassData);
+          const detectedGlassType = detectGlassTypeFromInstructions(cocktail.instructions || '', glassTypes);
           
           return {
             ...cocktail,
@@ -198,7 +199,7 @@ export const PotentialCocktailsPage: React.FC = () => {
       const allIngredients = await ingredientsResponse.json();
 
       // Create or get all ingredients
-      const ingredientPromises = updatedCocktail.ingredients.map(async (ingredient) => {
+      const ingredientPromises = updatedCocktail.ingredients.map(async (ingredient: Cocktail['ingredients'][0]) => {
         // Find existing ingredient
         const existingIngredient = allIngredients.find(
           (i: { name: string }) => i.name.toLowerCase() === ingredient.ingredient.name.toLowerCase()
@@ -209,10 +210,12 @@ export const PotentialCocktailsPage: React.FC = () => {
         }
 
         // Create new ingredient if it doesn't exist
+        const headers = await AdminService.getAdminHeaders();
         const createResponse = await fetch(getApiUrl('/ingredients'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...headers,
           },
           body: JSON.stringify({
             name: ingredient.ingredient.name
@@ -230,17 +233,19 @@ export const PotentialCocktailsPage: React.FC = () => {
       const ingredientIds = await Promise.all(ingredientPromises);
 
       // Now create the cocktail with the ingredient IDs
+      const headers = await AdminService.getAdminHeaders();
       const response = await fetch(getApiUrl('/cocktails'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...headers,
         },
         body: JSON.stringify({
           name: updatedCocktail.name,
           instructions: updatedCocktail.instructions,
           paperlessId: updatedCocktail.paperlessId,
           glassTypeId: updatedCocktail.glassType?.id ?? null,
-          ingredients: updatedCocktail.ingredients.map((ingredient, index) => ({
+          ingredients: updatedCocktail.ingredients.map((ingredient: Cocktail['ingredients'][0], index: number) => ({
             ingredientId: ingredientIds[index],
             amount: ingredient.amount,
             unit: ingredient.unit,
@@ -250,15 +255,18 @@ export const PotentialCocktailsPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create cocktail');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create cocktail');
       }
 
       // Update the status of the cocktail in the list
-      setCocktails(cocktails.map(cocktail => 
-        cocktail.id === updatedCocktail.id 
+      setCocktails(prevCocktails => 
+        prevCocktails.map(cocktail => 
+          cocktail.paperlessId === updatedCocktail.paperlessId
           ? { ...cocktail, status: 'active' }
           : cocktail
-      ));
+        )
+      );
 
       setSnackbar({
         open: true,

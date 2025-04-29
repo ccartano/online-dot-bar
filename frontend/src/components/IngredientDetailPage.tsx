@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, List, ListItem, styled } from '@mui/material';
 import { Ingredient } from '../types/ingredient.types';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
 import { fetchIngredientBySlug } from '../services/ingredient.service';
 import { fetchCocktailsByIngredient } from '../services/cocktail.service';
 import { DocumentTitle } from './DocumentTitle';
@@ -12,6 +12,7 @@ import { LoadingState } from './LoadingState';
 import { TitleSection } from './TitleSection';
 import { DescriptionSection } from './DescriptionSection';
 import { IngredientList } from './IngredientList';
+import { getIngredientTypeLabel } from '../utils/ingredientUtils';
 
 const StyledLink = styled(Box)({
   position: 'relative',
@@ -105,8 +106,8 @@ export const IngredientDetailPage: React.FC = () => {
                   ingredient: {
                     id: ingredient.id,
                     slug: ingredient.slug,
-                    name: ingredient.type.replace(/_/g, ' '),
-                    type: ingredient.type
+                    name: getIngredientTypeLabel(ingredient.type),
+                    description: ingredient.description || undefined
                   },
                   order: 0
                 }]}

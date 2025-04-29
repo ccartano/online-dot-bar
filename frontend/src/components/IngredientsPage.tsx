@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Box } from '@mui/material';
-import { Ingredient, IngredientType } from '../types/ingredient.types';
-import { FilterSidebar } from './FilterSidebar';
+import { Ingredient } from '../types/ingredient.types';
+import { FilterSidebar, FilterSection } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
 import { LoadingState } from './LoadingState';
 import { getIngredientTypeLabel } from '../utils/ingredientUtils';
 import { SEO } from './SEO';
 import { DocumentTitle } from './DocumentTitle';
+import { IngredientType } from '../utils/constants';
 
 // Move this outside the component to prevent recreation
 const capitalizeWords = (str: string): string => {
@@ -57,10 +58,10 @@ export const IngredientsPage: React.FC = () => {
   }, []);
 
   // Memoize filter sections to prevent unnecessary recalculations
-  const filterSections = useMemo(() => [
+  const filterSections: FilterSection[] = useMemo(() => [
     {
       title: 'Ingredient Type',
-      options: Object.values(IngredientType).map(type => ({
+      options: (Object.values(IngredientType) as IngredientType[]).map(type => ({
         id: type,
         label: getIngredientTypeLabel(type),
         checked: selectedTypes.includes(type),

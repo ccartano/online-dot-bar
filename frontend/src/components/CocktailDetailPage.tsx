@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
-import { Cocktail } from '../services/cocktail.service';
+import { CocktailDetailData } from '../types/cocktail.types';
 import { fetchCocktailBySlug } from '../services/cocktail.service';
 import { DocumentTitle } from './DocumentTitle';
 import { SEO } from './SEO';
@@ -12,13 +12,6 @@ import { TitleSection } from './TitleSection';
 import { DescriptionSection } from './DescriptionSection';
 import { RelatedItemsList } from './RelatedItemsList';
 
-// Define type for the API response
-interface CocktailDetailData {
-  cocktail: Cocktail;
-  potentialAkas: { id: number; name: string; slug?: string }[];
-  potentialVariations: { id: number; name: string; slug?: string }[];
-}
-
 export const CocktailDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [cocktailData, setCocktailData] = useState<CocktailDetailData | null>(null);
@@ -28,12 +21,8 @@ export const CocktailDetailPage: React.FC = () => {
   useEffect(() => {
     const fetchCocktail = async () => {
       try {
-        const cocktail = await fetchCocktailBySlug(slug || '');
-        setCocktailData({
-          cocktail,
-          potentialAkas: [], // These will be populated by the backend
-          potentialVariations: [], // These will be populated by the backend
-        });
+        const data = await fetchCocktailBySlug(slug || '');
+        setCocktailData(data);
       } catch {
         setError('Cocktail not found');
       } finally {
@@ -81,17 +70,29 @@ export const CocktailDetailPage: React.FC = () => {
               content={cocktailData.cocktail.instructions}
             />
 
-            <RelatedItemsList 
-              title="Also Known As"
-              items={cocktailData.potentialAkas}
-              basePath="/cocktails"
-            />
+            {cocktailData.potentialAkas.length > 0 && (
+              <RelatedItemsList 
+                title="Also Known As"
+                items={cocktailData.potentialAkas.map((aka: { id: number; name: string; slug?: string }) => ({
+                  id: aka.id,
+                  name: aka.name,
+                  slug: aka.slug || ''
+                }))}
+                basePath="/cocktails"
+              />
+            )}
 
-            <RelatedItemsList 
-              title="Variations"
-              items={cocktailData.potentialVariations}
-              basePath="/cocktails"
-            />
+            {cocktailData.variations.length > 0 && (
+              <RelatedItemsList 
+                title="Variations"
+                items={cocktailData.variations.map((v: { id: number; name: string; slug?: string }) => ({
+                  id: v.id,
+                  name: v.name,
+                  slug: v.slug || ''
+                }))}
+                basePath="/cocktails"
+              />
+            )}
           </Box>
         </>
       )}

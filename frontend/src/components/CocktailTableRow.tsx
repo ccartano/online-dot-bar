@@ -11,7 +11,7 @@ import {
   useTheme,
 } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
 import { GlassType } from '../types/glass.types';
 import { CocktailEditForm } from './CocktailEditForm';
 

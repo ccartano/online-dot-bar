@@ -9,7 +9,7 @@ import {
   CircularProgress,
   Typography,
 } from '@mui/material';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
 
 interface ThumbnailViewDialogProps {
   open: boolean;

@@ -1,6 +1,6 @@
 import { Box, List, ListItem, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
 import { formatAmountAndUnit, formatIngredientName } from '../utils/ingredientFormatting';
 
 interface IngredientListProps {
@@ -63,10 +63,10 @@ export const IngredientList: React.FC<IngredientListProps> = ({ ingredients, gla
                       alignItems: 'center',
                       fontSize: '1.25rem'
                     }}>
-                      {formattedAmount ? `${formattedAmount.amount} ${formattedAmount.unit}` : ''}
-                    </Typography>
+                    {formattedAmount}
+                  </Typography>
                 )}
-                {(customLabel || formattedAmount) && (
+                {((customLabel || formattedAmount) && (formattedAmount || customLabel)) && (
                   <Box sx={{ 
                     flex: 1,
                     color: '#ccc',

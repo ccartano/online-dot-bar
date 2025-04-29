@@ -3,7 +3,7 @@ import { Box, Button, Snackbar, Alert, Dialog, DialogActions, DialogContent, Dia
 import { AdminLogin } from './AdminLogin';
 import { AdminService } from '../services/admin.service';
 import { CocktailTable } from './CocktailTable';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
 import { getApiUrl } from '../config/api.config';
 import { GlassType } from '../types/glass.types';
 import { PotentialCocktailsPage } from './PotentialCocktailsPage';

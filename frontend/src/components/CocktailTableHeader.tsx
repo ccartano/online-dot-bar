@@ -7,12 +7,14 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
 
 interface HeadCell {
   id: keyof Cocktail | string;
   label: string;
   width?: string;
+  numeric?: boolean;
+  disablePadding?: boolean;
 }
 
 interface CocktailTableHeaderProps {
@@ -36,7 +38,7 @@ export const CocktailTableHeader: React.FC<CocktailTableHeaderProps> = ({
       <TableRow>
         {headCells.map((headCell) => (
           <TableCell
-            key={headCell.id}
+            key={headCell.id.toString()}
             width={headCell.width || 'auto'}
             sx={{
               padding: isMobile ? '8px' : '16px',
@@ -45,6 +47,8 @@ export const CocktailTableHeader: React.FC<CocktailTableHeaderProps> = ({
               borderBottom: '1px solid',
               borderColor: 'divider',
             }}
+            align={headCell.numeric ? 'right' : 'left'}
+            padding={headCell.disablePadding ? 'none' : 'normal'}
           >
             <Typography
               variant={isMobile ? "body2" : "subtitle2"}

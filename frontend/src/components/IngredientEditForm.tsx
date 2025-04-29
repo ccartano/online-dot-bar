@@ -11,13 +11,14 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import { Ingredient, IngredientType } from '../types/ingredient.types';
+import { Ingredient } from '../types/ingredient.types';
+import { IngredientType } from '../utils/constants';
 
 interface IngredientEditFormProps {
   ingredient: Ingredient;
-  onSave: (updatedIngredient: Partial<Ingredient>) => Promise<void>; // Made async
+  onSave: (updatedIngredient: Partial<Ingredient>) => Promise<void>;
   onCancel: () => void;
-  isSaving?: boolean; // Optional prop to show saving state
+  isSaving?: boolean;
   isMobile?: boolean;
 }
 
@@ -45,10 +46,10 @@ export const IngredientEditForm: React.FC<IngredientEditFormProps> = ({
 
   const handleSave = async () => {
     const updatedData: Partial<Ingredient> = {
-      name,
-      description: description.trim() === '' ? null : description.trim(),
+      name: name.trim(),
+      description: description.trim() === '' ? undefined : description.trim(),
       type,
-      imageUrl: imageUrl.trim() === '' ? null : imageUrl.trim(),
+      imageUrl: imageUrl.trim() === '' ? undefined : imageUrl.trim(),
     };
     await onSave(updatedData);
   };

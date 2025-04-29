@@ -3,7 +3,7 @@ import { Box, IconButton, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { Icon } from '@mdi/react';
 import { mdiPencil } from '@mdi/js';
-import { Cocktail } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
 import { AdminService } from '../services/admin.service';
 
 interface CocktailCardProps {

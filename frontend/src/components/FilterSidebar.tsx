@@ -9,7 +9,7 @@ interface FilterOption {
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-interface FilterSection {
+export interface FilterSection {
   title: string;
   options: FilterOption[];
 }

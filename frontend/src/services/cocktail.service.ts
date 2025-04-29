@@ -1,75 +1,6 @@
 import { getApiUrl } from '../config/api.config';
 import { AdminService } from './admin.service';
-
-export interface GlassType {
-  id: number;
-  name: string;
-  icon: string;
-  description?: string;
-}
-
-export interface Category {
-  id: number;
-  name: string;
-  description?: string;
-}
-
-export enum MeasurementUnit {
-  OZ = 'oz',
-  ML = 'ml',
-  DASH = 'dash',
-  DROP = 'drop',
-  PIECE = 'piece',
-  TSP = 'tsp',
-  TBSP = 'tbsp',
-  PINCH = 'pinch',
-  TWIST = 'twist',
-  WEDGE = 'wedge',
-  SPRIG = 'sprig',
-  SLICE = 'slice',
-  OTHER = 'other'
-}
-
-export interface Ingredient {
-  id: number;
-  name: string;
-  slug?: string;
-  type?: string;
-  description?: string;
-  imageUrl?: string;
-}
-
-export interface CocktailIngredient {
-  id?: number;
-  ingredient: Ingredient;
-  amount?: number;
-  unit?: MeasurementUnit;
-  notes?: string;
-  order: number;
-}
-
-export interface Cocktail {
-  id: number;
-  name: string;
-  slug: string;
-  description?: string | null;
-  instructions?: string;
-  imageUrl?: string | null;
-  paperlessId?: number | null;
-  source?: string | null;
-  glassTypeId?: number | null;
-  glassType?: GlassType;
-  categoryId?: number | null;
-  category?: Category;
-  createdAt?: string;
-  created?: string;
-  updatedAt: string;
-  ingredients: CocktailIngredient[];
-  variationSignature?: string;
-  akaSignature?: string;
-  status: 'active' | 'pending';
-  tags?: string[];
-}
+import { Cocktail, CocktailDetailData } from '../types/cocktail.types';
 
 export const cocktailService = {
   async getAllCocktails(): Promise<Cocktail[]> {
@@ -142,7 +73,7 @@ export const fetchCocktails = async (): Promise<Cocktail[]> => {
 };
 
 // Fetch a single cocktail by slug
-export const fetchCocktailBySlug = async (slug: string): Promise<Cocktail> => {
+export const fetchCocktailBySlug = async (slug: string): Promise<CocktailDetailData> => {
   const response = await fetch(getApiUrl(`/cocktails/by-slug/${slug}`));
   if (!response.ok) {
     throw new Error('Failed to fetch cocktail');
@@ -160,6 +91,15 @@ export const fetchCocktailsByIngredient = async (
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch cocktails by ingredient`);
+  }
+  return response.json();
+};
+
+// Fetch detailed cocktail data by slug including variations
+export const fetchCocktailDetailBySlug = async (slug: string): Promise<CocktailDetailData> => {
+  const response = await fetch(getApiUrl(`/cocktails/by-slug/${slug}/detail`));
+  if (!response.ok) {
+    throw new Error('Failed to fetch cocktail details');
   }
   return response.json();
 };

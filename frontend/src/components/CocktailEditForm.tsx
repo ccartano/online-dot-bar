@@ -25,8 +25,8 @@ import {
 import { Add, Delete } from '@mui/icons-material';
 import { Icon } from '@mdi/react';
 import { mdiGlassCocktail } from '@mdi/js';
-import { Cocktail, CocktailIngredient, MeasurementUnit } from '../services/cocktail.service';
-import { GlassType } from '../types/glass.types';
+import { Cocktail, CocktailIngredient, GlassType } from '../types/cocktail.types';
+import { MeasurementUnit } from '../utils/constants';
 
 interface CocktailEditFormProps {
   initialCocktail: Cocktail;
@@ -87,11 +87,11 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
   }, [initialCocktail.id]);
 
   const handleInputChange = (field: keyof Cocktail, value: Cocktail[keyof Cocktail] | number | null) => {
-    setEditingCocktail(prev => ({ ...prev!, [field]: value }));
+    setEditingCocktail((prev: Cocktail) => ({ ...prev!, [field]: value }));
   };
 
   const handleIngredientChange = (index: number, field: keyof CocktailIngredient | 'ingredient.name', value: string | number | MeasurementUnit | undefined) => {
-    setEditingCocktail(prev => {
+    setEditingCocktail((prev: Cocktail) => {
       if (!prev) return prev;
       const newIngredients = [...prev.ingredients];
       const currentIngredientItem = newIngredients[index];
@@ -167,7 +167,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
           slug: generateSlug(newIngredient.ingredient.name.trim())
         },
       };
-      setEditingCocktail(prev => ({
+      setEditingCocktail((prev: Cocktail) => ({
         ...prev!,
         ingredients: [...prev!.ingredients, newCocktailIngredient],
       }));
@@ -182,9 +182,9 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
   };
 
   const handleRemoveIngredient = (index: number) => {
-    setEditingCocktail(prev => ({
+    setEditingCocktail((prev: Cocktail) => ({
       ...prev!,
-      ingredients: prev!.ingredients.filter((_, i) => i !== index),
+      ingredients: prev!.ingredients.filter((_: CocktailIngredient, i: number) => i !== index),
     }));
   };
 
@@ -305,7 +305,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
           {isMobileView ? (
             // Mobile view - Stack layout
             <Stack spacing={1} sx={{ mb: 2 }}>
-              {editingCocktail.ingredients.map((ingredient, index) => (
+              {editingCocktail.ingredients.map((ingredient: CocktailIngredient, index: number) => (
                 <Paper key={`${ingredient.ingredient.name}-${index}`} 
                   sx={{ 
                     p: 1.5,
@@ -347,7 +347,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                       />
                       <FormControl size="small" sx={{ width: '60%' }}>
                         <Select
-                          value={ingredient.unit || ''}
+                          value={ingredient.unit as string}
                           onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
                           displayEmpty
                         >
@@ -355,8 +355,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                             <em>Select unit</em>
                           </MenuItem>
                           {Object.values(MeasurementUnit).map((unit) => (
-                            <MenuItem key={unit} value={unit}>
-                              {unit}
+                            <MenuItem key={unit as string} value={unit as string}>
+                              {unit as string}
                             </MenuItem>
                           ))}
                         </Select>
@@ -379,7 +379,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {editingCocktail.ingredients.map((ingredient, index) => (
+                  {editingCocktail.ingredients.map((ingredient: CocktailIngredient, index: number) => (
                     <TableRow key={`${ingredient.ingredient.name}-${index}`} hover>
                       <TableCell>
                         <TextField
@@ -394,7 +394,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                       <TableCell>
                         <FormControl size="small" fullWidth>
                           <Select
-                            value={ingredient.unit || ''}
+                            value={ingredient.unit as string}
                             onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
                             displayEmpty
                           >
@@ -402,8 +402,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                               <em>Select unit</em>
                             </MenuItem>
                             {Object.values(MeasurementUnit).map((unit) => (
-                              <MenuItem key={unit} value={unit}>
-                                {unit}
+                              <MenuItem key={unit as string} value={unit as string}>
+                                {unit as string}
                               </MenuItem>
                             ))}
                           </Select>
@@ -459,7 +459,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                 />
                 <FormControl size="small" sx={{ width: '60%' }}>
                   <Select
-                    value={newIngredient.unit || ''}
+                    value={newIngredient.unit as string}
                     onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value as MeasurementUnit }))}
                     displayEmpty
                   >
@@ -467,8 +467,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                       <em>Select unit</em>
                     </MenuItem>
                     {Object.values(MeasurementUnit).map((unit) => (
-                      <MenuItem key={unit} value={unit}>
-                        {unit}
+                      <MenuItem key={unit as string} value={unit as string}>
+                        {unit as string}
                       </MenuItem>
                     ))}
                   </Select>
@@ -498,7 +498,7 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
               />
               <FormControl size="small" sx={{ width: '120px' }}>
                 <Select
-                  value={newIngredient.unit || ''}
+                  value={newIngredient.unit as string}
                   onChange={(e) => setNewIngredient(prev => ({ ...prev, unit: e.target.value as MeasurementUnit }))}
                   displayEmpty
                 >
@@ -506,8 +506,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                     <em>Select unit</em>
                   </MenuItem>
                   {Object.values(MeasurementUnit).map((unit) => (
-                    <MenuItem key={unit} value={unit}>
-                      {unit}
+                    <MenuItem key={unit as string} value={unit as string}>
+                      {unit as string}
                     </MenuItem>
                   ))}
                 </Select>

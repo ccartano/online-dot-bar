@@ -33,11 +33,12 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { Edit, Delete } from '@mui/icons-material';
-import { Ingredient, IngredientType } from '../types/ingredient.types';
+import { Ingredient } from '../types/ingredient.types';
+import { IngredientType, INGREDIENT_TYPE_LABELS } from '../utils/constants';
 import { IngredientEditForm } from './IngredientEditForm';
 import { updateIngredient, deleteIngredient } from '../services/ingredient.service';
 import SearchIcon from '@mui/icons-material/Search';
-import { getIngredientTypeLabel, formatIngredientType } from '../utils/ingredientUtils';
+import { formatIngredientType } from '../utils/ingredientUtils';
 
 type Order = 'asc' | 'desc';
 
@@ -274,8 +275,8 @@ export const IngredientAdminTable: React.FC<IngredientAdminTableProps> = ({
           >
             <MenuItem value="all">All Types</MenuItem>
             {Object.values(IngredientType).map((type) => (
-              <MenuItem key={type} value={type}>
-                {getIngredientTypeLabel(type)}
+              <MenuItem key={type.toString()} value={type}>
+                {INGREDIENT_TYPE_LABELS[type]}
               </MenuItem>
             ))}
           </Select>

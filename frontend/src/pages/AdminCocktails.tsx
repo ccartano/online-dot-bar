@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Cocktail, cocktailService } from '../services/cocktail.service';
+import { Cocktail } from '../types/cocktail.types';
+import { cocktailService } from '../services/cocktail.service';
 import { GlassType } from '../types/glass.types';
 import { CocktailEditForm } from '../components/CocktailEditForm';
 import './AdminCocktails.css';
