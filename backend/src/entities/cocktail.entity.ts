@@ -24,6 +24,19 @@ export class Cocktail {
   @Column({ unique: true })
   slug: string;
 
+  @Column({ type: 'enum', enum: ['active', 'pending'], default: 'active' })
+  status: 'active' | 'pending';
+
+  @Column({ nullable: true })
+  parentId: number;
+
+  @ManyToOne(() => Cocktail, (cocktail) => cocktail.variations, { nullable: true })
+  @JoinColumn({ name: 'parentId' })
+  parent: Cocktail;
+
+  @OneToMany(() => Cocktail, (cocktail) => cocktail.parent)
+  variations: Cocktail[];
+
   // Optional description of the cocktail
   @Column({ nullable: true })
   description: string;

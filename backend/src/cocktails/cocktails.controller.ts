@@ -58,22 +58,67 @@ export class CocktailsController {
     );
   }
 
-  @Get(':id')
-  findOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): ReturnType<CocktailsService['findOne']> {
-    return this.cocktailsService.findOne(id);
-  }
-
   @Get('by-slug/:slug')
-  findBySlug(@Param('slug') slug: string): Promise<Cocktail> {
-    return this.cocktailsService.findBySlug(slug);
+  async findBySlug(@Param('slug') slug: string): Promise<ReturnType<CocktailsService['findOne']>> {
+    const cocktail = await this.cocktailsService.findBySlug(slug);
+    
+    // If this is a variation (has a parent), get the parent's data
+    if (cocktail.parentId) {
+      const parentCocktail = await this.cocktailsService.findOne(cocktail.parentId);
+      
+      // Capitalize the parent cocktail name
+      const capitalizedParent = {
+        ...parentCocktail.cocktail,
+        name: parentCocktail.cocktail.name
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ')
+      };
+      
+      // Capitalize all variation names
+      const capitalizedVariations = parentCocktail.variations
+        .filter(v => v.id !== cocktail.id)
+        .map(v => ({
+          ...v,
+          name: v.name
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ')
+        }));
+      
+      return {
+        cocktail,
+        potentialAkas: parentCocktail.potentialAkas,
+        potentialVariations: parentCocktail.potentialVariations,
+        variations: [
+          capitalizedParent,
+          ...capitalizedVariations
+        ]
+      };
+    }
+    
+    // If this is a parent, get its variations
+    const parentData = await this.cocktailsService.findOne(cocktail.id);
+    
+    // Capitalize all variation names
+    const capitalizedVariations = parentData.variations.map(v => ({
+      ...v,
+      name: v.name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
+    }));
+    
+    return {
+      ...parentData,
+      variations: capitalizedVariations
+    };
   }
 
   @Post()
   @UseGuards(AdminGuard)
   create(@Body() createCocktailDto: CreateCocktailDto): Promise<Cocktail> {
-    return this.cocktailsService.create(createCocktailDto);
+    return this.cocktailsService.createWithDuplicateCheck(createCocktailDto);
   }
 
   @Put(':id')

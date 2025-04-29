@@ -9,21 +9,26 @@ import {
 import { Cocktail } from './cocktail.entity';
 import { Ingredient } from './ingredient.entity';
 
-// Enum for different measurement units
-export enum MeasurementUnit {
-  OZ = 'oz', // ounces
-  ML = 'ml', // milliliters
-  DASH = 'dash', // for bitters
-  PINCH = 'pinch', // for small amounts
-  PIECE = 'piece', // for garnishes
-  SLICE = 'slice', // for fruit slices
-  SPRIG = 'sprig', // for herbs
-  TWIST = 'twist', // for citrus twists
-  WEDGE = 'wedge', // for fruit wedges
-  TSP = 'tsp', // teaspoon
-  TBSP = 'tbsp', // tablespoon
-  OTHER = 'other', // for anything else
-}
+// Valid measurement units
+export const MEASUREMENT_UNITS = [
+  'oz', // ounces
+  'ml', // milliliters
+  'dash', // for bitters
+  'pinch', // for small amounts
+  'piece', // for garnishes
+  'slice', // for fruit slices
+  'sprig', // for herbs
+  'twist', // for citrus twists
+  'wedge', // for fruit wedges
+  'tsp', // teaspoon
+  'tbsp', // tablespoon
+  'splash', // for small liquid amounts
+  'part', // for proportional measurements
+  'to taste', // for ingredients that should be added according to personal preference
+  'other' // for anything else
+] as const;
+
+export type MeasurementUnit = typeof MEASUREMENT_UNITS[number];
 
 @Entity()
 export class CocktailIngredient {
@@ -71,7 +76,7 @@ export class CocktailIngredient {
    */
   static parseIngredientString(ingredientString: string): {
     amount: number;
-    unit: MeasurementUnit;
+    unit: string;
     ingredientName: string;
   } {
     // Remove any parenthetical conversions
@@ -99,23 +104,25 @@ export class CocktailIngredient {
       amount = Number(amountStr);
     }
 
-    // Map unit string to MeasurementUnit enum
-    const unitMap: Record<string, MeasurementUnit> = {
-      oz: MeasurementUnit.OZ,
-      dash: MeasurementUnit.DASH,
-      dashes: MeasurementUnit.DASH,
-      ml: MeasurementUnit.ML,
-      pinch: MeasurementUnit.PINCH,
-      piece: MeasurementUnit.PIECE,
-      slice: MeasurementUnit.SLICE,
-      sprig: MeasurementUnit.SPRIG,
-      twist: MeasurementUnit.TWIST,
-      wedge: MeasurementUnit.WEDGE,
-      tsp: MeasurementUnit.TSP,
-      tbsp: MeasurementUnit.TBSP,
+    // Map unit string to valid measurement unit
+    const unitMap: Record<string, string> = {
+      oz: 'oz',
+      dash: 'dash',
+      dashes: 'dash',
+      ml: 'ml',
+      pinch: 'pinch',
+      piece: 'piece',
+      slice: 'slice',
+      sprig: 'sprig',
+      twist: 'twist',
+      wedge: 'wedge',
+      tsp: 'tsp',
+      tbsp: 'tbsp',
+      part: 'part',
+      'to taste': 'to taste'
     };
 
-    const unit = unitMap[unitStr.toLowerCase()] || MeasurementUnit.OTHER;
+    const unit = unitMap[unitStr.toLowerCase()] || 'other';
 
     // Get the ingredient name (everything after the measurement)
     const ingredientName = withoutConversions

@@ -55,6 +55,18 @@ export class CreateCocktailDto {
   @IsOptional()
   categoryId?: number;
 
+  @IsNumber()
+  @IsOptional()
+  parentId?: number;
+
+  @IsString()
+  @IsOptional()
+  status?: 'active' | 'pending';
+
+  @IsString()
+  @IsOptional()
+  source?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CocktailIngredientDto)

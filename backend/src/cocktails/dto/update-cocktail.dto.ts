@@ -33,6 +33,10 @@ export class UpdateCocktailDto {
 
   @IsOptional()
   @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
   instructions?: string;
 
   @IsOptional()
@@ -46,6 +50,10 @@ export class UpdateCocktailDto {
   @IsOptional()
   @IsNumber()
   categoryId?: number;
+
+  @IsOptional()
+  @IsString()
+  source?: string;
 
   @IsOptional()
   @IsArray()
