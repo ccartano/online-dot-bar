@@ -18,7 +18,7 @@ export class Cocktail {
   id: number;
 
   // Name of the cocktail
-  @Column({ unique: true })
+  @Column()
   name: string;
 
   @Column({ unique: true })

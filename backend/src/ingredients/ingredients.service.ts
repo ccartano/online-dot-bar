@@ -96,6 +96,15 @@ export class IngredientsService {
         .replace(/(^-|-$)/g, '');
     }
 
+    // Check if ingredient already exists by slug
+    const existingIngredient = await this.ingredientsRepository.findOne({
+      where: { slug: ingredient.slug }
+    });
+
+    if (existingIngredient) {
+      return existingIngredient;
+    }
+
     const newIngredient = this.ingredientsRepository.create(ingredient);
     const result = await this.ingredientsRepository.save(newIngredient);
     
