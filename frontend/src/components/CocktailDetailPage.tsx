@@ -40,10 +40,46 @@ export const CocktailDetailPage: React.FC = () => {
           <SEO 
             title={`${cocktailData.cocktail ? titleize(cocktailData.cocktail.name) : 'Cocktail'} Recipe - The Online.Bar`}
             description={cocktailData.cocktail?.description ? 
-              `${titleize(cocktailData.cocktail.name)}: ${cocktailData.cocktail.description}` : 
+              `${titleize(cocktailData.cocktail.name)}: ${cocktailData.cocktail.description}. Learn how to make this ${cocktailData.cocktail.category || 'cocktail'} with step-by-step instructions, ingredients, and measurements.` : 
               `Learn how to make the perfect ${cocktailData.cocktail.name}. Get ingredients, measurements, and step-by-step instructions for this ${cocktailData.cocktail.category || 'cocktail'}.`
             }
             image={cocktailData.cocktail.imageUrl || undefined}
+            canonicalUrl={`/cocktails/${cocktailData.cocktail.slug}`}
+            ogType="article"
+            twitterCard="summary_large_image"
+            additionalMetaTags={[
+              { name: 'keywords', content: `cocktail recipe, ${cocktailData.cocktail.name}, ${cocktailData.cocktail.category || 'cocktail'}, how to make ${cocktailData.cocktail.name}, cocktail ingredients` },
+              { name: 'author', content: 'The Online.Bar' },
+              { property: 'article:published_time', content: new Date().toISOString() },
+              { property: 'article:modified_time', content: new Date().toISOString() },
+              { property: 'article:section', content: 'Cocktail Recipes' },
+              { property: 'article:tag', content: String(cocktailData.cocktail.category || 'Cocktails') }
+            ]}
+            structuredData={{
+              '@context': 'https://schema.org',
+              '@type': 'Recipe',
+              name: titleize(cocktailData.cocktail.name),
+              description: cocktailData.cocktail.description,
+              image: cocktailData.cocktail.imageUrl,
+              recipeCategory: cocktailData.cocktail.category || 'Cocktail',
+              recipeCuisine: 'International',
+              prepTime: 'PT5M',
+              cookTime: 'PT5M',
+              totalTime: 'PT10M',
+              recipeYield: '1 serving',
+              recipeIngredient: cocktailData.cocktail.ingredients.map(ing => 
+                `${ing.amount} ${ing.unit} ${ing.ingredient.name}`
+              ),
+              recipeInstructions: cocktailData.cocktail.instructions ? 
+                cocktailData.cocktail.instructions.split('\n').map(step => ({
+                  '@type': 'HowToStep',
+                  text: step.trim()
+                })) : [],
+              author: {
+                '@type': 'Organization',
+                name: 'The Online.Bar'
+              }
+            }}
           />
           <DocumentTitle title={titleize(cocktailData.cocktail.name)} />
           <Box sx={{ 
