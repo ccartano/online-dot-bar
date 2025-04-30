@@ -1,127 +1,113 @@
-import { Cocktail } from '../types/cocktail.types';
-import { MeasurementUnit, REVERSE_FRACTION_MAP } from './constants';
+import { CocktailIngredient } from '../types/cocktail.types';
+import { MeasurementUnit, REVERSE_FRACTION_MAP, ML_TO_OZ_RATIO } from './constants';
 import { titleize } from './formatting';
 import { plural } from 'pluralize';
 
-// Map of units to their display formats
-const UNIT_DISPLAY_MAP: Record<MeasurementUnit, string> = {
-  [MeasurementUnit.OZ]: 'oz',
-  [MeasurementUnit.ML]: 'ml',
-  [MeasurementUnit.DASH]: 'dash',
-  [MeasurementUnit.PINCH]: 'pinch',
-  [MeasurementUnit.PIECE]: 'piece',
-  [MeasurementUnit.SLICE]: 'slice',
-  [MeasurementUnit.SPRIG]: 'sprig',
-  [MeasurementUnit.TWIST]: 'twist',
-  [MeasurementUnit.WEDGE]: 'wedge',
-  [MeasurementUnit.TSP]: 'tsp',
-  [MeasurementUnit.TBSP]: 'tbsp',
-  [MeasurementUnit.SPLASH]: 'splash',
-  [MeasurementUnit.PART]: 'part',
-  [MeasurementUnit.TO_TASTE]: 'to taste',
-  [MeasurementUnit.OTHER]: ''
+// Helper function to convert ML to OZ
+const convertMlToOz = (ml: number): number => {
+  // Convert to OZ and round to 1 decimal place
+  const oz = ml * ML_TO_OZ_RATIO;
+  // Round to nearest quarter (0.25) for cleaner fractions
+  return Math.round(oz * 4) / 4;
 };
 
 // Helper function to convert decimal to fraction
 const decimalToFraction = (decimal: number): string => {
-  const fraction = REVERSE_FRACTION_MAP[decimal.toFixed(3)];
-  return fraction || decimal.toString();
+  // First try exact matches with decimal point
+  const decimalStr = decimal.toString();
+  const fraction = REVERSE_FRACTION_MAP[decimalStr];
+  if (fraction) return fraction;
+
+  // Then try with decimal point removed
+  const fractionWithoutPoint = REVERSE_FRACTION_MAP[decimalStr.replace('0.', '.')];
+  if (fractionWithoutPoint) return fractionWithoutPoint;
+
+  // Then try with 3 decimal places
+  const decimalStr3 = decimal.toFixed(3);
+  const fraction3 = REVERSE_FRACTION_MAP[decimalStr3];
+  if (fraction3) return fraction3;
+
+  // If no match, return the decimal
+  return decimal.toString();
 };
 
 // Helper function to format amount
 const formatAmount = (amount: number): string => {
   if (amount === 0.25) return '%';
   if (Number.isInteger(amount)) return amount.toString();
+  
+  // Handle mixed numbers (e.g., 1.5 -> 1½)
+  const whole = Math.floor(amount);
+  const fraction = amount - whole;
+  
+  // If we have a whole number and a fraction
+  if (whole > 0 && fraction > 0) {
+    const fractionStr = decimalToFraction(fraction);
+    return `${whole}${fractionStr}`;
+  }
+  
+  // If it's just a fraction
   return decimalToFraction(amount);
 };
 
 // Helper function to format unit
 const formatUnit = (unit: MeasurementUnit, amount: number): string => {
-  const baseUnit = UNIT_DISPLAY_MAP[unit];
-  if (!baseUnit) return '';
+  // Don't display "OTHER" unit type (case-insensitive)
+  if (unit.toLowerCase() === MeasurementUnit.OTHER.toLowerCase()) return '';
   
   // Handle pluralization for all units except "to taste"
   if (amount > 1 && unit !== MeasurementUnit.TO_TASTE) {
-    return plural(baseUnit);
+    return plural(unit);
   }
   
-  return baseUnit;
+  return unit;
 };
 
-export const formatAmountAndUnit = (ingredient: Cocktail['ingredients'][0]) => {
+export const formatAmountAndUnit = (ingredient: CocktailIngredient) => {
+  // Don't display anything for OTHER unit type
+  if (ingredient.unit?.toLowerCase() === MeasurementUnit.OTHER.toLowerCase()) return '';
+  
   if (!ingredient.amount && !ingredient.unit) return '';
   if (!ingredient.unit) return ingredient.amount?.toString() || '';
-  if (!ingredient.amount) return ingredient.unit;
+  
+  // For units like OZ, don't display if there's no amount
+  if (!ingredient.amount && [
+    MeasurementUnit.OZ,
+    MeasurementUnit.ML,
+    MeasurementUnit.TSP,
+    MeasurementUnit.TBSP,
+    MeasurementUnit.PIECE
+  ].includes(ingredient.unit.toLowerCase() as MeasurementUnit)) {
+    return '';
+  }
+  
+  if (!ingredient.amount) return ingredient.unit.toLowerCase();
 
-  const formattedAmount = formatAmount(ingredient.amount);
-  const formattedUnit = formatUnit(ingredient.unit, ingredient.amount);
+  // Ensure amount is a number before processing
+  const amount = Number(ingredient.amount);
+  if (isNaN(amount)) return ingredient.unit.toLowerCase();
+
+  // Normalize unit case
+  const normalizedUnit = ingredient.unit.toLowerCase() as MeasurementUnit;
+
+  // Convert ML to OZ if needed
+  let displayAmount = amount;
+  let displayUnit = normalizedUnit;
+  
+  if (normalizedUnit === MeasurementUnit.ML) {
+    displayAmount = convertMlToOz(amount);
+    displayUnit = MeasurementUnit.OZ;
+  }
+
+  const formattedAmount = formatAmount(displayAmount);
+  const formattedUnit = formatUnit(displayUnit, displayAmount).toLowerCase();
 
   return `${formattedAmount} ${formattedUnit}`.trim();
 };
 
-export const formatIngredientName = (ingredient: Cocktail['ingredients'][0]) => {
+export const formatIngredientName = (ingredient: CocktailIngredient) => {
   if (!ingredient.ingredient) {
     return '';
   }
   return titleize(ingredient.ingredient.name);
-};
-
-export const parseIngredientString = (ingredientString: string): {
-  amount: number;
-  unit: MeasurementUnit;
-  ingredientName: string;
-} => {
-  // Remove any parenthetical conversions
-  const withoutConversions = ingredientString.replace(/\s*\([^)]*\)\s*/, ' ');
-
-  // Match the measurement part (e.g., "2 oz.", "1/2 oz.", "2 dashes")
-  const measurementMatch = withoutConversions.match(/^([\d/%]+)\s+([a-zA-Z]+)/);
-
-  if (!measurementMatch) {
-    throw new Error(`Invalid ingredient format: ${ingredientString}`);
-  }
-
-  const [, amountStr, unitStr] = measurementMatch;
-
-  // Convert amount string to number
-  let amount: number;
-  if (amountStr.includes('/')) {
-    const [numerator, denominator] = amountStr.split('/').map(Number);
-    amount = numerator / denominator;
-  } else if (amountStr === '%') {
-    amount = 0.25;
-  } else {
-    amount = Number(amountStr);
-  }
-
-  // Map unit string to MeasurementUnit
-  const unitMap: Record<string, MeasurementUnit> = {
-    oz: MeasurementUnit.OZ,
-    dash: MeasurementUnit.DASH,
-    dashes: MeasurementUnit.DASH,
-    ml: MeasurementUnit.ML,
-    pinch: MeasurementUnit.PINCH,
-    piece: MeasurementUnit.PIECE,
-    slice: MeasurementUnit.SLICE,
-    sprig: MeasurementUnit.SPRIG,
-    twist: MeasurementUnit.TWIST,
-    wedge: MeasurementUnit.WEDGE,
-    tsp: MeasurementUnit.TSP,
-    tbsp: MeasurementUnit.TBSP,
-    part: MeasurementUnit.PART,
-    'to taste': MeasurementUnit.TO_TASTE
-  };
-
-  const unit = unitMap[unitStr.toLowerCase()] || MeasurementUnit.OTHER;
-
-  // Get the ingredient name (everything after the measurement)
-  const ingredientName = withoutConversions
-    .replace(/^[\d/%]+\s+[a-zA-Z]+\.?\s*/, '')
-    .trim();
-
-  return {
-    amount,
-    unit,
-    ingredientName,
-  };
 }; 

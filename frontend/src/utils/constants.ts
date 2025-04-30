@@ -51,7 +51,9 @@ export enum MeasurementUnit {
   SPLASH = 'splash', // for small liquid amounts
   PART = 'part', // for proportional measurements
   TO_TASTE = 'to taste', // for ingredients that should be added according to personal preference
-  OTHER = 'other' // for anything else
+  WHOLE = 'whole', // for whole fruits/items
+  OTHER = 'other', // for anything else
+  DROP = 'drop',
 } 
 
 export enum IngredientType {
