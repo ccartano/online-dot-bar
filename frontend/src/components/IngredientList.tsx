@@ -49,7 +49,7 @@ export const IngredientList: React.FC<IngredientListProps> = ({ ingredients, gla
                       minWidth: 'fit-content',
                       display: 'flex',
                       alignItems: 'center',
-                      fontSize: '1.25rem'
+                      fontSize: '1rem'
                     }}>
                     {customLabel}
                   </Typography>
@@ -60,9 +60,9 @@ export const IngredientList: React.FC<IngredientListProps> = ({ ingredients, gla
                     sx={{ 
                       minWidth: 'fit-content',
                       display: 'flex',
-                      alignItems: 'center',
-                      fontSize: '1.25rem'
-                    }}>
+                      fontSize: ingredient.unit?.toLowerCase() === 'dash' ? '1rem' : undefined
+                    }}
+                  >
                     {formattedAmount}
                   </Typography>
                 )}

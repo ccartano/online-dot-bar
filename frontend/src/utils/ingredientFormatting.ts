@@ -52,55 +52,59 @@ const formatAmount = (amount: number): string => {
 
 // Helper function to format unit
 const formatUnit = (unit: MeasurementUnit, amount: number): string => {
-  // Don't display "OTHER" unit type (case-insensitive)
-  if (unit.toLowerCase() === MeasurementUnit.OTHER.toLowerCase()) return '';
+  const normalizedUnit = unit.toLowerCase();
+  
+  // Don't display "OTHER" unit type
+  if (normalizedUnit === MeasurementUnit.OTHER.toLowerCase()) return '';
   
   // Handle pluralization for all units except "to taste"
-  if (amount > 1 && unit !== MeasurementUnit.TO_TASTE) {
-    return plural(unit);
+  if (amount > 1 && normalizedUnit !== MeasurementUnit.TO_TASTE.toLowerCase()) {
+    return plural(titleize(unit));
   }
   
-  return unit;
+  return titleize(unit);
 };
 
 export const formatAmountAndUnit = (ingredient: CocktailIngredient) => {
+  const normalizedUnit = ingredient.unit?.toLowerCase() ?? '';
+  
   // Don't display anything for OTHER unit type
-  if (ingredient.unit?.toLowerCase() === MeasurementUnit.OTHER.toLowerCase()) return '';
+  if (normalizedUnit === MeasurementUnit.OTHER.toLowerCase()) return '';
+  
+  // Don't display amount/unit for Slice with no amount
+  if (normalizedUnit === MeasurementUnit.SLICE.toLowerCase() && !ingredient.amount) return '';
   
   if (!ingredient.amount && !ingredient.unit) return '';
   if (!ingredient.unit) return ingredient.amount?.toString() || '';
   
   // For units like OZ, don't display if there's no amount
   if (!ingredient.amount && [
-    MeasurementUnit.OZ,
-    MeasurementUnit.ML,
-    MeasurementUnit.TSP,
-    MeasurementUnit.TBSP,
-    MeasurementUnit.PIECE
-  ].includes(ingredient.unit.toLowerCase() as MeasurementUnit)) {
+    MeasurementUnit.OZ.toLowerCase(),
+    MeasurementUnit.ML.toLowerCase(),
+    MeasurementUnit.TSP.toLowerCase(),
+    MeasurementUnit.TBSP.toLowerCase(),
+    MeasurementUnit.PIECE.toLowerCase()
+  ].includes(normalizedUnit)) {
     return '';
   }
   
-  if (!ingredient.amount) return ingredient.unit.toLowerCase();
+  if (!ingredient.amount) return titleize(ingredient.unit);
 
   // Ensure amount is a number before processing
   const amount = Number(ingredient.amount);
-  if (isNaN(amount)) return ingredient.unit.toLowerCase();
-
-  // Normalize unit case
-  const normalizedUnit = ingredient.unit.toLowerCase() as MeasurementUnit;
+  if (isNaN(amount)) return titleize(ingredient.unit);
 
   // Convert ML to OZ if needed
   let displayAmount = amount;
-  let displayUnit = normalizedUnit;
+  let displayUnit = ingredient.unit;
   
-  if (normalizedUnit === MeasurementUnit.ML) {
+  if (normalizedUnit === MeasurementUnit.ML.toLowerCase()) {
     displayAmount = convertMlToOz(amount);
     displayUnit = MeasurementUnit.OZ;
   }
 
   const formattedAmount = formatAmount(displayAmount);
-  const formattedUnit = formatUnit(displayUnit, displayAmount).toLowerCase();
+  const formattedUnit = formatUnit(displayUnit, displayAmount);
 
   return `${formattedAmount} ${formattedUnit}`.trim();
 };
@@ -109,5 +113,14 @@ export const formatIngredientName = (ingredient: CocktailIngredient) => {
   if (!ingredient.ingredient) {
     return '';
   }
-  return titleize(ingredient.ingredient.name);
+  
+  const name = titleize(ingredient.ingredient.name);
+  const normalizedUnit = ingredient.unit?.toLowerCase();
+  
+  // Special case for Slice unit with no amount
+  if (normalizedUnit === MeasurementUnit.SLICE.toLowerCase() && !ingredient.amount) {
+    return `Slice of ${name}`;
+  }
+  
+  return name;
 }; 
