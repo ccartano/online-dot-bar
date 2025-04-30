@@ -75,12 +75,7 @@ export const IngredientDetailPage: React.FC = () => {
       {ingredient && (
         <>
           <SEO 
-            title={`${titleize(ingredient.name)} - The Online.Bar`}
-            description={ingredient.description ? 
-              `${ingredient.name}: ${ingredient.description}` : 
-              `Learn about ${ingredient.name} in cocktails. Discover its characteristics, common uses, and cocktail recipes that feature this ingredient.`
-            }
-            image={ingredient.imageUrl || undefined}
+            ingredient={ingredient}
           />
           <DocumentTitle title={titleize(ingredient.name)} />
           <Box sx={{ 
@@ -131,7 +126,6 @@ export const IngredientDetailPage: React.FC = () => {
                 content={""}
                 variant="h5"
                 sx={{
-                  fontFamily: 'Corinthia, cursive',
                   fontWeight: 700,
                   color: '#1a1a1a',
                   mb: 2
@@ -157,8 +151,7 @@ export const IngredientDetailPage: React.FC = () => {
                     >
                       <StyledLink>
                         <Box sx={{ 
-                          fontFamily: 'serif',
-                          fontSize: '1.1rem',
+                          fontSize: '1rem',
                           lineHeight: 1.5
                         }}>
                           {titleize(cocktail.name)}
