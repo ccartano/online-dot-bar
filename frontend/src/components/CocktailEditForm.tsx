@@ -27,6 +27,8 @@ import { Icon } from '@mdi/react';
 import { mdiGlassCocktail } from '@mdi/js';
 import { Cocktail, CocktailIngredient, GlassType } from '../types/cocktail.types';
 import { MeasurementUnit } from '../utils/constants';
+import { AdminService } from '../services/admin.service';
+import { getApiUrl } from '../config/api.config';
 
 interface CocktailEditFormProps {
   initialCocktail: Cocktail;
@@ -162,8 +164,8 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
         notes: newIngredient.notes,
         order: editingCocktail.ingredients.length + 1,
         ingredient: {
-          id: -1, // Temporary ID for new ingredients
-          name: newIngredient.ingredient.name.trim(),
+          id: undefined, // Set to undefined to indicate a new ingredient
+          name: newIngredient.ingredient.name.trim().toLowerCase(), // Normalize name to lowercase
           slug: generateSlug(newIngredient.ingredient.name.trim())
         },
       };
@@ -188,29 +190,83 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
     }));
   };
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     setSaveError(null);
     if (editingCocktail.ingredients.length === 0) {
       setSaveError('Cannot save cocktail with no ingredients. Please add at least one.');
       return;
     }
 
-    // Ensure all ingredient names are saved from the editing state
-    const finalCocktail = { ...editingCocktail };
-    Object.entries(editingIngredientNames).forEach(([index, name]) => {
-      const idx = parseInt(index);
-      if (finalCocktail.ingredients[idx]) {
-        finalCocktail.ingredients[idx] = {
-          ...finalCocktail.ingredients[idx],
-          ingredient: {
-            ...finalCocktail.ingredients[idx].ingredient,
-            name
-          }
-        };
+    try {
+      // First get all ingredients
+      const ingredientsResponse = await fetch(getApiUrl('/ingredients'));
+      if (!ingredientsResponse.ok) {
+        throw new Error('Failed to fetch ingredients');
       }
-    });
+      const allIngredients = await ingredientsResponse.json();
 
-    onSave(finalCocktail);
+      // Create or get all ingredients
+      const ingredientPromises = editingCocktail.ingredients.map(async (ingredient) => {
+        // Find existing ingredient
+        const existingIngredient = allIngredients.find(
+          (i: { name: string }) => i.name.toLowerCase() === ingredient.ingredient.name.toLowerCase()
+        );
+        
+        if (existingIngredient) {
+          return existingIngredient.id;
+        }
+
+        // Create new ingredient if it doesn't exist
+        const headers = await AdminService.getAdminHeaders();
+        const createResponse = await fetch(getApiUrl('/ingredients'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...headers,
+          },
+          body: JSON.stringify({
+            name: ingredient.ingredient.name
+          }),
+        });
+
+        if (!createResponse.ok) {
+          throw new Error('Failed to create ingredient');
+        }
+
+        const newIngredient = await createResponse.json();
+        return newIngredient.id;
+      });
+
+      const ingredientIds = await Promise.all(ingredientPromises);
+
+      // Update the cocktail with the ingredient IDs
+      const finalCocktail = { ...editingCocktail };
+      finalCocktail.ingredients = finalCocktail.ingredients.map((ingredient, index) => ({
+        ...ingredient,
+        ingredient: {
+          ...ingredient.ingredient,
+          id: ingredientIds[index]
+        }
+      }));
+
+      // Ensure all ingredient names are saved from the editing state
+      Object.entries(editingIngredientNames).forEach(([index, name]) => {
+        const idx = parseInt(index);
+        if (finalCocktail.ingredients[idx]) {
+          finalCocktail.ingredients[idx] = {
+            ...finalCocktail.ingredients[idx],
+            ingredient: {
+              ...finalCocktail.ingredients[idx].ingredient,
+              name
+            }
+          };
+        }
+      });
+
+      onSave(finalCocktail);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Failed to save cocktail');
+    }
   };
 
   return (
@@ -347,16 +403,16 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                       />
                       <FormControl size="small" sx={{ width: '60%' }}>
                         <Select
-                          value={ingredient.unit as string}
-                          onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
+                          value={ingredient.unit?.toLowerCase() || ''}
+                          onChange={(e) => handleIngredientChange(index, 'unit', (e.target.value as MeasurementUnit)?.toLowerCase() || undefined)}
                           displayEmpty
                         >
                           <MenuItem value="">
                             <em>Select unit</em>
                           </MenuItem>
                           {Object.values(MeasurementUnit).map((unit) => (
-                            <MenuItem key={unit as string} value={unit as string}>
-                              {unit as string}
+                            <MenuItem key={unit} value={unit.toLowerCase()}>
+                              {unit}
                             </MenuItem>
                           ))}
                         </Select>
@@ -394,16 +450,16 @@ export const CocktailEditForm: React.FC<CocktailEditFormProps> = ({
                       <TableCell>
                         <FormControl size="small" fullWidth>
                           <Select
-                            value={ingredient.unit as string}
-                            onChange={(e) => handleIngredientChange(index, 'unit', e.target.value as MeasurementUnit || undefined)}
+                            value={ingredient.unit?.toLowerCase() || ''}
+                            onChange={(e) => handleIngredientChange(index, 'unit', (e.target.value as MeasurementUnit)?.toLowerCase() || undefined)}
                             displayEmpty
                           >
                             <MenuItem value="">
                               <em>Select unit</em>
                             </MenuItem>
                             {Object.values(MeasurementUnit).map((unit) => (
-                              <MenuItem key={unit as string} value={unit as string}>
-                                {unit as string}
+                              <MenuItem key={unit} value={unit.toLowerCase()}>
+                                {unit}
                               </MenuItem>
                             ))}
                           </Select>

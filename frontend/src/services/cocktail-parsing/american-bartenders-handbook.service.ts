@@ -88,7 +88,7 @@ export class AmericanBartendersHandbookService {
       tags: ['american-bartenders-handbook'],
       description: '',
       imageUrl: '',
-      source: 'american bartender\'s handbook',
+      source: 'American Bartenders Handbook',
       glassTypeId: null,
       categoryId: null,
       createdAt: new Date().toISOString(),

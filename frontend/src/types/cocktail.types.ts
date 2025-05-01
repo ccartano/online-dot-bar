@@ -15,7 +15,7 @@ export interface Category {
 }
 
 export interface Ingredient {
-  id: number;
+  id?: number;
   name: string;
   slug: string;
   description?: string;

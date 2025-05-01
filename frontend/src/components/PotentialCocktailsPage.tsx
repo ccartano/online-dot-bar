@@ -13,8 +13,8 @@ import { AdminService } from '../services/admin.service';
 // Tag ID to name mapping
 const TAG_MAP: Record<string, string> = {
   '2': 'American Bartenders Handbook',
-  '3': 'Encylopedia',
-  '9': 'Bartenders Guide'
+  '3': 'The Encyclopedia of Cocktails',
+  '9': 'The Offical Bartenders Guide'
 };
 
 export const PotentialCocktailsPage: React.FC = () => {

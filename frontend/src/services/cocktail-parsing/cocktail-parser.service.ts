@@ -36,7 +36,11 @@ export class CocktailParserService {
           amount = Number(amountStr);
         }
         
-        const unit = unitStr.toLowerCase().replace('.', '') as MeasurementUnit;
+        let unit = unitStr.toLowerCase().replace('.', '') as MeasurementUnit;
+        if (!Object.values(MeasurementUnit).map(u => u.toLowerCase()).includes(unit)) {
+          console.warn(`Invalid unit detected: ${unit}, defaulting to 'other'`);
+          unit = MeasurementUnit.OTHER;
+        }
         
         return {
           order,
@@ -184,6 +188,16 @@ export class CocktailParserService {
       
       const cocktails: Cocktail[] = [];
       
+      // Determine source based on tag
+      let source = '';
+      if (data.tags?.includes('Encyclopedia')) {
+        source = 'The Encyclopedia of Cocktails';
+      } else if (data.tags?.includes('American Bartenders Handbook')) {
+        source = 'American Bartenders Handbook';
+      } else if (data.tags?.includes('Bartenders Guide')) {
+        source = 'The Offical Bartenders Guide';
+      }
+      
       // Handle both single cocktail and array of cocktails
       const items = Array.isArray(data) ? data : [data];
       console.log('Processing items:', items);
@@ -230,7 +244,11 @@ export class CocktailParserService {
                   amount = Number(amountStr);
                 }
                 
-                const unit = unitStr.toLowerCase().replace('.', '') as MeasurementUnit;
+                let unit = unitStr.toLowerCase().replace('.', '') as MeasurementUnit;
+                if (!Object.values(MeasurementUnit).map(u => u.toLowerCase()).includes(unit)) {
+                  console.warn(`Invalid unit detected: ${unit}, defaulting to 'other'`);
+                  unit = MeasurementUnit.OTHER;
+                }
                 
                 return {
                   order: index,
@@ -277,8 +295,8 @@ export class CocktailParserService {
           instructions: item.instructions || '',
           paperlessId: docId,
           status: 'pending' as const,
-          tags: ['paperless-gpt-ocr-complete'],
-          source: 'paperless-gpt-ocr-complete',
+          tags: data.tags || [],
+          source,
           glassTypeId: glassType?.id || null,
           glassType: glassType,
           categoryId: null,

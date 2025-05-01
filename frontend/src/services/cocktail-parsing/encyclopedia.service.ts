@@ -15,7 +15,7 @@ export class EncyclopediaService {
         ingredients: [],
         tags: ['encyclopedia'],
         status: 'pending' as const,
-        source: 'encyclopedia',
+        source: 'The Encyclopedia of Cocktails',
         glassTypeId: null,
         categoryId: null,
         createdAt: new Date().toISOString(),

@@ -40,7 +40,10 @@ export class CocktailIngredient {
   amount: number;
 
   // The unit of measurement
-  @Column({ nullable: true })
+  @Column({ nullable: true, transformer: {
+    to: (value: string) => value?.toLowerCase(),
+    from: (value: string) => value
+  }})
   unit: string;
 
   // Optional notes about how to use/prepare this ingredient
