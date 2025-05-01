@@ -5,7 +5,6 @@ import { Ingredient } from '../types/ingredient.types';
 import { Cocktail } from '../types/cocktail.types';
 import { fetchIngredientBySlug } from '../services/ingredient.service';
 import { fetchCocktailsByIngredient } from '../services/cocktail.service';
-import { DocumentTitle } from './DocumentTitle';
 import { SEO } from './SEO';
 import { titleize } from '../utils/formatting';
 import { LoadingState } from './LoadingState';
@@ -77,7 +76,6 @@ export const IngredientDetailPage: React.FC = () => {
           <SEO 
             ingredient={ingredient}
           />
-          <DocumentTitle title={titleize(ingredient.name)} />
           <Box sx={{ 
             p: { xs: 2, sm: 3 }, 
             maxWidth: '600px', 

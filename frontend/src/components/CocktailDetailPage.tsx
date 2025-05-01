@@ -39,7 +39,6 @@ export const CocktailDetailPage: React.FC = () => {
           <SEO 
             cocktail={cocktailData.cocktail}
           />
-          <TitleSection title={titleize(cocktailData.cocktail.name)} />
           <Box sx={{ 
             p: 3, 
             maxWidth: '600px', 

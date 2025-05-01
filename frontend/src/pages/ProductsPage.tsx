@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Product, productService } from '../services/productService';
 import { SEO } from '../components/SEO';
-import { DocumentTitle } from '../components/DocumentTitle';
 import './ProductsPage.css';
 
 const ProductsPage: React.FC = () => {
@@ -66,10 +65,9 @@ const ProductsPage: React.FC = () => {
   return (
     <>
       <SEO 
-        title="Bar Tools & Equipment - The Online.Bar"
+        title="Bar Tools & Equipment | The Online.Bar"
         description="Shop essential bar tools and equipment for your home bar. Find cocktail shakers, jiggers, strainers, muddlers, and more quality bartending equipment."
       />
-      <DocumentTitle title="Bar Tools & Equipment" />
       <div className="products-page">
         <h1>Tools & Equipment</h1>
         <div className="products-grid">
