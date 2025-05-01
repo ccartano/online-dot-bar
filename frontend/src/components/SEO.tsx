@@ -47,7 +47,7 @@ export const SEO = ({
 
   // If ingredient is provided, use its data for SEO
   if (ingredient) {
-    title = `${titleize(ingredient.name)} - The Online.Bar`;
+    title = `${titleize(ingredient.name)} | The Online.Bar`;
     description = ingredient.description ? 
       `${ingredient.name}: ${ingredient.description}` : 
       `Learn about ${ingredient.name} in cocktails. Discover its characteristics, common uses, and cocktail recipes that feature this ingredient.`;
@@ -89,7 +89,7 @@ export const SEO = ({
 
   // If cocktail is provided, use its data for SEO
   if (cocktail) {
-    title = `${titleize(cocktail.name)} Recipe - The Online.Bar`;
+    title = `${titleize(cocktail.name)} | The Online.Bar`;
     description = cocktail.description ? 
       `${titleize(cocktail.name)}: ${cocktail.description}. Learn how to make this ${cocktail.category?.name || 'cocktail'} with step-by-step instructions, ingredients, and measurements.` : 
       `Learn how to make the perfect ${cocktail.name}. Get ingredients, measurements, and step-by-step instructions for this ${cocktail.category?.name || 'cocktail'}.`;

@@ -7,7 +7,6 @@ import { FilterSidebar, FilterSection } from './FilterSidebar';
 import { AlphabeticalList } from './AlphabeticalList';
 import { LoadingState } from './LoadingState';
 import { SEO } from './SEO';
-import { DocumentTitle } from './DocumentTitle';
 import { Ingredient } from '../types/ingredient.types';
 import { IngredientType } from '../utils/constants';
 
@@ -157,7 +156,6 @@ export const CocktailsPage: React.FC = () => {
         title="Cocktail Recipes | The Online.Bar"
         description="Browse our extensive collection of cocktail recipes. Find classic drinks, modern mixology creations, and detailed instructions for making the perfect cocktail."
       />
-      <DocumentTitle title="Cocktail Recipes" />
       <LoadingState loading={loading} error={error}>
         <Box sx={{ 
           display: 'flex', 

@@ -7,7 +7,6 @@ import { AlphabeticalList } from './AlphabeticalList';
 import { LoadingState } from './LoadingState';
 import { getIngredientTypeLabel } from '../utils/ingredientUtils';
 import { SEO } from './SEO';
-import { DocumentTitle } from './DocumentTitle';
 import { IngredientType } from '../utils/constants';
 
 // Move this outside the component to prevent recreation
@@ -97,10 +96,9 @@ export const IngredientsPage: React.FC = () => {
   return (
     <>
       <SEO 
-        title="Cocktail Ingredients A-Z - The Online.Bar"
+        title="Cocktail Ingredients A-Z | The Online.Bar"
         description="Browse our comprehensive A-Z list of cocktail ingredients. Find spirits, liqueurs, mixers, garnishes, and more with detailed information about each ingredient."
       />
-      <DocumentTitle title="Cocktail Ingredients" />
       <LoadingState loading={loading} error={error}>
         <Box sx={{ 
           display: 'flex', 

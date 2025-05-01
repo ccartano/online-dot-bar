@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
 import { CocktailDetailData } from '../types/cocktail.types';
 import { fetchCocktailBySlug } from '../services/cocktail.service';
-import { DocumentTitle } from './DocumentTitle';
 import { SEO } from './SEO';
 import { titleize } from '../utils/formatting';
 import { IngredientList } from './IngredientList';
@@ -40,7 +39,7 @@ export const CocktailDetailPage: React.FC = () => {
           <SEO 
             cocktail={cocktailData.cocktail}
           />
-          <DocumentTitle title={titleize(cocktailData.cocktail.name)} />
+          <TitleSection title={titleize(cocktailData.cocktail.name)} />
           <Box sx={{ 
             p: 3, 
             maxWidth: '600px', 
