@@ -223,6 +223,21 @@ export class CocktailParserService {
               const quantity = ing.quantity || '';
               const ingredientName = (ing.ingredient || '').toLowerCase();
               
+              // First try to match PART measurements
+              const partMatch = quantity.match(/^(\d+(?:\.\d+)?)\s*part(s)?\s+(.+)/i);
+              if (partMatch) {
+                return {
+                  order: index,
+                  amount: parseFloat(partMatch[1]),
+                  unit: MeasurementUnit.PART,
+                  ingredient: {
+                    id: -1,
+                    name: ingredientName.trim(),
+                    slug: ParsingUtilsService.generateSlug(ingredientName.trim())
+                  }
+                };
+              }
+              
               // Match the amount and unit pattern in the quantity
               const measurementMatch = quantity.match(/^(\d+(?:\s+\d+\/\d+)?|\d+\/\d+|\d+\s+or\s+\d+)\s*(oz\.?|ml|dash|pinch|piece|slice|sprig|twist|wedge|tsp|tbsp|splash|drop|drops)/i);
               
@@ -273,10 +288,10 @@ export class CocktailParserService {
                   slug: ParsingUtilsService.generateSlug(ingredientName.trim())
                 }
               };
-            } else {
-              // String format
-              return this.parseOcrCompleteIngredient(ing, index);
             }
+            
+            // String format - use ParsingUtilsService which already handles PART measurements
+            return ParsingUtilsService.parseStringIngredient(ing);
           })
           .filter((ing: CocktailIngredient | null): ing is CocktailIngredient => ing !== null);
         
