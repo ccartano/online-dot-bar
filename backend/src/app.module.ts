@@ -15,6 +15,7 @@ import { Cocktail } from './entities/cocktail.entity';
 import { PaperlessService } from './services/paperless.service';
 import { PaperlessController } from './controllers/paperless.controller';
 import { CocktailsController } from './cocktails/cocktails.controller';
+import { CocktailIngredientsModule } from './cocktail-ingredients/cocktail-ingredients.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CocktailsController } from './cocktails/cocktails.controller';
     SearchModule,
     ProductsModule,
     AuthModule,
+    CocktailIngredientsModule,
   ],
   controllers: [AppController, PaperlessController, CocktailsController],
   providers: [

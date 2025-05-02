@@ -23,7 +23,7 @@ export class CocktailParserService {
           ingredient: {
             id: -1,
             name: ingredientName.trim(),
-            slug: ParsingUtilsService.generateSlug(ingredientName.trim())
+            slug: ''
           }
         };
       }
@@ -50,13 +50,13 @@ export class CocktailParserService {
           ingredient: {
             id: -1,
             name: `${fruit} (juiced)`,
-            slug: ParsingUtilsService.generateSlug(`${fruit}-juiced`)
+            slug: ''
           }
         };
       }
       
       // Match the amount and unit pattern in the quantity
-      const measurementMatch = quantity.match(/^(\d+(?:\s+\d+\/\d+)?|\d+\/\d+|\d+\s+or\s+\d+)\s*(oz\.?|ml|dash|pinch|piece|slice|sprig|twist|wedge|tsp|tbsp|splash|drop|drops)/i);
+      const measurementMatch = quantity.match(/^(\d+(?:\s+\d+\/\d+)?|\d+\/\d+|\d+\s+or\s+\d+)\s*(oz\.?|ml|dash|pinch|piece|slice|sprig|twist|wedge|tsp\.?|teaspoon|tbsp\.?|tablespoon|spoonful|spoonfuls|splash|drop|drops)/i);
       
       if (measurementMatch) {
         const [_, amountStr, unitStr] = measurementMatch;
@@ -76,9 +76,21 @@ export class CocktailParserService {
           amount = Number(amountStr);
         }
         
-        let unit = unitStr.toLowerCase().replace('.', '') as MeasurementUnit;
-        if (!Object.values(MeasurementUnit).map(u => u.toLowerCase()).includes(unit)) {
-          console.warn(`Invalid unit detected: ${unit}, defaulting to 'other'`);
+        // Normalize unit string
+        let unit: MeasurementUnit;
+        const normalizedUnit = unitStr.toLowerCase().replace('.', '');
+        // Handle full unit names
+        if (normalizedUnit === 'teaspoon' || normalizedUnit === 'teaspoons') {
+          unit = MeasurementUnit.TSP;
+        } else if (normalizedUnit === 'tablespoon' || normalizedUnit === 'tablespoons' || 
+                   normalizedUnit === 'spoonful' || normalizedUnit === 'spoonfuls') {
+          unit = MeasurementUnit.TBSP;
+        } else if (normalizedUnit === 'drop' || normalizedUnit === 'drops') {
+          unit = MeasurementUnit.DROP;
+        } else if (Object.values(MeasurementUnit).map(u => u.toLowerCase()).includes(normalizedUnit)) {
+          unit = Object.values(MeasurementUnit).find(u => u.toLowerCase() === normalizedUnit) as MeasurementUnit;
+        } else {
+          console.warn(`Invalid unit detected: ${normalizedUnit}, defaulting to 'other'`);
           unit = MeasurementUnit.OTHER;
         }
         
@@ -89,7 +101,7 @@ export class CocktailParserService {
           ingredient: {
             id: -1,
             name: ingredientName.trim(),
-            slug: ParsingUtilsService.generateSlug(ingredientName.trim())
+            slug: ''
           }
         };
       }
@@ -102,7 +114,7 @@ export class CocktailParserService {
         ingredient: {
           id: -1,
           name: ingredientName.trim(),
-          slug: ParsingUtilsService.generateSlug(ingredientName.trim())
+          slug: ''
         }
       };
     }
@@ -129,7 +141,7 @@ export class CocktailParserService {
         ingredient: {
           id: -1,
           name: partMatch[3].trim(),
-          slug: ParsingUtilsService.generateSlug(partMatch[3].trim())
+          slug: ''
         }
       };
     }
@@ -156,13 +168,28 @@ export class CocktailParserService {
         ingredient: {
           id: -1,
           name: `${fruit} (juiced)`,
-          slug: ParsingUtilsService.generateSlug(`${fruit}-juiced`)
+          slug: ''
+        }
+      };
+    }
+
+    // Special case for "Splash of" measurements
+    const splashMatch = cleanIngredient.match(/^splash\s+of\s+(.+)/i);
+    if (splashMatch) {
+      return {
+        order,
+        amount: undefined,
+        unit: MeasurementUnit.SPLASH,
+        ingredient: {
+          id: -1,
+          name: splashMatch[1].trim(),
+          slug: ''
         }
       };
     }
     
     // Match the amount and unit pattern (e.g., "1 1/2 oz.", "1 oz.", "1/2 tsp.", "2 or 3 drops")
-    const measurementMatch = cleanIngredient.match(/^(\d+(?:\s+\d+\/\d+)?|\d+\/\d+|\d+\s+or\s+\d+)\s*(oz\.?|ml|dash|pinch|piece|slice|sprig|twist|wedge|tsp|tbsp|splash|drop|drops)/i);
+    const measurementMatch = cleanIngredient.match(/^(\d+(?:\s+\d+\/\d+)?|\d+\/\d+|\d+\s+or\s+\d+)\s*(oz\.?|ml|dash|pinch|piece|slice|sprig|twist|wedge|tsp\.?|teaspoon|tbsp\.?|tablespoon|spoonful|spoonfuls|splash|drop|drops)/i);
     
     if (measurementMatch) {
       const [_, amountStr, unitStr] = measurementMatch;
@@ -182,7 +209,23 @@ export class CocktailParserService {
         amount = Number(amountStr);
       }
       
-      const unit = unitStr.toLowerCase().replace('.', '') as MeasurementUnit;
+      // Normalize unit string
+      let unit: MeasurementUnit;
+      const normalizedUnit = unitStr.toLowerCase().replace('.', '');
+      // Handle full unit names
+      if (normalizedUnit === 'teaspoon' || normalizedUnit === 'teaspoons') {
+        unit = MeasurementUnit.TSP;
+      } else if (normalizedUnit === 'tablespoon' || normalizedUnit === 'tablespoons' || 
+                 normalizedUnit === 'spoonful' || normalizedUnit === 'spoonfuls') {
+        unit = MeasurementUnit.TBSP;
+      } else if (normalizedUnit === 'drop' || normalizedUnit === 'drops') {
+        unit = MeasurementUnit.DROP;
+      } else if (Object.values(MeasurementUnit).map(u => u.toLowerCase()).includes(normalizedUnit)) {
+        unit = Object.values(MeasurementUnit).find(u => u.toLowerCase() === normalizedUnit) as MeasurementUnit;
+      } else {
+        console.warn(`Invalid unit detected: ${normalizedUnit}, defaulting to 'other'`);
+        unit = MeasurementUnit.OTHER;
+      }
       
       const matchLength = measurementMatch[0].length;
       const name = cleanIngredient.slice(matchLength)
@@ -197,7 +240,7 @@ export class CocktailParserService {
         ingredient: {
           id: -1,
           name,
-          slug: ParsingUtilsService.generateSlug(name)
+          slug: ''
         }
       };
     }
@@ -211,7 +254,7 @@ export class CocktailParserService {
       ingredient: {
         id: -1,
         name: cleanIngredient,
-        slug: ParsingUtilsService.generateSlug(cleanIngredient)
+        slug: ''
       }
     };
   }

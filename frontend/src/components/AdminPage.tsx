@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, Typography } from '@mui/material';
 import { SEO } from './SEO';
 import { CocktailEditForm } from './CocktailEditForm';
+import { MeasurementsAdminPage } from './MeasurementsAdminPage';
 
 interface ConfirmationDialogProps {
   open: boolean;
@@ -61,7 +62,7 @@ export const AdminPage: React.FC = () => {
   });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [cocktailToDelete, setCocktailToDelete] = useState<number | null>(null);
-  const [view, setView] = useState<'current' | 'potential' | 'ingredients' | 'products'>('current');
+  const [view, setView] = useState<'current' | 'potential' | 'ingredients' | 'products' | 'measurements'>('current');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newCocktail, setNewCocktail] = useState<Partial<Cocktail>>({
     name: '',
@@ -248,7 +249,7 @@ export const AdminPage: React.FC = () => {
     }
   };
 
-  const handleViewChange = (_event: React.SyntheticEvent, newValue: 'current' | 'potential' | 'ingredients' | 'products') => {
+  const handleViewChange = (_event: React.SyntheticEvent, newValue: 'current' | 'potential' | 'ingredients' | 'products' | 'measurements') => {
     setView(newValue);
   };
 
@@ -411,6 +412,7 @@ export const AdminPage: React.FC = () => {
           <Tab label="Potential Cocktails" value="potential" />
           <Tab label="Ingredients" value="ingredients" />
           <Tab label="Products" value="products" />
+          <Tab label="Measurements" value="measurements" />
         </Tabs>
 
         {loading ? (
@@ -452,6 +454,7 @@ export const AdminPage: React.FC = () => {
               />
             )}
             {view === 'products' && <AdminProducts />}
+            {view === 'measurements' && <MeasurementsAdminPage />}
           </Box>
         )}
 
