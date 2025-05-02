@@ -57,8 +57,10 @@ const formatUnit = (unit: MeasurementUnit, amount: number): string => {
   // Don't display "OTHER" unit type
   if (normalizedUnit === MeasurementUnit.OTHER.toLowerCase()) return '';
   
-  // Handle pluralization for all units except "to taste"
-  if (amount > 1 && normalizedUnit !== MeasurementUnit.TO_TASTE.toLowerCase()) {
+  // Handle pluralization for all units except "to taste" and "whole"
+  if (amount > 1 && 
+      normalizedUnit !== MeasurementUnit.TO_TASTE.toLowerCase() && 
+      normalizedUnit !== MeasurementUnit.WHOLE.toLowerCase()) {
     return plural(titleize(unit));
   }
   
