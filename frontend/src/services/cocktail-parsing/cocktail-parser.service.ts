@@ -6,20 +6,60 @@ import { EncyclopediaService } from './encyclopedia.service';
 import { ParsingUtilsService } from './parsing-utils.service';
 
 export class CocktailParserService {
-  private static parseOcrCompleteIngredient(ingredient: string | any, order: number = 0): CocktailIngredient | null {
+  private static parseIngredient(ingredient: string | any, order: number = 0): CocktailIngredient | null {
     // Handle object format with quantity and ingredient properties
     if (typeof ingredient === 'object' && ingredient !== null) {
       console.log('Parsing object ingredient:', ingredient);
       const quantity = ingredient.quantity || '';
       const ingredientName = (ingredient.ingredient || '').toLowerCase();
       
+      // First try to match PART measurements
+      const partMatch = quantity.match(/^(\d+(?:\.\d+)?)\s*part(s)?\s+(.+)/i);
+      if (partMatch) {
+        return {
+          order,
+          amount: parseFloat(partMatch[1]),
+          unit: MeasurementUnit.PART,
+          ingredient: {
+            id: -1,
+            name: ingredientName.trim(),
+            slug: ParsingUtilsService.generateSlug(ingredientName.trim())
+          }
+        };
+      }
+
+      // Special case for "Juice of X" measurements
+      const juiceOfMatch = quantity.match(/^juice\s+of\s+(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s+(lemon|lime|orange|grapefruit)/i);
+      if (juiceOfMatch) {
+        const [_, amountStr, fruit] = juiceOfMatch;
+        let amount: number;
+        if (amountStr.includes(' ')) {
+          const [whole, fraction] = amountStr.split(' ');
+          const [numerator, denominator] = fraction.split('/').map(Number);
+          amount = Number(whole) + (numerator / denominator);
+        } else if (amountStr.includes('/')) {
+          const [numerator, denominator] = amountStr.split('/').map(Number);
+          amount = numerator / denominator;
+        } else {
+          amount = Number(amountStr);
+        }
+        return {
+          order,
+          amount,
+          unit: MeasurementUnit.WHOLE,
+          ingredient: {
+            id: -1,
+            name: `${fruit} (juiced)`,
+            slug: ParsingUtilsService.generateSlug(`${fruit}-juiced`)
+          }
+        };
+      }
+      
       // Match the amount and unit pattern in the quantity
       const measurementMatch = quantity.match(/^(\d+(?:\s+\d+\/\d+)?|\d+\/\d+|\d+\s+or\s+\d+)\s*(oz\.?|ml|dash|pinch|piece|slice|sprig|twist|wedge|tsp|tbsp|splash|drop|drops)/i);
-      console.log('Object measurement match:', measurementMatch);
       
       if (measurementMatch) {
         const [_, amountStr, unitStr] = measurementMatch;
-        console.log('Object amount string:', amountStr, 'Unit string:', unitStr);
         
         // Convert amount to decimal
         let amount: number;
@@ -54,7 +94,7 @@ export class CocktailParserService {
         };
       }
       
-      // If no measurement found in quantity, return with undefined amount and unit
+      // If no measurement found, return with undefined amount and unit
       return {
         order,
         amount: undefined,
@@ -67,7 +107,7 @@ export class CocktailParserService {
       };
     }
 
-    // Handle string format (existing logic)
+    // Handle string format
     if (typeof ingredient !== 'string') {
       console.error('Invalid ingredient type:', typeof ingredient, ingredient);
       return null;
@@ -79,29 +119,37 @@ export class CocktailParserService {
     const cleanIngredient = ingredient.replace(/\s*\([^)]*\)\s*/, ' ').trim().toLowerCase();
     console.log('Cleaned ingredient:', cleanIngredient);
 
+    // First try to match PART measurements
+    const partMatch = cleanIngredient.match(/^(\d+(?:\.\d+)?)\s*part(s)?\s+(.+)/i);
+    if (partMatch) {
+      return {
+        order,
+        amount: parseFloat(partMatch[1]),
+        unit: MeasurementUnit.PART,
+        ingredient: {
+          id: -1,
+          name: partMatch[3].trim(),
+          slug: ParsingUtilsService.generateSlug(partMatch[3].trim())
+        }
+      };
+    }
+
     // Special case for "Juice of X" measurements
     const juiceOfMatch = cleanIngredient.match(/^juice\s+of\s+(\d+(?:\s+\d+\/\d+)?|\d+\/\d+)\s+(lemon|lime|orange|grapefruit)/i);
     if (juiceOfMatch) {
       const [_, amountStr, fruit] = juiceOfMatch;
-      console.log('Juice of match:', { amountStr, fruit });
-
-      // Convert amount to decimal
       let amount: number;
       if (amountStr.includes(' ')) {
-        // Mixed number (e.g., "1 1/2")
         const [whole, fraction] = amountStr.split(' ');
         const [numerator, denominator] = fraction.split('/').map(Number);
         amount = Number(whole) + (numerator / denominator);
       } else if (amountStr.includes('/')) {
-        // Simple fraction (e.g., "1/2")
         const [numerator, denominator] = amountStr.split('/').map(Number);
         amount = numerator / denominator;
       } else {
-        // Simple number
         amount = Number(amountStr);
       }
-
-      const result = {
+      return {
         order,
         amount,
         unit: MeasurementUnit.WHOLE,
@@ -111,48 +159,38 @@ export class CocktailParserService {
           slug: ParsingUtilsService.generateSlug(`${fruit}-juiced`)
         }
       };
-      console.log('Final parsed juice of ingredient:', result);
-      return result;
     }
     
     // Match the amount and unit pattern (e.g., "1 1/2 oz.", "1 oz.", "1/2 tsp.", "2 or 3 drops")
     const measurementMatch = cleanIngredient.match(/^(\d+(?:\s+\d+\/\d+)?|\d+\/\d+|\d+\s+or\s+\d+)\s*(oz\.?|ml|dash|pinch|piece|slice|sprig|twist|wedge|tsp|tbsp|splash|drop|drops)/i);
-    console.log('Measurement match:', measurementMatch);
     
     if (measurementMatch) {
       const [_, amountStr, unitStr] = measurementMatch;
-      console.log('Amount string:', amountStr, 'Unit string:', unitStr);
       
       // Convert amount to decimal
       let amount: number;
       if (amountStr.includes(' or ')) {
         amount = Number(amountStr.split(' or ')[0]);
-        console.log('"or" amount conversion:', amount);
       } else if (amountStr.includes(' ')) {
         const [whole, fraction] = amountStr.split(' ');
         const [numerator, denominator] = fraction.split('/').map(Number);
         amount = Number(whole) + (numerator / denominator);
-        console.log('Mixed number conversion:', { whole, fraction, numerator, denominator, result: amount });
       } else if (amountStr.includes('/')) {
         const [numerator, denominator] = amountStr.split('/').map(Number);
         amount = numerator / denominator;
-        console.log('Fraction conversion:', { numerator, denominator, result: amount });
       } else {
         amount = Number(amountStr);
-        console.log('Simple number conversion:', amount);
       }
       
       const unit = unitStr.toLowerCase().replace('.', '') as MeasurementUnit;
-      console.log('Normalized unit:', unit);
       
       const matchLength = measurementMatch[0].length;
       const name = cleanIngredient.slice(matchLength)
         .replace(/^\s*\.\s*/, '')
         .replace(/^\s*s\s*/, '')
         .trim();
-      console.log('Extracted ingredient name:', name);
       
-      const result = {
+      return {
         order,
         amount,
         unit,
@@ -162,8 +200,6 @@ export class CocktailParserService {
           slug: ParsingUtilsService.generateSlug(name)
         }
       };
-      console.log('Final parsed ingredient:', result);
-      return result;
     }
 
     // Handle ingredients without measurements
@@ -195,7 +231,7 @@ export class CocktailParserService {
       } else if (data.tags?.includes('American Bartenders Handbook')) {
         source = 'American Bartenders Handbook';
       } else if (data.tags?.includes('Bartenders Guide')) {
-        source = 'The Offical Bartenders Guide';
+        source = 'The Official Bartenders Guide';
       }
       
       // Handle both single cocktail and array of cocktails
@@ -216,83 +252,7 @@ export class CocktailParserService {
         console.log('Found glass type:', glassType);
         
         const ingredients = item.ingredients
-          .map((ing: any, index: number) => {
-            // Handle both string and object formats
-            if (typeof ing === 'object' && ing !== null) {
-              // Object format with quantity and ingredient
-              const quantity = ing.quantity || '';
-              const ingredientName = (ing.ingredient || '').toLowerCase();
-              
-              // First try to match PART measurements
-              const partMatch = quantity.match(/^(\d+(?:\.\d+)?)\s*part(s)?\s+(.+)/i);
-              if (partMatch) {
-                return {
-                  order: index,
-                  amount: parseFloat(partMatch[1]),
-                  unit: MeasurementUnit.PART,
-                  ingredient: {
-                    id: -1,
-                    name: ingredientName.trim(),
-                    slug: ParsingUtilsService.generateSlug(ingredientName.trim())
-                  }
-                };
-              }
-              
-              // Match the amount and unit pattern in the quantity
-              const measurementMatch = quantity.match(/^(\d+(?:\s+\d+\/\d+)?|\d+\/\d+|\d+\s+or\s+\d+)\s*(oz\.?|ml|dash|pinch|piece|slice|sprig|twist|wedge|tsp|tbsp|splash|drop|drops)/i);
-              
-              if (measurementMatch) {
-                const [_, amountStr, unitStr] = measurementMatch;
-                
-                // Convert amount to decimal
-                let amount: number;
-                if (amountStr.includes(' or ')) {
-                  amount = Number(amountStr.split(' or ')[0]);
-                } else if (amountStr.includes(' ')) {
-                  const [whole, fraction] = amountStr.split(' ');
-                  const [numerator, denominator] = fraction.split('/').map(Number);
-                  amount = Number(whole) + (numerator / denominator);
-                } else if (amountStr.includes('/')) {
-                  const [numerator, denominator] = amountStr.split('/').map(Number);
-                  amount = numerator / denominator;
-                } else {
-                  amount = Number(amountStr);
-                }
-                
-                let unit = unitStr.toLowerCase().replace('.', '') as MeasurementUnit;
-                if (!Object.values(MeasurementUnit).map(u => u.toLowerCase()).includes(unit)) {
-                  console.warn(`Invalid unit detected: ${unit}, defaulting to 'other'`);
-                  unit = MeasurementUnit.OTHER;
-                }
-                
-                return {
-                  order: index,
-                  amount,
-                  unit,
-                  ingredient: {
-                    id: -1,
-                    name: ingredientName.trim(),
-                    slug: ParsingUtilsService.generateSlug(ingredientName.trim())
-                  }
-                };
-              }
-              
-              // If no measurement found, return with undefined amount and unit
-              return {
-                order: index,
-                amount: undefined,
-                unit: undefined,
-                ingredient: {
-                  id: -1,
-                  name: ingredientName.trim(),
-                  slug: ParsingUtilsService.generateSlug(ingredientName.trim())
-                }
-              };
-            }
-            
-            // String format - use ParsingUtilsService which already handles PART measurements
-            return ParsingUtilsService.parseStringIngredient(ing);
-          })
+          .map((ing: any, index: number) => this.parseIngredient(ing, index))
           .filter((ing: CocktailIngredient | null): ing is CocktailIngredient => ing !== null);
         
         console.log('Parsed ingredients:', ingredients);
