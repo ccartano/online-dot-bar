@@ -7,7 +7,10 @@ import { plural } from 'pluralize';
 const convertMlToOz = (ml: number): number => {
   // Convert to OZ and round to nearest third (0.333, 0.666, etc.)
   const oz = ml * ML_TO_OZ_RATIO;
-  return Math.round(oz * 3) / 3;
+  // First round to 3 decimal places to avoid floating point issues
+  const roundedOz = Math.round(oz * 1000) / 1000;
+  // Then round to nearest third
+  return Math.round(roundedOz * 3) / 3;
 };
 
 // Helper function to convert decimal to fraction
