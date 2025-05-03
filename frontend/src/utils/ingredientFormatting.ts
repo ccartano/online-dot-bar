@@ -5,10 +5,9 @@ import { plural } from 'pluralize';
 
 // Helper function to convert ML to OZ
 const convertMlToOz = (ml: number): number => {
-  // Convert to OZ and round to 1 decimal place
+  // Convert to OZ and round to nearest third (0.333, 0.666, etc.)
   const oz = ml * ML_TO_OZ_RATIO;
-  // Round to nearest quarter (0.25) for cleaner fractions
-  return Math.round(oz * 4) / 4;
+  return Math.round(oz * 3) / 3;
 };
 
 // Helper function to convert decimal to fraction
@@ -33,7 +32,6 @@ const decimalToFraction = (decimal: number): string => {
 
 // Helper function to format amount
 const formatAmount = (amount: number): string => {
-  if (amount === 0.25) return '%';
   if (Number.isInteger(amount)) return amount.toString();
   
   // Handle mixed numbers (e.g., 1.5 -> 1½)
