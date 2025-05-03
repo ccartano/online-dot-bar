@@ -6,7 +6,6 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { CocktailsModule } from './cocktails/cocktails.module';
 import { IngredientsModule } from './ingredients/ingredients.module';
-import { CategoriesModule } from './categories/categories.module';
 import { GlassTypesModule } from './glass-types/glass-types.module';
 import { SearchModule } from './search/search.module';
 import { ProductsModule } from './products/products.module';
@@ -26,7 +25,6 @@ import { CocktailIngredientsModule } from './cocktail-ingredients/cocktail-ingre
     DatabaseModule,
     CocktailsModule,
     IngredientsModule,
-    CategoriesModule,
     GlassTypesModule,
     SearchModule,
     ProductsModule,

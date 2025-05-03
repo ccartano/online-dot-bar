@@ -1,11 +1,10 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Logger } from '@nestjs/common';
 import {
-  Ingredient,
   Cocktail,
   CocktailIngredient,
   GlassType,
-  Category,
+  Ingredient,
   Product,
 } from '../entities';
 import * as dotenv from 'dotenv';
@@ -49,7 +48,7 @@ export const databaseConfig: TypeOrmModuleOptions = {
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  entities: [Ingredient, Cocktail, CocktailIngredient, GlassType, Category, Product],
+  entities: [Ingredient, Cocktail, CocktailIngredient, GlassType, Product],
   synchronize: process.env.NODE_ENV !== 'production', // Set to false in production
   logging: process.env.NODE_ENV !== 'production',
 };

@@ -15,7 +15,6 @@ import {
   CreateCocktailDto,
 } from './dto/create-cocktail.dto';
 import { GlassType } from '../entities/glass-type.entity';
-import { Category } from '../entities/category.entity';
 import { Ingredient } from '../entities/ingredient.entity';
 import { CocktailIngredient } from '../entities/cocktail-ingredient.entity';
 import {
@@ -33,8 +32,6 @@ export class CocktailsService {
     private cocktailsRepository: Repository<Cocktail>,
     @InjectRepository(GlassType)
     private glassTypesRepository: Repository<GlassType>,
-    @InjectRepository(Category)
-    private categoriesRepository: Repository<Category>,
     @InjectRepository(Ingredient)
     private ingredientsRepository: Repository<Ingredient>,
     @InjectRepository(CocktailIngredient)
@@ -93,22 +90,17 @@ export class CocktailsService {
     // If not in cache, get from database
     const queryBuilder = this.cocktailsRepository
       .createQueryBuilder('cocktail')
-      .leftJoinAndSelect('cocktail.category', 'category')
       .leftJoinAndSelect('cocktail.ingredients', 'cocktailIngredients')
       .leftJoinAndSelect('cocktailIngredients.ingredient', 'ingredient')
       .addSelect('cocktail.glassTypeId');
 
     if (filterDto) {
-      const { name, categoryId, ingredientIds, glassTypeNames } = filterDto;
+      const { name, ingredientIds, glassTypeNames } = filterDto;
 
       if (name) {
         queryBuilder.andWhere('LOWER(cocktail.name) LIKE LOWER(:name)', {
           name: `%${name}%`,
         });
-      }
-
-      if (categoryId) {
-        queryBuilder.andWhere('category.id = :categoryId', { categoryId });
       }
 
       if (ingredientIds && ingredientIds.length > 0) {
@@ -171,7 +163,6 @@ export class CocktailsService {
     const result = await this.cocktailsRepository
       .createQueryBuilder('cocktail')
       .leftJoinAndSelect('cocktail.glassType', 'glassType')
-      .leftJoinAndSelect('cocktail.category', 'category')
       .leftJoinAndSelect('cocktail.ingredients', 'cocktailIngredients')
       .leftJoinAndSelect('cocktailIngredients.ingredient', 'ingredient')
       .where('cocktail.id = :id', { id })
@@ -215,7 +206,6 @@ export class CocktailsService {
       this.cocktailsRepository
         .createQueryBuilder('cocktail')
         .leftJoinAndSelect('cocktail.glassType', 'glassType')
-        .leftJoinAndSelect('cocktail.category', 'category')
         .leftJoinAndSelect('cocktail.ingredients', 'cocktailIngredients')
         .leftJoinAndSelect('cocktailIngredients.ingredient', 'ingredient')
         .where('cocktail.parentId = :id', { id })
@@ -239,7 +229,7 @@ export class CocktailsService {
   async findByPaperlessId(paperlessId: number): Promise<Cocktail | null> {
     return this.cocktailsRepository.findOne({
       where: { paperlessId },
-      relations: ['ingredients', 'glassType', 'category'],
+      relations: ['ingredients', 'glassType'],
     });
   }
 
@@ -278,7 +268,6 @@ export class CocktailsService {
       where: { slug },
       relations: [
         'glassType',
-        'category',
         'ingredients',
         'ingredients.ingredient',
       ],
@@ -290,7 +279,7 @@ export class CocktailsService {
   }
 
   async create(createCocktailDto: CreateCocktailDto): Promise<Cocktail> {
-    const { ingredients, categoryId, glassTypeId, name, parentId, ...cocktailBaseData } =
+    const { ingredients, glassTypeId, name, parentId, ...cocktailBaseData } =
       createCocktailDto;
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -368,16 +357,11 @@ export class CocktailsService {
       const glassType = glassTypeId
         ? await this.glassTypesRepository.findOneBy({ id: glassTypeId })
         : null;
-      const category = categoryId
-        ? await this.categoriesRepository.findOneBy({ id: categoryId })
-        : null;
 
       if (glassTypeId && !glassType)
         throw new NotFoundException(
           `GlassType with ID ${glassTypeId} not found`,
         );
-      if (categoryId && !category)
-        throw new NotFoundException(`Category with ID ${categoryId} not found`);
 
       const newCocktail = this.cocktailsRepository.create({
         ...cocktailBaseData, // Use the rest of the DTO data
@@ -385,7 +369,6 @@ export class CocktailsService {
         slug, // Add the generated slug
         glassTypeId: glassType ? glassType.id : null,
         glassType: glassType || undefined,
-        category: category || undefined,
         variationSignature, // 3. Save the calculated signatures
         akaSignature,
         parentId, // Include parentId if it exists
@@ -467,7 +450,7 @@ export class CocktailsService {
     id: number,
     updateCocktailDto: UpdateCocktailDto,
   ): Promise<Cocktail> {
-    const { ingredients, categoryId, name, ...cocktailBaseData } =
+    const { ingredients, name, ...cocktailBaseData } =
       updateCocktailDto;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -476,7 +459,7 @@ export class CocktailsService {
     try {
       const cocktail = await queryRunner.manager.findOne(Cocktail, {
         where: { id },
-        relations: ['ingredients', 'category', 'glassType'],
+        relations: ['ingredients', 'glassType'],
       });
 
       if (!cocktail) {
@@ -500,29 +483,11 @@ export class CocktailsService {
         }
       }
 
-      // Fetch new category if categoryId is provided
-      let categoryToUpdate: Category | null | undefined = undefined;
-      if (categoryId !== undefined) {
-        if (categoryId === null) {
-          categoryToUpdate = null;
-        } else {
-          categoryToUpdate = await this.categoriesRepository.findOneBy({
-            id: categoryId,
-          });
-          if (!categoryToUpdate) {
-            throw new NotFoundException(
-              `Category with ID ${categoryId} not found`,
-            );
-          }
-        }
-      }
-
-      // Merge basic data and potentially the new category
+      // Merge basic data
       queryRunner.manager.merge(Cocktail, cocktail, {
         ...cocktailBaseData,
         ...(name && { name: name.toLowerCase() }), // Downcase name
         ...(slug && { slug }),
-        ...(categoryToUpdate !== undefined && { category: categoryToUpdate }),
         ...(updateCocktailDto.source && { source: updateCocktailDto.source.toLowerCase() }), // Downcase source
         ...(updateCocktailDto.description && { description: updateCocktailDto.description.toLowerCase() }), // Downcase description
         ...(updateCocktailDto.instructions && { instructions: updateCocktailDto.instructions.toLowerCase() }) // Downcase instructions

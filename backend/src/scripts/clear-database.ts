@@ -1,40 +1,43 @@
 import { DataSource } from 'typeorm';
 import { Cocktail } from '../entities/cocktail.entity';
-import { GlassType } from '../entities/glass-type.entity';
-import { Category } from '../entities/category.entity';
-import { Ingredient } from '../entities/ingredient.entity';
 import { CocktailIngredient } from '../entities/cocktail-ingredient.entity';
-import { AppDataSource } from '../data-source';
+import { GlassType } from '../entities/glass-type.entity';
+import { Ingredient } from '../entities/ingredient.entity';
+import { Product } from '../entities/product.entity';
 
-async function clearDatabase(dataSource: DataSource) {
-  const entities = [
-    CocktailIngredient,
-    Cocktail,
-    Ingredient,
-    GlassType,
-    Category,
-  ];
+async function clearDatabase() {
+  const dataSource = new DataSource({
+    type: 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    username: process.env.DB_USERNAME || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    database: process.env.DB_DATABASE,
+    entities: [
+      Cocktail,
+      CocktailIngredient,
+      GlassType,
+      Ingredient,
+      Product,
+    ],
+  });
+
+  await dataSource.initialize();
 
   try {
-    for (const entity of entities) {
-      const repository = dataSource.getRepository(entity);
-      await repository.delete({});
-      console.log(`Cleared ${entity.name} table`);
-    }
+    await dataSource.transaction(async (manager) => {
+      await manager.delete(CocktailIngredient, {});
+      await manager.delete(Cocktail, {});
+      await manager.delete(GlassType, {});
+      await manager.delete(Ingredient, {});
+      await manager.delete(Product, {});
+    });
     console.log('Database cleared successfully');
   } catch (error) {
     console.error('Error clearing database:', error);
-    throw error;
+  } finally {
+    await dataSource.destroy();
   }
 }
 
-// Execute the clear database function
-AppDataSource.initialize()
-  .then(async () => {
-    await clearDatabase(AppDataSource);
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('Error during Data Source initialization:', error);
-    process.exit(1);
-  });
+clearDatabase();

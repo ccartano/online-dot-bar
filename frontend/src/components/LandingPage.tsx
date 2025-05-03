@@ -7,7 +7,7 @@ export const LandingPage: React.FC = () => {
   return (
     <>
       <SEO 
-        title="The Online.Bar - Cocktail Recipes & Mixology Guide"
+        title="The Online.Bar | Cocktail Recipes & Mixology Guide"
         description="Your comprehensive cocktail and mixology resource. Search and discover cocktail recipes, ingredients, and bartending techniques."
       />
       <Box

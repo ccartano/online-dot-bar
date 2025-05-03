@@ -8,7 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { CocktailIngredient, Category, GlassType } from './index';
+import { CocktailIngredient, GlassType } from './index';
 
 // The @Entity() decorator tells TypeORM this is a database table
 @Entity()
@@ -73,16 +73,6 @@ export class Cocktail {
   })
   @JoinColumn({ name: 'glassTypeId' })
   glassType: GlassType;
-
-  @Column({ nullable: true })
-  categoryId: number;
-
-  @ManyToOne(() => Category, (category) => category.cocktails, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'categoryId' })
-  category: Category;
 
   // This will be our relationship to the ingredients through the junction table
   // We'll set this up properly once we create the CocktailIngredient entity
