@@ -12,7 +12,7 @@ interface Ingredient {
   slug: string;
 }
 
-const API_URL = process.env.API_URL || 'https://api.theonline.bar';
+const API_URL = process.env.API_URL || 'https://theonline.bar';
 
 const fetchCocktails = async (): Promise<Cocktail[]> => {
   const response = await fetch(`${API_URL}/api/cocktails`);

@@ -37,7 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 import fs from 'fs';
 import path from 'path';
 import fetch from 'node-fetch';
-var API_URL = process.env.API_URL || 'https://api.theonline.bar';
+var API_URL = process.env.API_URL || 'https://theonline.bar';
 var fetchCocktails = function () { return __awaiter(void 0, void 0, void 0, function () {
     var response;
     return __generator(this, function (_a) {
