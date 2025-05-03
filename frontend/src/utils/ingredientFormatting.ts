@@ -47,8 +47,9 @@ const formatAmount = (amount: number): string => {
     return `${whole}${fractionStr}`;
   }
   
-  // If it's just a fraction
-  return decimalToFraction(amount);
+  // If it's just a fraction, round to 3 decimal places first
+  const roundedFraction = Math.round(fraction * 1000) / 1000;
+  return decimalToFraction(roundedFraction);
 };
 
 // Helper function to format unit
