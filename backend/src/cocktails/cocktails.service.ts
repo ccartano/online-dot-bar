@@ -6,7 +6,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Brackets, Not } from 'typeorm';
+import { Repository, Brackets, Not, Like } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Cocktail } from '../entities/cocktail.entity';
@@ -27,6 +27,8 @@ import { slugify } from '../utils/slugify';
 
 @Injectable()
 export class CocktailsService {
+  private readonly CACHE_TTL = 60 * 60 * 24; // 24 hours in seconds
+
   constructor(
     @InjectRepository(Cocktail)
     private cocktailsRepository: Repository<Cocktail>,
@@ -40,31 +42,46 @@ export class CocktailsService {
     private dataSource: DataSource,
   ) {}
 
+  // Cache Management
   private getCacheKey(filterDto?: FilterCocktailDto): string {
     if (!filterDto) return 'cocktails:all';
     return `cocktails:filtered:${JSON.stringify(filterDto)}`;
   }
 
-  // Helper function to calculate ingredient signatures
+  private async invalidateCache(): Promise<void> {
+    const cacheKeys = await this.cacheManager.get<string[]>('cocktails:cache-keys') || [];
+    await Promise.all([
+      this.cacheManager.del('cocktails:all'),
+      ...cacheKeys.map(key => this.cacheManager.del(key))
+    ]);
+    await this.cacheManager.set('cocktails:cache-keys', [], this.CACHE_TTL);
+  }
+
+  private async addCacheKey(key: string): Promise<void> {
+    const cacheKeys = await this.cacheManager.get<string[]>('cocktails:cache-keys') || [];
+    if (!cacheKeys.includes(key)) {
+      cacheKeys.push(key);
+      await this.cacheManager.set('cocktails:cache-keys', cacheKeys, this.CACHE_TTL);
+    }
+  }
+
+  // Signature Calculation
   private _calculateSignatures(ingredients: CocktailIngredientDto[]): {
     variationSignature: string | null;
     akaSignature: string | null;
   } {
-    if (!ingredients || ingredients.length === 0) {
+    if (!ingredients?.length) {
       return { variationSignature: null, akaSignature: null };
     }
 
-    // Sort ingredients for consistent signatures
     const sortedIngredients = [...ingredients].sort((a, b) =>
       a.ingredientId < b.ingredientId ? -1 : 1,
     );
 
-    // Variation signature: sorted ingredient IDs
     const variationSignature = sortedIngredients
       .map((i) => i.ingredientId)
       .join('-');
 
-    // AKA signature: sorted ingredientId-amount-unit strings
     const akaSignature = sortedIngredients
       .map(
         (i) =>
@@ -78,64 +95,55 @@ export class CocktailsService {
     return { variationSignature, akaSignature };
   }
 
-  async findAll(filterDto?: FilterCocktailDto): Promise<Cocktail[]> {
-    const cacheKey = this.getCacheKey(filterDto);
-    
-    // Try to get from cache first
-    const cachedData = await this.cacheManager.get<Cocktail[]>(cacheKey);
-    if (cachedData) {
-      return cachedData;
-    }
-
-    // If not in cache, get from database
-    const queryBuilder = this.cocktailsRepository
+  // Query Building
+  private buildBaseQuery() {
+    return this.cocktailsRepository
       .createQueryBuilder('cocktail')
       .leftJoinAndSelect('cocktail.ingredients', 'cocktailIngredients')
       .leftJoinAndSelect('cocktailIngredients.ingredient', 'ingredient')
       .addSelect('cocktail.glassTypeId');
+  }
 
-    if (filterDto) {
-      const { name, ingredientIds, glassTypeNames } = filterDto;
+  private applyFilters(queryBuilder: any, filterDto: FilterCocktailDto) {
+    const { name, ingredientIds, glassTypeNames } = filterDto;
 
-      if (name) {
-        queryBuilder.andWhere('LOWER(cocktail.name) LIKE LOWER(:name)', {
-          name: `%${name}%`,
-        });
-      }
-
-      if (ingredientIds && ingredientIds.length > 0) {
-        queryBuilder.andWhere(
-          new Brackets((qb) => {
-            ingredientIds.forEach((id, index) => {
-              qb.andWhere(
-                `EXISTS (SELECT 1 FROM cocktail_ingredient ci WHERE ci."cocktailId" = cocktail.id AND ci."ingredientId" = :ingredientId${index})`,
-                { [`ingredientId${index}`]: id },
-              );
-            });
-          }),
-        );
-      }
-
-      if (glassTypeNames && glassTypeNames.length > 0) {
-        const glassTypeIds = await this.glassTypesRepository
-          .createQueryBuilder('glassType')
-          .select('glassType.id')
-          .where('glassType.name IN (:...names)', { names: glassTypeNames })
-          .getMany()
-          .then((types) => types.map((t) => t.id));
-
-        if (glassTypeIds.length > 0) {
-          queryBuilder.andWhere('cocktail.glassTypeId IN (:...glassTypeIds)', {
-            glassTypeIds,
-          });
-        }
-      }
+    if (name) {
+      queryBuilder.andWhere('LOWER(cocktail.name) LIKE LOWER(:name)', {
+        name: `%${name}%`,
+      });
     }
 
+    if (ingredientIds?.length) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          ingredientIds.forEach((id, index) => {
+            qb.andWhere(
+              `EXISTS (SELECT 1 FROM cocktail_ingredient ci WHERE ci."cocktailId" = cocktail.id AND ci."ingredientId" = :ingredientId${index})`,
+              { [`ingredientId${index}`]: id },
+            );
+          });
+        }),
+      );
+    }
+
+    if (glassTypeNames?.length) {
+      queryBuilder.andWhere('cocktail.glassTypeId IN (:...glassTypeIds)', {
+        glassTypeIds: glassTypeNames.map(name => this.glassTypesRepository.findOneBy({ name })),
+      });
+    }
+  }
+
+  // CRUD Operations
+  async findAll(filterDto?: FilterCocktailDto): Promise<Cocktail[]> {
+    const cacheKey = this.getCacheKey(filterDto);
+    const cachedData = await this.cacheManager.get<Cocktail[]>(cacheKey);
+    if (cachedData) return cachedData;
+
+    const queryBuilder = this.buildBaseQuery();
+    if (filterDto) this.applyFilters(queryBuilder, filterDto);
+
     const cocktails = await queryBuilder.getMany();
-    
-    // Store in cache and track the key
-    await this.cacheManager.set(cacheKey, cocktails, 60 * 60 * 24); // 24 hours TTL
+    await this.cacheManager.set(cacheKey, cocktails, this.CACHE_TTL);
     await this.addCacheKey(cacheKey);
     
     return cocktails;
@@ -147,7 +155,6 @@ export class CocktailsService {
     potentialVariations: { id: number; name: string }[];
     variations: Cocktail[];
   }> {
-    // Try to get from cache first
     const cacheKey = `cocktail:${id}`;
     const cachedData = await this.cacheManager.get<{
       cocktail: Cocktail;
@@ -155,12 +162,9 @@ export class CocktailsService {
       potentialVariations: { id: number; name: string }[];
       variations: Cocktail[];
     }>(cacheKey);
-    if (cachedData) {
-      return cachedData;
-    }
+    if (cachedData) return cachedData;
 
-    // Use a single query with proper joins
-    const result = await this.cocktailsRepository
+    const cocktail = await this.cocktailsRepository
       .createQueryBuilder('cocktail')
       .leftJoinAndSelect('cocktail.glassType', 'glassType')
       .leftJoinAndSelect('cocktail.ingredients', 'cocktailIngredients')
@@ -168,62 +172,69 @@ export class CocktailsService {
       .where('cocktail.id = :id', { id })
       .getOne();
 
-    if (!result) {
+    if (!cocktail) {
       throw new NotFoundException(`Cocktail with ID ${id} not found`);
     }
 
-    // Fetch potential AKAs and variations in a single query
     const [potentialAkas, potentialVariations, variations] = await Promise.all([
-      result.akaSignature
-        ? this.cocktailsRepository
-            .createQueryBuilder('cocktail')
-            .select(['cocktail.id', 'cocktail.name'])
-            .where('cocktail.akaSignature = :akaSignature', {
-              akaSignature: result.akaSignature,
-            })
-            .andWhere('cocktail.id != :id', { id })
-            .getMany()
-        : [],
-      result.variationSignature
-        ? this.cocktailsRepository
-            .createQueryBuilder('cocktail')
-            .select(['cocktail.id', 'cocktail.name'])
-            .where('cocktail.variationSignature = :variationSignature', {
-              variationSignature: result.variationSignature,
-            })
-            .andWhere('cocktail.id != :id', { id })
-            .andWhere(
-              result.akaSignature
-                ? 'cocktail.akaSignature != :akaSignature'
-                : '1=1',
-              result.akaSignature
-                ? { akaSignature: result.akaSignature }
-                : {},
-            )
-            .getMany()
-        : [],
-      // Fetch all variations of this cocktail
-      this.cocktailsRepository
-        .createQueryBuilder('cocktail')
-        .leftJoinAndSelect('cocktail.glassType', 'glassType')
-        .leftJoinAndSelect('cocktail.ingredients', 'cocktailIngredients')
-        .leftJoinAndSelect('cocktailIngredients.ingredient', 'ingredient')
-        .where('cocktail.parentId = :id', { id })
-        .getMany(),
+      this.findPotentialAkas(cocktail),
+      this.findPotentialVariations(cocktail),
+      this.findVariations(cocktail.id),
     ]);
 
     const response = {
-      cocktail: result,
+      cocktail,
       potentialAkas,
       potentialVariations,
       variations,
     };
 
-    // Store in cache
-    await this.cacheManager.set(cacheKey, response, 60 * 60 * 24); // 24 hours TTL
+    await this.cacheManager.set(cacheKey, response, this.CACHE_TTL);
     await this.addCacheKey(cacheKey);
 
     return response;
+  }
+
+  private async findPotentialAkas(cocktail: Cocktail) {
+    if (!cocktail.akaSignature) return [];
+    return this.cocktailsRepository
+      .createQueryBuilder('cocktail')
+      .select(['cocktail.id', 'cocktail.name'])
+      .where('cocktail.akaSignature = :akaSignature', {
+        akaSignature: cocktail.akaSignature,
+      })
+      .andWhere('cocktail.id != :id', { id: cocktail.id })
+      .getMany();
+  }
+
+  private async findPotentialVariations(cocktail: Cocktail) {
+    if (!cocktail.variationSignature) return [];
+    return this.cocktailsRepository
+      .createQueryBuilder('cocktail')
+      .select(['cocktail.id', 'cocktail.name'])
+      .where('cocktail.variationSignature = :variationSignature', {
+        variationSignature: cocktail.variationSignature,
+      })
+      .andWhere('cocktail.id != :id', { id: cocktail.id })
+      .andWhere(
+        cocktail.akaSignature
+          ? 'cocktail.akaSignature != :akaSignature'
+          : '1=1',
+        cocktail.akaSignature
+          ? { akaSignature: cocktail.akaSignature }
+          : {},
+      )
+      .getMany();
+  }
+
+  private async findVariations(parentId: number) {
+    return this.cocktailsRepository
+      .createQueryBuilder('cocktail')
+      .leftJoinAndSelect('cocktail.glassType', 'glassType')
+      .leftJoinAndSelect('cocktail.ingredients', 'cocktailIngredients')
+      .leftJoinAndSelect('cocktailIngredients.ingredient', 'ingredient')
+      .where('cocktail.parentId = :id', { id: parentId })
+      .getMany();
   }
 
   async findByPaperlessId(paperlessId: number): Promise<Cocktail | null> {
@@ -279,141 +290,145 @@ export class CocktailsService {
   }
 
   async create(createCocktailDto: CreateCocktailDto): Promise<Cocktail> {
-    const { ingredients, glassTypeId, name, parentId, ...cocktailBaseData } =
-      createCocktailDto;
     const queryRunner = this.dataSource.createQueryRunner();
-
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // Generate base slug from name
-      let slug = slugify(name);
+      const { ingredients, glassTypeId, name, parentId, ...cocktailBaseData } = createCocktailDto;
+      const slug = await this.generateSlug(name, parentId);
+      const { variationSignature, akaSignature } = this._calculateSignatures(ingredients);
 
-      // If this is a variation, append a unique identifier
-      if (parentId) {
-        const parentCocktail = await this.cocktailsRepository.findOne({
-          where: { id: parentId },
-        });
-        if (!parentCocktail) {
-          throw new NotFoundException(`Parent cocktail with ID ${parentId} not found`);
-        }
-        
-        // Find existing variations to determine the next number
-        const existingVariations = await this.cocktailsRepository.find({
-          where: { parentId },
-        });
-        
-        // Append a number to make the slug unique
-        slug = `${slug}-v${existingVariations.length + 1}`;
-      } else {
-        // Only check for existing slug if this is not a variation
-        const existingCocktail = await this.cocktailsRepository.findOne({
-          where: { slug },
-        });
-        if (existingCocktail) {
-          throw new Error(`A cocktail with the slug '${slug}' already exists`);
-        }
-      }
+      await this.checkForDuplicates(name, akaSignature, variationSignature);
 
-      // 1. Calculate signatures for the new cocktail
-      const { variationSignature, akaSignature } = this._calculateSignatures(
-        ingredients || [],
-      );
-
-      // 2. Check for potential duplicates/variations before creating
-      if (akaSignature) {
-        const potentialAka = await this.cocktailsRepository.findOne({
-          where: { akaSignature, name: Not(name) }, // Same ingredients, different name
-        });
-        if (potentialAka) {
-          // For now, log a warning. Could throw ConflictException or return specific info.
-          console.warn(
-            `Potential AKA found for cocktail "${name}": "${potentialAka.name}" (ID: ${potentialAka.id})`,
-          );
-          // throw new ConflictException(`Cocktail with the exact same ingredients (AKA "${potentialAka.name}") already exists.`);
-        }
-      }
-
-      if (variationSignature) {
-        const potentialVariations = await this.cocktailsRepository.find({
-          where: {
-            variationSignature,
-            // Optional: Exclude exact AKA matches if already handled or logged
-            ...(akaSignature && { akaSignature: Not(akaSignature) }),
-          },
-        });
-        if (potentialVariations.length > 0) {
-          // Log variations found
-          console.warn(
-            `Potential variations found for cocktail "${name}" based on ingredient IDs: ${potentialVariations
-              .map((p) => `"${p.name}" (ID: ${p.id})`)
-              .join(', ')}`,
-          );
-        }
-      }
-
-      // Fetch related entities if IDs are provided
       const glassType = glassTypeId
         ? await this.glassTypesRepository.findOneBy({ id: glassTypeId })
         : null;
 
-      if (glassTypeId && !glassType)
-        throw new NotFoundException(
-          `GlassType with ID ${glassTypeId} not found`,
-        );
+      if (glassTypeId && !glassType) {
+        throw new NotFoundException(`GlassType with ID ${glassTypeId} not found`);
+      }
 
-      const newCocktail = this.cocktailsRepository.create({
-        ...cocktailBaseData, // Use the rest of the DTO data
-        name: name.toLowerCase(), // Downcase name
-        slug, // Add the generated slug
-        glassTypeId: glassType ? glassType.id : null,
-        glassType: glassType || undefined,
-        variationSignature, // 3. Save the calculated signatures
-        akaSignature,
-        parentId, // Include parentId if it exists
-        source: createCocktailDto.source?.toLowerCase(), // Downcase source
-        description: createCocktailDto.description?.toLowerCase(), // Downcase description
-        instructions: createCocktailDto.instructions?.toLowerCase() // Downcase instructions
-      });
-      const savedCocktail = await queryRunner.manager.save(newCocktail);
-
-      if (ingredients && ingredients.length > 0) {
-        for (const ingredientDto of ingredients) {
-          const ingredient = await this.ingredientsRepository.findOneBy({
-            id: ingredientDto.ingredientId,
-          });
-          if (!ingredient) {
-            throw new NotFoundException(
-              `Ingredient with ID ${ingredientDto.ingredientId} not found`,
-            );
-          }
-          const cocktailIngredient = this.cocktailIngredientsRepository.create({
-            cocktail: savedCocktail,
-            ingredient: ingredient,
-            amount: ingredientDto.amount,
-            unit: ingredientDto.unit?.toLowerCase(), // Downcase unit
-            order: ingredientDto.order,
-          });
-          await queryRunner.manager.save(cocktailIngredient);
+      const newCocktail = await this.createCocktailEntity(
+        queryRunner,
+        {
+          ...cocktailBaseData,
+          name: name.toLowerCase(),
+          slug,
+          glassTypeId: glassType?.id,
+          glassType,
+          variationSignature,
+          akaSignature,
+          parentId,
         }
+      );
+
+      if (ingredients?.length) {
+        await this.createCocktailIngredients(queryRunner, newCocktail, ingredients);
       }
 
       await queryRunner.commitTransaction();
-
-      // Refetch with relations and handle the new return type
-      const result = await this.findOne(savedCocktail.id);
       await this.invalidateCache();
-      return result.cocktail;
+      
+      // Return the saved cocktail directly instead of fetching it again
+      return newCocktail;
     } catch (err) {
       await queryRunner.rollbackTransaction();
-      if (err instanceof NotFoundException) {
-        throw err;
-      }
+      if (err instanceof NotFoundException) throw err;
       console.error('Error creating cocktail:', err);
       throw new InternalServerErrorException('Failed to create cocktail');
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  private async generateSlug(name: string, parentId?: number): Promise<string> {
+    let slug = slugify(name);
+
+    if (parentId) {
+      const existingVariations = await this.cocktailsRepository.find({
+        where: { parentId },
+      });
+      return `${slug}-v${existingVariations.length + 1}`;
+    }
+
+    const existingCocktail = await this.cocktailsRepository.findOne({
+      where: { slug },
+    });
+
+    if (existingCocktail) {
+      const existingVariations = await this.cocktailsRepository.find({
+        where: { slug: Like(`${slug}-v%`) },
+      });
+      return `${slug}-v${existingVariations.length + 1}`;
+    }
+
+    return slug;
+  }
+
+  private async checkForDuplicates(
+    name: string,
+    akaSignature: string | null,
+    variationSignature: string | null,
+  ) {
+    if (akaSignature) {
+      const potentialAka = await this.cocktailsRepository.findOne({
+        where: { akaSignature, name: Not(name) },
+      });
+      if (potentialAka) {
+        console.warn(
+          `Potential AKA found for cocktail "${name}": "${potentialAka.name}" (ID: ${potentialAka.id})`,
+        );
+      }
+    }
+
+    if (variationSignature) {
+      const potentialVariations = await this.cocktailsRepository.find({
+        where: {
+          variationSignature,
+          ...(akaSignature && { akaSignature: Not(akaSignature) }),
+        },
+      });
+      if (potentialVariations.length > 0) {
+        console.warn(
+          `Potential variations found for cocktail "${name}" based on ingredient IDs: ${potentialVariations
+            .map((p) => `"${p.name}" (ID: ${p.id})`)
+            .join(', ')}`,
+        );
+      }
+    }
+  }
+
+  private async createCocktailEntity(
+    queryRunner: any,
+    data: Partial<Cocktail>,
+  ): Promise<Cocktail> {
+    const newCocktail = this.cocktailsRepository.create(data);
+    return queryRunner.manager.save(newCocktail);
+  }
+
+  private async createCocktailIngredients(
+    queryRunner: any,
+    cocktail: Cocktail,
+    ingredients: CocktailIngredientDto[],
+  ): Promise<void> {
+    for (const ingredientDto of ingredients) {
+      const ingredient = await this.ingredientsRepository.findOneBy({
+        id: ingredientDto.ingredientId,
+      });
+      if (!ingredient) {
+        throw new NotFoundException(
+          `Ingredient with ID ${ingredientDto.ingredientId} not found`,
+        );
+      }
+      const cocktailIngredient = this.cocktailIngredientsRepository.create({
+        cocktail,
+        ingredient,
+        amount: ingredientDto.amount,
+        unit: ingredientDto.unit?.toLowerCase(),
+        order: ingredientDto.order,
+      });
+      await queryRunner.manager.save(cocktailIngredient);
     }
   }
 
@@ -557,28 +572,6 @@ export class CocktailsService {
       throw new NotFoundException(`Cocktail with ID ${id} not found`);
     }
     await this.invalidateCache();
-  }
-
-  private async invalidateCache(): Promise<void> {
-    // Delete the main cache
-    await this.cacheManager.del('cocktails:all');
-    
-    // Since we can't list all keys, we'll maintain a set of cache keys
-    const cacheKeys = await this.cacheManager.get<string[]>('cocktails:cache-keys') || [];
-    
-    // Delete all known cache keys
-    await Promise.all(cacheKeys.map(key => this.cacheManager.del(key)));
-    
-    // Reset the cache keys
-    await this.cacheManager.set('cocktails:cache-keys', [], 60 * 60 * 24);
-  }
-
-  private async addCacheKey(key: string): Promise<void> {
-    const cacheKeys = await this.cacheManager.get<string[]>('cocktails:cache-keys') || [];
-    if (!cacheKeys.includes(key)) {
-      cacheKeys.push(key);
-      await this.cacheManager.set('cocktails:cache-keys', cacheKeys, 60 * 60 * 24);
-    }
   }
 
   private generateIngredientSignature(ingredients: CocktailIngredientDto[]): string {
