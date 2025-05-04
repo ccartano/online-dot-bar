@@ -29,6 +29,14 @@ const decimalToFraction = (decimal: number): string => {
   const fraction3 = REVERSE_FRACTION_MAP[decimalStr3];
   if (fraction3) return fraction3;
 
+  // Round to 3 decimal places and try to match with REVERSE_FRACTION_MAP
+  const rounded = Math.round(decimal * 1000) / 1000;
+  for (const [value, fraction] of Object.entries(REVERSE_FRACTION_MAP)) {
+    if (Math.abs(rounded - Number(value)) < 0.01) {
+      return fraction;
+    }
+  }
+
   // If no match, return the decimal
   return decimal.toString();
 };

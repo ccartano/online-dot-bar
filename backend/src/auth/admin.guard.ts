@@ -20,11 +20,6 @@ export class AdminGuard implements CanActivate {
 
     const expectedHashedToken = createHash('sha256').update(adminToken).digest('hex');
 
-    this.logger.debug(`Received hash: ${hashedToken}`);
-    this.logger.debug(`Expected hash: ${expectedHashedToken}`);
-    this.logger.debug(`Hash length: ${hashedToken?.length}, Expected length: ${expectedHashedToken?.length}`);
-    this.logger.debug(`Hash match: ${hashedToken === expectedHashedToken}`);
-
     if (!hashedToken) {
       this.logger.warn('No admin token provided in request');
       throw new UnauthorizedException('Admin access required');

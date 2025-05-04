@@ -1,6 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { CocktailsService } from '../cocktails/cocktails.service';
 import { IngredientsService } from '../ingredients/ingredients.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { Repository } from 'typeorm';
+import { Cocktail } from '../entities/cocktail.entity';
+import { Ingredient } from '../entities/ingredient.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 export interface SearchResult {
   id: string;
@@ -13,121 +19,131 @@ export interface SearchResult {
 
 @Injectable()
 export class SearchService {
+  private readonly CACHE_TTL = 60 * 60; // 1 hour in seconds
+
   constructor(
     private readonly cocktailService: CocktailsService,
     private readonly ingredientService: IngredientsService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectRepository(Cocktail)
+    private cocktailRepository: Repository<Cocktail>,
+    @InjectRepository(Ingredient)
+    private ingredientRepository: Repository<Ingredient>,
   ) {}
 
-  private fuzzyMatch(str: string, query: string): boolean {
-    const strLower = str.toLowerCase();
-    const queryLower = query.toLowerCase();
-    let queryIndex = 0;
-    
-    for (let i = 0; i < strLower.length; i++) {
-      if (strLower[i] === queryLower[queryIndex]) {
-        queryIndex++;
-        if (queryIndex === queryLower.length) return true;
-      }
-    }
-    return false;
+  private getCacheKey(type: 'search' | 'ingredients', query: string): string {
+    return `search:${type}:${query.toLowerCase()}`;
   }
 
   async searchByIngredients(ingredients: string[]): Promise<SearchResult[]> {
-    if (!ingredients || ingredients.length === 0) {
-      return [];
-    }
+    if (!ingredients?.length) return [];
 
-    const cocktails = await this.cocktailService.findAll();
-    const results: SearchResult[] = [];
+    // Normalize and clean up ingredients
+    const normalizedIngredients = ingredients
+      .map(ing => ing.trim().toLowerCase())
+      .filter(ing => ing.length > 0);
 
-    // For each cocktail, check if it contains ALL of the searched ingredients
-    cocktails.forEach(cocktail => {
-      const matchedIngredients: string[] = [];
-      let hasAllIngredients = true;
+    const cacheKey = this.getCacheKey('ingredients', normalizedIngredients.join(','));
+    const cachedResults = await this.cacheManager.get<SearchResult[]>(cacheKey);
+    if (cachedResults) return cachedResults;
 
-      // Check each searched ingredient against the cocktail's ingredients
-      ingredients.forEach(searchedIngredient => {
-        let found = false;
-        cocktail.ingredients.forEach(cocktailIngredient => {
-          // Use a more precise text-based search that looks for the ingredient name as a whole word
-          const ingredientName = cocktailIngredient.ingredient.name.toLowerCase();
-          const searchTerm = searchedIngredient.toLowerCase();
-          
-          // Check for exact match or if the ingredient name contains the search term as a whole word
-          if (ingredientName === searchTerm || 
-              ingredientName.includes(` ${searchTerm} `) || 
-              ingredientName.startsWith(`${searchTerm} `) || 
-              ingredientName.endsWith(` ${searchTerm}`)) {
-            matchedIngredients.push(cocktailIngredient.ingredient.name);
-            found = true;
-          }
+    // Use database-level filtering with improved search
+    const cocktails = await this.cocktailRepository
+      .createQueryBuilder('cocktail')
+      .leftJoinAndSelect('cocktail.ingredients', 'cocktailIngredients')
+      .leftJoinAndSelect('cocktailIngredients.ingredient', 'ingredient')
+      .where(
+        normalizedIngredients.map((_, index) => 
+          `EXISTS (
+            SELECT 1 FROM cocktail_ingredient ci 
+            JOIN ingredient i ON ci."ingredientId" = i.id 
+            WHERE ci."cocktailId" = cocktail.id 
+            AND (
+              LOWER(i.name) = LOWER(:ingredient${index})
+              OR LOWER(i.name) LIKE LOWER(:ingredient${index}Pattern)
+              OR LOWER(i.name) LIKE LOWER(:ingredient${index}Word)
+            )
+          )`
+        ).join(' AND '),
+        normalizedIngredients.reduce((acc, ingredient, index) => ({
+          ...acc,
+          [`ingredient${index}`]: ingredient,
+          [`ingredient${index}Pattern`]: `%${ingredient}%`,
+          [`ingredient${index}Word`]: `% ${ingredient} %`,
+        }), {})
+      )
+      .getMany();
+
+    const results: SearchResult[] = cocktails.map(cocktail => {
+      const matchedIngredients = cocktail.ingredients
+        .map(ci => ci.ingredient.name)
+        .filter(name => {
+          const nameLower = name.toLowerCase();
+          return normalizedIngredients.some(ing => 
+            nameLower === ing || 
+            nameLower.includes(` ${ing} `) ||
+            nameLower.startsWith(`${ing} `) ||
+            nameLower.endsWith(` ${ing}`)
+          );
         });
-        if (!found) {
-          hasAllIngredients = false;
-        }
-      });
 
-      // Only add to results if all ingredients were found
-      if (hasAllIngredients) {
-        results.push({
-          id: cocktail.id.toString(),
-          name: cocktail.name,
-          slug: cocktail.slug,
-          type: 'cocktail',
-          matchedIngredients: [...new Set(matchedIngredients)] // Remove duplicates
-        });
-      }
+      return {
+        id: cocktail.id.toString(),
+        name: cocktail.name,
+        slug: cocktail.slug,
+        type: 'cocktail' as const,
+        matchedIngredients: [...new Set(matchedIngredients)] // Remove duplicates
+      };
     });
 
-    // Sort results by number of matched ingredients (most matches first)
+    // Sort results by number of matched ingredients and name
     const sortedResults = results.sort((a, b) => {
       const aMatches = a.matchedIngredients?.length || 0;
       const bMatches = b.matchedIngredients?.length || 0;
-      return bMatches - aMatches;
+      if (bMatches !== aMatches) return bMatches - aMatches;
+      return a.name.localeCompare(b.name);
     });
 
-    // Return only the top 10 results
-    return sortedResults.slice(0, 10);
+    await this.cacheManager.set(cacheKey, sortedResults, this.CACHE_TTL);
+    return sortedResults;
   }
 
   async search(query: string): Promise<SearchResult[]> {
-    if (!query || query.length < 2) {
-      return [];
-    }
+    if (!query || query.length < 2) return [];
 
+    const cacheKey = this.getCacheKey('search', query);
+    const cachedResults = await this.cacheManager.get<SearchResult[]>(cacheKey);
+    if (cachedResults) return cachedResults;
+
+    // Use database-level text search
     const [cocktails, ingredients] = await Promise.all([
-      this.cocktailService.findAll(),
-      this.ingredientService.findAll(),
+      this.cocktailRepository
+        .createQueryBuilder('cocktail')
+        .where('LOWER(cocktail.name) LIKE LOWER(:query)', { query: `%${query}%` })
+        .getMany(),
+      this.ingredientRepository
+        .createQueryBuilder('ingredient')
+        .where('LOWER(ingredient.name) LIKE LOWER(:query)', { query: `%${query}%` })
+        .getMany()
     ]);
 
-    const results: SearchResult[] = [];
+    const results: SearchResult[] = [
+      ...cocktails.map(cocktail => ({
+        id: cocktail.id.toString(),
+        name: cocktail.name,
+        slug: cocktail.slug,
+        type: 'cocktail' as const,
+      })),
+      ...ingredients.map(ingredient => ({
+        id: ingredient.id.toString(),
+        name: ingredient.name,
+        slug: ingredient.slug,
+        type: 'ingredient' as const,
+        ingredientType: ingredient.type,
+      }))
+    ];
 
-    // Search cocktails
-    cocktails.forEach(cocktail => {
-      if (this.fuzzyMatch(cocktail.name, query)) {
-        results.push({
-          id: cocktail.id.toString(),
-          name: cocktail.name,
-          slug: cocktail.slug,
-          type: 'cocktail',
-        });
-      }
-    });
-
-    // Search ingredients
-    ingredients.forEach(ingredient => {
-      if (this.fuzzyMatch(ingredient.name, query)) {
-        results.push({
-          id: ingredient.id.toString(),
-          name: ingredient.name,
-          slug: ingredient.slug,
-          type: 'ingredient',
-          ingredientType: ingredient.type,
-        });
-      }
-    });
-
-    // Sort results by relevance (exact matches first, then fuzzy matches)
+    // Sort results by relevance
     const sortedResults = results.sort((a, b) => {
       const aStartsWith = a.name.toLowerCase().startsWith(query.toLowerCase());
       const bStartsWith = b.name.toLowerCase().startsWith(query.toLowerCase());
@@ -135,9 +151,15 @@ export class SearchService {
       if (aStartsWith && !bStartsWith) return -1;
       if (!aStartsWith && bStartsWith) return 1;
       return a.name.localeCompare(b.name);
-    });
+    }).slice(0, 10);
 
-    // Return only the top 10 results
-    return sortedResults.slice(0, 10);
+    await this.cacheManager.set(cacheKey, sortedResults, this.CACHE_TTL);
+    return sortedResults;
+  }
+
+  private fuzzyMatch(text: string, query: string): boolean {
+    const textLower = text.toLowerCase();
+    const queryLower = query.toLowerCase();
+    return textLower.includes(queryLower);
   }
 } 
